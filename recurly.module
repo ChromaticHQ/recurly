@@ -4,6 +4,9 @@
  * @file
  * Uses Recurly's PHP client library to interact with their API and integrate it
  * with Drupal user accounts.
+ *
+ * This is a D6 backport of the original D7 module. D7 code style is retained
+ * in an effort to minimize changes to D7 code in order to make merging easier.
  */
 
 
@@ -28,7 +31,7 @@ function recurly_menu() {
   );
 
   // Define administrative menu items.
-  $items['admin/config/services/recurly'] = array(
+  $items['admin/settings/recurly'] = array(
     'title' => 'Recurly',
     'description' => 'Configure your Recurly API settings and points of integration with Drupal.',
     'page callback' => 'drupal_get_form',
@@ -36,13 +39,13 @@ function recurly_menu() {
     'access arguments' => array('administer recurly'),
     'file' => 'includes/recurly.admin.inc',
   );
-  $items['admin/config/services/recurly/settings'] = array(
+  $items['admin/settings/recurly/settings'] = array(
     'title' => 'Settings',
     'description' => 'Configure your Recurly API settings and points of integration with Drupal.',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   );
-  $items['admin/config/services/recurly/subscription-plans'] = array(
+  $items['admin/settings/recurly/subscription-plans'] = array(
     'title' => 'Subscription plans',
     'description' => 'View a list of subscription plans defined in your Recurly account.',
     'page callback' => 'recurly_subscription_plans_overview',
@@ -53,6 +56,21 @@ function recurly_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_perm().
+ *
+ * This is implemented as a wrapper for the D7 hook_permission function.
+ * Doing this helps keep the diff between the D7 and D6 versions minimal.
+ */
+function recurly_perm() {
+  $out = array();
+  $permissions = recurly_permission();
+  foreach ($permissions as $key => $val) {
+    $out[] = $key;
+  }
+  return $out;
 }
 
 /**
@@ -104,6 +122,15 @@ function recurly_help($path, $arg) {
   switch ($path) {
     case 'admin/config/services/recurly/subscription-plans':
       return '<p>' . t('The subscription plans below are defined for the Recurly account configured in your default account settings. Plans should be defined and updated at Recurly and are cached here for informational purposes only. Edit links and purchase links that may appear in the table redirect to Recurly.') . '</p>';
+  }
+}
+
+/**
+ * Implements hook_user().
+ */
+function recurly_user($type, $edit, &$account, $category = NULL) {
+  if ($type == 'view') {
+    return recurly_user_view($account, NULL, NULL);
   }
 }
 
@@ -191,6 +218,40 @@ function recurly_user_view($account, $view_mode, $langcode) {
         }
       }
     }
+  }
+}
+
+/**
+ * Implements hook_filter().
+ */
+function recurly_filter($op, $delta = 0, $format = -1, $text = '') {
+  $info = recurly_filter_info();
+  switch ($op) {
+    case 'list':
+      $out = array();
+      foreach ($info as $key => $info) {
+        $out[$key] = $info['title'];
+      }
+      return $out;
+    case 'description':
+      return $info[$delta]['description'];
+    case 'no cache':
+      return !$info[$delta]['cache'];
+    case 'process':
+      $function = 'recurly_filter_' . $delta . '_process';
+      if (function_exists($function)) {
+        return $function($text, NULL, $format, NULL, NULL, NULL);
+      }
+  }
+}
+
+/**
+ * Implements hook_filter_tips().
+ */
+function recurly_filter_tips($delta, $format, $long) {
+  $function = 'recurly_filter_'. $delta .'_tips';
+  if (function_exists($function)) {
+    return $function(NULL, $format, $long);
   }
 }
 
@@ -398,10 +459,9 @@ function recurly_client_initialize($settings = NULL) {
   // If no settings array was given, use the default account settings.
   if (empty($settings)) {
     $settings = array(
-      'username' => variable_get('recurly_api_username', ''),
-      'password' => variable_get('recurly_api_password', ''),
+      'api_key' => variable_get('recurly_api_key', ''),
       'subdomain' => variable_get('recurly_subdomain', ''),
-      'environment' => variable_get('recurly_environment', 'sandbox'),
+      'private_key' => variable_get('recurly_private_key', ''),
     );
   }
 
@@ -410,7 +470,7 @@ function recurly_client_initialize($settings = NULL) {
   if (($path = libraries_get_path('recurly')) && file_exists($path . '/library/recurly.php')) {
     // Include the library files and configure authentication.
     require_once $path . '/library/recurly.php';
-    RecurlyClient::SetAuth($settings['username'], $settings['password'], $settings['subdomain'], $settings['environment']);
+    RecurlyClient::SetAuth($settings['api_key'], $settings['subdomain'], $settings['private_key']);
   }
   else {
     watchdog('recurly', 'Could not find the Recurly PHP client library in sites/all/libraries/recurly.', array(), WATCHDOG_ERROR);
@@ -649,12 +709,6 @@ function recurly_url($path = '') {
   // Generate the subdomain to use for the current account.
   $subdomain = RecurlyClient::$subdomain;
 
-  // Add the sandbox suffix to the subdomain if the account is currently in the
-  // snadbox environment.
-  if (RecurlyClient::$environment == 'sandbox') {
-    $subdomain .= '-test';
-  }
-
   return url('https://' . $subdomain . '.recurly.com/' . $path);
 }
 
@@ -724,7 +778,7 @@ function recurly_subscription_plan_purchase_url($plan, $settings = NULL) {
   $query = '';
 
   if (!empty($settings)) {
-    $query = '?' . drupal_http_build_query($settings);
+    $query = '?' . drupal_query_string_encode($settings);
   }
 
   return recurly_url('subscribe/' . $plan->plan_code . $query);

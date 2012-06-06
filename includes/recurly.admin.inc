@@ -9,7 +9,7 @@
 /**
  * Returns the site-wide Recurly settings form.
  */
-function recurly_settings_form($form, &$form_state) {
+function recurly_settings_form(&$form_state) {
   // Add form elements to collect default account information.
   $form['account'] = array(
     '#type' => 'fieldset',
@@ -20,7 +20,7 @@ function recurly_settings_form($form, &$form_state) {
   $form['account']['recurly_subdomain'] = array(
     '#type' => 'textfield',
     '#title' => t('Subdomain'),
-    '#description' => t("The subdomain of your account excluding the -test suffix if still in Sandbox."),
+    '#description' => t("The subdomain of your account including the -test suffix if using the Sandbox."),
     '#default_value' => variable_get('recurly_subdomain', ''),
   );
   $form['account']['recurly_hosted_payment_pages'] = array(
@@ -28,25 +28,16 @@ function recurly_settings_form($form, &$form_state) {
     '#title' => t('Hosted Payment Pages are enabled for this account.'),
     '#default_value' => variable_get('recurly_hosted_payment_pages', FALSE),
   );
-  $form['account']['recurly_api_username'] = array(
+  $form['account']['recurly_api_key'] = array(
     '#type' => 'textfield',
-    '#title' => t('API username'),
-    '#default_value' => variable_get('recurly_api_username', ''),
+    '#title' => t('API Key'),
+    '#default_value' => variable_get('recurly_api_key', ''),
   );
-  $form['account']['recurly_api_password'] = array(
+  $form['account']['recurly_private_key'] = array(
     '#type' => 'textfield',
-    '#title' => t('API password'),
-    '#default_value' => variable_get('recurly_api_password', ''),
-  );
-  $form['account']['recurly_environment'] = array(
-    '#type' => 'radios',
-    '#title' => t('Environment'),
-    '#description' => t('Select the environment that matches your account status.'),
-    '#options' => array(
-      'sandbox' => t('Sandbox'),
-      'production' => t('Production'),
-    ),
-    '#default_value' => variable_get('recurly_environment', 'sandbox'),
+    '#title' => t('Recurly Private Key'),
+    '#description' => t('Optional: Recurly Private Key - enter this if needed for transparent post/recurly.js verifications.'),
+    '#default_value' => variable_get('recurly_private_key', ''),
   );
 
   // Add form elements to configure default push notification settings.
@@ -146,5 +137,5 @@ function recurly_subscription_plans_overview() {
     $rows[] = array(array('data' => t('No subscription plans found.'), 'colspan' => 5));
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows));
+  return theme('table', $header, $rows);
 }

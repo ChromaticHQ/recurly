@@ -47,7 +47,7 @@ function recurly_schema() {
       'status' => array(
         'description' => 'Whether the account is closed or active.',
         'type' => 'varchar',
-        'size' => 255,
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -90,20 +90,23 @@ function recurly_schema() {
  * Implements hook_install().
  */
 function recurly_install() {
+  drupal_install_schema('recurly');
+
   // Initialize the Recurly listener key variable.
-  variable_set('recurly_listener_key', substr(drupal_hash_base64(REQUEST_TIME), 0, 8));
+  variable_set('recurly_listener_key', substr(md5(REQUEST_TIME), 0, 8));  
 }
 
 /**
  * Implements hook_uninstall().
  */
 function recurly_uninstall() {
+  drupal_uninstall_schema('recurly');
+
   // Remove the site-wide account settings.
   variable_del('recurly_subdomain');
   variable_del('recurly_hosted_payment_pages');
-  variable_del('recurly_api_username');
-  variable_del('recurly_api_password');
-  variable_del('recurly_environment');
+  variable_del('recurly_api_key');
+  variable_del('recurly_private_key');
 
   // Remove the push notification settings.
   variable_del('recurly_listener_key');
