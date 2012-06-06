@@ -432,7 +432,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
         // Save the local record now.
         recurly_account_save($recurly_account, $uid);
       }
-      elseif(!empty($local_account) && recurly_integration_option_enabled('account', 'push_update')) {
+      elseif (!empty($local_account) && recurly_integration_option_enabled('account', 'push_update')) {
         // Otherwise if a local record was found and we want to keep it
         // synchronized, save it afresh now, preserving any existing data array.
         recurly_account_save($recurly_account, $local_account->uid, $local_account->data);
@@ -652,10 +652,10 @@ function recurly_account_save($recurly_account, $uid, $data = array(), $export =
 
   // Generate an array of data to save.
   $fields = array(
-    'email' => $recurly_account->email,
-    'first_name' => $recurly_account->first_name,
-    'last_name' => $recurly_account->last_name,
-    'company_name' => $recurly_account->company_name,
+    'email' => (string) $recurly_account->email,
+    'first_name' => (string) $recurly_account->first_name,
+    'last_name' => (string) $recurly_account->last_name,
+    'company_name' => (string) $recurly_account->company_name,
     'uid' => $uid,
     'updated' => REQUEST_TIME,
     'data' => serialize($data),
