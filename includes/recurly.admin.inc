@@ -5,7 +5,6 @@
  * Recurly settings forms and administration page callbacks.
  */
 
-
 /**
  * Returns the site-wide Recurly settings form.
  */
@@ -14,19 +13,8 @@ function recurly_settings_form($form, &$form_state) {
   $form['account'] = array(
     '#type' => 'fieldset',
     '#title' => t('Default account settings'),
-    '#description' => t('Configure these settings based on your Company Settings and API Credentials settings in the Recurly administration interface.'),
+    '#description' => t('Configure this information based on the "API Credentials" section within the Recurly administration interface.'),
     '#collapsible' => TRUE,
-  );
-  $form['account']['recurly_subdomain'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Subdomain'),
-    '#description' => t("The subdomain of your account including the -test suffix if using the Sandbox."),
-    '#default_value' => variable_get('recurly_subdomain', ''),
-  );
-  $form['account']['recurly_hosted_payment_pages'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Hosted Payment Pages are enabled for this account.'),
-    '#default_value' => variable_get('recurly_hosted_payment_pages', FALSE),
   );
   $form['account']['recurly_api_key'] = array(
     '#type' => 'textfield',
@@ -38,6 +26,17 @@ function recurly_settings_form($form, &$form_state) {
     '#title' => t('Recurly Private Key'),
     '#description' => t('Optional: Recurly Private Key - enter this if needed for transparent post/recurly.js verifications.'),
     '#default_value' => variable_get('recurly_private_key', ''),
+  );
+  $form['account']['recurly_subdomain'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Subdomain'),
+    '#description' => t("The subdomain of your account including the -test suffix if using the Sandbox."),
+    '#default_value' => variable_get('recurly_subdomain', ''),
+  );
+  $form['account']['recurly_hosted_payment_pages'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hosted Payment Pages are enabled for this account.'),
+    '#default_value' => variable_get('recurly_hosted_payment_pages', FALSE),
   );
 
   // Add form elements to configure default push notification settings.
@@ -123,14 +122,30 @@ function recurly_subscription_plans_overview() {
       );
     }
 
-    $rows[] = array(
-      t('@name <small>(Plan code: @code)</small>', array('@name' => $plan->name, '@code' => $plan->plan_code)) . $description,
-      t('@unit_price per @interval_length @interval_unit', array('@unit_price' => number_format($plan->unit_amount_in_cents / 100, 2), '@interval_length' => $plan->plan_interval_length, '@interval_unit' => $plan->plan_interval_unit)),
-      t('@setup_fee', array('@setup_fee' => number_format($plan->setup_fee_in_cents / 100, 2))),
-      t('@trial_length @trial_unit', array('@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit)),
-      format_date($plan->created_at),
-      theme('links', array('links' => $operations, 'attributes' => array('class' => array('links', 'inline')))),
-    );
+    // TODO: Remove reset() calls once Recurly_CurrencyList implements Iterator.
+    // See https://github.com/recurly/recurly-client-php/issues/37
+    $unit_amounts = in_array('Iterator', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
+    $setup_fees = in_array('Iterator', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
+
+    $row = array();
+    $row[] = check_plain($plan->name) . ' <small>(' . t('Plan code: @code', array('@code' => $plan->plan_code)) . ')</small>' . $description;
+
+    $amount_strings = array();
+    foreach ($unit_amounts as $unit_amount) {
+      $amount_strings[] = t('@unit_price per @interval_length @interval_unit', array('@unit_price' => number_format($unit_amount->amount(), 2) . ' ' . $unit_amount->currencyCode, '@interval_length' => $plan->plan_interval_length, '@interval_unit' => $plan->plan_interval_unit));
+    }
+    $row[] = implode('<br />', $amount_strings);
+
+    $setup_strings = array();
+    foreach ($setup_fees as $setup_fee) {
+      $setup_strings[] = check_plain(number_format($unit_amount->amount(), 2) . ' ' . $unit_amount->currencyCode);
+    }
+    $row[] = implode('<br />', $setup_strings);
+
+    $row[] = t('@trial_length @trial_unit', array('@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit));
+    $row[] = format_date($plan->created_at->format('U'));
+    $row[] = theme('links', array('links' => $operations, 'attributes' => array('class' => array('links', 'inline'))));
+    $rows[] = $row;
   }
 
   if (empty($rows)) {
