@@ -387,7 +387,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
 
     // Retrieve the POST XML and create a notification object from it.
     $post_xml = file_get_contents('php://input');
-    $notification = new RecurlyPushNotification($post_xml);
+    $notification = new Recurly_PushNotification($post_xml);
 
     // Bail if this is an empty or invalid notification.
     if (empty($notification) || empty($notification->type)) {
@@ -404,7 +404,13 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
     if ((recurly_integration_option_enabled('account', 'push_create') || recurly_integration_option_enabled('account', 'push_update')) &&
       in_array($notification->type, array('new_account_notification', 'canceled_account_notification', 'billing_info_updated_notification'))) {
       // Retrieve the full account record from Recurly.
-      $recurly_account = RecurlyAccount::getAccount($notification->account->account_code);
+      try {
+        $recurly_account = Recurly_Account::get($notification->account->account_code);
+      }
+      catch (Recurly_NotFoundError $e) {
+        drupal_set_message(t('Account not found'));
+        //watchdog_exception('recurly', $e);
+      }
 
       // If we couldn't get anything, just attempt to use the submitted data.
       if (empty($recurly_account)) {
@@ -467,10 +473,15 @@ function recurly_client_initialize($settings = NULL) {
 
   // If we can find a path in the libraries directory to the Recurly PHP client
   // library...
-  if (($path = libraries_get_path('recurly')) && file_exists($path . '/library/recurly.php')) {
+  $path = libraries_get_path('recurly');
+  if (($path = libraries_get_path('recurly')) && file_exists($path . '/lib/recurly.php')) {
     // Include the library files and configure authentication.
-    require_once $path . '/library/recurly.php';
-    RecurlyClient::SetAuth($settings['api_key'], $settings['subdomain'], $settings['private_key']);
+    require_once $path . '/lib/recurly.php';
+
+    // Required for the API
+    Recurly_Client::$apiKey = $settings['api_key'];
+    // Optional for Recurly.js:
+    Recurly_js::$privateKey = $settings['private_key'];
   }
   else {
     watchdog('recurly', 'Could not find the Recurly PHP client library in sites/all/libraries/recurly.', array(), WATCHDOG_ERROR);
@@ -565,7 +576,7 @@ function recurly_account_load($conditions = array(), $local = FALSE) {
 
   // Attempt to load the full account from Recurly.
   try {
-    $recurly_account = RecurlyAccount::getAccount($data->account_code);
+    $recurly_account = Recurly_Account::get($data->account_code);
 
     // Return the orphaned data if no account was found at Recurly.
     if (empty($recurly_account)) {
@@ -615,14 +626,15 @@ function recurly_account_save($recurly_account, $uid, $data = array(), $export =
   // record that does not match a record at Recurly.
   if ($export) {
     // Check to see if the record already exists.
-    $remote_account = RecurlyAccount::getAccount($recurly_account->account_code);
+    $remote_account = Recurly_Account::getAccount($recurly_account->account_code);
 
     // If it does, then update the account.
     if (!empty($remote_account)) {
       try {
         $recurly_account->update();
       }
-      catch (Exception $e) {
+      catch (Recurly_NotFoundError $e) {
+        //watchdog_exception('recurly', $e);
         return FALSE;
       }
     }
@@ -631,7 +643,8 @@ function recurly_account_save($recurly_account, $uid, $data = array(), $export =
       try {
         $recurly_account->create();
       }
-      catch (Exception $e) {
+      catch (Recurly_NotFoundError $e) {
+        //watchdog_exception('recurly', $e);
         return FALSE;
       }
     }
@@ -682,7 +695,7 @@ function recurly_subscription_plans($reset_cache = FALSE) {
   // If we haven't specified a cache reset, attempt to retrieve plans from the
   // cache before getting them from Recurly.
   if (!$reset_cache) {
-    $plans = cache_get('recurly-subscription-plans:' . RecurlyClient::$subdomain);
+    $plans = cache_get('recurly-subscription-plans:' . variable_get('recurly_subdomain', ''));
 
     // If plans were found, return them now.
     if (!empty($plans->data)) {
@@ -691,11 +704,11 @@ function recurly_subscription_plans($reset_cache = FALSE) {
   }
 
   // Retrieve the subscription plans from Recurly.
-  $plans = RecurlyPlan::getPlans();
+  $plans = Recurly_PlanList::get();
 
   // If data was actually returned, cache it for the current subdomain.
   if (!empty($plans)) {
-    cache_set('recurly-subscription-plans:' . RecurlyClient::$subdomain, $plans, 'cache', CACHE_TEMPORARY);
+    cache_set('recurly-subscription-plans:' . variable_get('recurly_subdomain', ''), $plans, 'cache', CACHE_TEMPORARY);
   }
 
   return $plans;
@@ -707,7 +720,7 @@ function recurly_subscription_plans($reset_cache = FALSE) {
  */
 function recurly_url($path = '') {
   // Generate the subdomain to use for the current account.
-  $subdomain = RecurlyClient::$subdomain;
+  $subdomain = variable_get('recurly_subdomain', '');
 
   return url('https://' . $subdomain . '.recurly.com/' . $path);
 }
