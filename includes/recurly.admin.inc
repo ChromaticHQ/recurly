@@ -82,6 +82,21 @@ function recurly_settings_form($form, &$form_state) {
 }
 
 /**
+ * Trims user-supplied API text values.
+ */
+function recurly_settings_form_validate($form, &$form_state) {
+  static $keys = array(
+    'recurly_api_key',
+    'recurly_private_key',
+    'recurly_subdomain',
+    'recurly_listener_key',
+  );
+  foreach ($keys as $key) {
+    $form_state['values'][$key] = trim($form_state['values'][$key]);
+  }
+}
+
+/**
  * Displays a list of subscription plans currently defined in your Recurly account.
  */
 function recurly_subscription_plans_overview() {
