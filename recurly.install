@@ -100,7 +100,6 @@ function recurly_install() {
 function recurly_uninstall() {
   // Remove the site-wide account settings.
   variable_del('recurly_subdomain');
-  variable_del('recurly_hosted_payment_pages');
   variable_del('recurly_api_key');
   variable_del('recurly_private_key');
 

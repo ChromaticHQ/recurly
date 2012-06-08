@@ -1,0 +1,5 @@
+name = Recurly hosted pages
+description = Displays options for managing subscription accounts remotely using Recurly's "hosted pages". This module is only necessary if not using more extensive Recurly integration modules such as Commerce Recurly or RecurlyJS.
+dependencies[] = recurly
+core = 7.x
+package = Recurly
