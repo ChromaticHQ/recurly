@@ -23,7 +23,7 @@ function recurly_hosted_user_view($account, $view_mode, $langcode) {
     // Initialize the Recurly client.
     recurly_client_initialize();
 
-    // If the account is linked to a Recurly account get an array of values...
+    // If the account is linked to a Recurly account...
     if ($recurly_account = recurly_account_load(array('uid' => $account->uid))) {
       // Add it to the content array.
       $account->content['recurly_account'] = array(
@@ -33,11 +33,11 @@ function recurly_hosted_user_view($account, $view_mode, $langcode) {
       );
 
       // Build an account holder string based on available data.
-      if (empty($recurly_account['company_name'])) {
-        $account_holder = t('@first_name @last_name', array('@first_name' => $recurly_account['first_name'], '@last_name' => $recurly_account['last_name']));
+      if (empty($recurly_account->company_name)) {
+        $account_holder = t('@first_name @last_name', array('@first_name' => $recurly_account->first_name, '@last_name' => $recurly_account->last_name));
       }
       else {
-        $account_holder = t('@first_name @last_name, @company_name', array('@first_name' => $recurly_account['first_name'], '@last_name' => $recurly_account['last_name'], '@company_name' => $recurly_account['company_name']));
+        $account_holder = t('@first_name @last_name, @company_name', array('@first_name' => $recurly_account->first_name, '@last_name' => $recurly_account->last_name, '@company_name' => $recurly_account->company_name));
       }
 
       $account->content['recurly_account']['account_holder'] = array(
@@ -47,17 +47,17 @@ function recurly_hosted_user_view($account, $view_mode, $langcode) {
       );
 
       // Add the account e-mail address if available.
-      if (!empty($recurly_account['email'])) {
+      if (!empty($recurly_account->email)) {
         $account->content['recurly_account']['account_email'] = array(
           '#type' => 'user_profile_item',
           '#title' => t('Account e-mail address'),
-          '#markup' => check_plain($recurly_account['email']),
+          '#markup' => check_plain($recurly_account->email),
         );
       }
 
       // Tell the user if the account is closed.
-      if ((empty($recurly_account['state']) && $recurly_account['status'] == 'closed') ||
-        (!empty($recurly_account->state) && $recurly_account['state'] == 'closed')) {
+      if ((empty($recurly_account->state) && $recurly_account->status == 'closed') ||
+        (!empty($recurly_account->state) && $recurly_account->state == 'closed')) {
         $account->content['recurly_account']['account_closed'] = array(
           '#type' => 'user_profile_item',
           '#title' => t('Account status'),
@@ -78,13 +78,12 @@ function recurly_hosted_user_view($account, $view_mode, $langcode) {
 
         // If Hosted Payment Pages are enabled, give users a link to their own
         // account management page if their account is active.
-        if ($user->uid == $account->uid && $recurly_account['state'] == 'active') {
+        if ($user->uid == $account->uid && $recurly_account->state == 'active') {
           // Give users manage links for their own accounts.
           $account->content['recurly_account']['manage_account_link'] = array(
             '#type' => 'user_profile_item',
             '#title' => t('Manage account'),
-            '#markup' => l(t('Update your subscription and billing information at Recurly.'), recurly_hosted_account_manage_url($recurly_account, user_access('edit own recurly account without login'))),
-          );
+            '#markup' => l(t('Update your subscription and billing information at Recurly.'), recurly_hosted_account_manage_url($recurly_account, user_access('edit own recurly account without login'))),          );
         }
       }
     }
@@ -101,7 +100,7 @@ function recurly_hosted_user_view($account, $view_mode, $langcode) {
  *   The URL for the plan's edit page at Recurly.
  */
 function recurly_hosted_account_edit_url($recurly_account) {
-  return recurly_url('accounts/' . $recurly_account['account_code']);
+  return recurly_url('accounts/' . $recurly_account->account_code);
 }
 
 /**
@@ -119,8 +118,8 @@ function recurly_hosted_account_edit_url($recurly_account) {
  */
 function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token = FALSE) {
   // Return a URL using the hosted login token if available.
-  if ($hosted_login_token && !empty($recurly_account['hosted_login_token'])) {
-    return recurly_url('account/' . $recurly_account['hosted_login_token']);
+  if ($hosted_login_token && !empty($recurly_account->hosted_login_token)) {
+    return recurly_url('account/' . $recurly_account->hosted_login_token);
   }
 
   return recurly_url('account');
