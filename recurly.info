@@ -3,3 +3,4 @@ description = Provides API integration with Recurly using their PHP client libra
 dependencies[] = libraries
 dependencies[] = dbtng
 core = 6.x
+package = Recurly

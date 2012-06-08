@@ -33,11 +33,6 @@ function recurly_settings_form(&$form_state) {
     '#description' => t("The subdomain of your account including the -test suffix if using the Sandbox."),
     '#default_value' => variable_get('recurly_subdomain', ''),
   );
-  $form['account']['recurly_hosted_payment_pages'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Hosted Payment Pages are enabled for this account.'),
-    '#default_value' => variable_get('recurly_hosted_payment_pages', FALSE),
-  );
 
   // Add form elements to configure default push notification settings.
   $form['push'] = array(
@@ -71,7 +66,6 @@ function recurly_settings_form(&$form_state) {
     '#type' => 'checkboxes',
     '#title' => t('Account integration'),
     '#options' => array(
-      'profile_display' => t('Display Recurly account information on user profile pages, including account management links if Hosted Payment Pages are enabled.'),
       'push_create' => t('Create local account records upon receipt of push notifications linked to users by e-mail address.'),
       'push_update' => t('Update local account records upon receipt of push notifications.'),
     ),
@@ -130,7 +124,7 @@ function recurly_subscription_plans_overview() {
     }
 
     // Add a purchase link if Hosted Payment Pages are enabled.
-    if (variable_get('recurly_hosted_payment_pages', FALSE)) {
+    if (module_exists('recurly_hosted')) {
       $operations[] = array(
         'title' => t('purchase'),
         'href' => recurly_subscription_plan_purchase_url($plan),
