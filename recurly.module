@@ -437,7 +437,6 @@ function recurly_account_save($recurly_account, $uid, $data = array(), $export =
     'company_name' => (string) $recurly_account->company_name,
     'uid' => $uid,
     'updated' => REQUEST_TIME,
-    'data' => serialize($data),
   );
 
   // Add the status based on whatever data we have available.
