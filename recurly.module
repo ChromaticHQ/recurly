@@ -108,24 +108,6 @@ function recurly_help($path, $arg) {
 }
 
 /**
- * Determines whether or not the specified point of integration is enabled.
- *
- * @param $integration
- *   The type of integration option to check from the following:
- *   - account: integration with Recurly accounts
- * @param $option
- *   The name of the option to check to see if it's enabled based on the type of
- *   integration.
- *
- * @return
- *   Boolean indicating whether or not the point of integration is enabled.
- */
-function recurly_integration_option_enabled($integration, $option) {
-  $options = variable_get('recurly_' . $integration . '_integration', array());
-  return !empty($options[$option]);
-}
-
-/**
  * Processes an incoming push notification.
  *
  * Push notifications are configured at Recurly, where you can setup the URL
@@ -180,10 +162,8 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
       watchdog('recurly', 'Incoming @type push notification: !notification', array('@type' => $notification->type, '!notification' => '<pre>' . check_plain(print_r($notification, TRUE)) . '</pre>'), WATCHDOG_NOTICE);
     }
 
-    // If push synchronization is enabled for account data and the incoming
-    // notification is an account update...
-    if ((recurly_integration_option_enabled('account', 'push_create') || recurly_integration_option_enabled('account', 'push_update')) &&
-      in_array($notification->type, array('new_account_notification', 'canceled_account_notification', 'billing_info_updated_notification'))) {
+    // If this is a new, canceled, or updated account set the database record.
+    if (in_array($notification->type, array('new_account_notification', 'canceled_account_notification', 'billing_info_updated_notification'))) {
       // Retrieve the full account record from Recurly.
       try {
         $recurly_account = Recurly_Account::get($notification->account->account_code);
@@ -202,7 +182,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
       $local_account = recurly_account_load(array('account_code' => $recurly_account->account_code), TRUE);
 
       // If no local record exists and we've specified to create it...
-      if (empty($local_account) && recurly_integration_option_enabled('account', 'push_create')) {
+      if (empty($local_account)) {
         $uid = 0;
 
         // Attempt to find a matching user account.
@@ -213,7 +193,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
         // Save the local record now.
         recurly_account_save($recurly_account, $uid);
       }
-      elseif (!empty($local_account) && recurly_integration_option_enabled('account', 'push_update')) {
+      elseif (!empty($local_account)) {
         // Otherwise if a local record was found and we want to keep it
         // synchronized, save it afresh now, preserving any existing data array.
         recurly_account_save($recurly_account, $local_account->uid, $local_account->data);
