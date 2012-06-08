@@ -56,22 +56,6 @@ function recurly_settings_form(&$form_state) {
     '#default_value' => variable_get('recurly_push_logging', FALSE),
   );
 
-  // Add form elements allowing the administrator to toggle integration options.
-  $form['integration'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Integration options'),
-    '#collapsible' => TRUE,
-  );
-  $form['integration']['recurly_account_integration'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Account integration'),
-    '#options' => array(
-      'push_create' => t('Create local account records upon receipt of push notifications linked to users by e-mail address.'),
-      'push_update' => t('Update local account records upon receipt of push notifications.'),
-    ),
-    '#default_value' => variable_get('recurly_account_integration', array()),
-  );
-
   return system_settings_form($form);
 }
 
