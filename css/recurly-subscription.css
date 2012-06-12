@@ -1,0 +1,85 @@
+/**
+ * @file
+ * CSS for subscription information. Typically under user/x/subscription.
+ */
+.subscription {
+  border: 1px solid #CCC;
+  border-radius: 10px;
+  padding: 10px;
+}
+.subscription h2 {
+  padding: 0;
+  margin: 0;
+}
+.subscription table {
+  width: auto;
+  float: left;
+}
+.subscription table td,
+.subscription table th {
+  color: inherit;
+  background: transparent;
+}
+.subscription table tr {
+  background: transparent;
+}
+
+.subscription .line-items {
+  float: right;
+  width: 260px;
+  padding: 0px;
+}
+.subscription .line-items.change {
+  background: #fffbcc;
+  border: 1px solid #E6DB55;
+  clear: right;
+}
+.subscription .line-items.change .label {
+  font-weight: bold;
+  padding: 10px;
+}
+.subscription .line-items.change .total {
+  border-color: #E6DB55;
+}
+.subscription .line-items ul {
+  margin: 0;
+  padding: 0;
+}
+.subscription .line-items li {
+  padding: 5px 10px 5px 10px;
+  overflow: hidden;
+  vertical-align: baseline;
+  font-size: 13px;
+}
+.subscription .line-items li > .name {
+  display: inline;
+}
+.subscription .line-items li > .qty {
+  font-weight: bold;
+  font-size: 12px;
+  display: inline;
+}
+.subscription .line-items li > .qty:after {
+  font-weight: normal;
+  content: '\00D7';
+  padding-right: 5px;
+}
+.subscription .line-items li > .cost {
+  display: block;
+  float: right;
+  padding-left: 10px;
+  padding-bottom: 10px;
+  height: 100%;
+}
+.subscription .line-items .total {
+  clear: both;
+  float: right;
+  border-top: 1px solid gray;
+  padding: 10px;
+}
+.subscription .changing_to {
+  display: inline;
+  top: 100%;
+  left: 0;
+  background: red;
+}

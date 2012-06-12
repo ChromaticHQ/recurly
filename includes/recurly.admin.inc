@@ -56,7 +56,84 @@ function recurly_settings_form($form, &$form_state) {
     '#default_value' => variable_get('recurly_push_logging', FALSE),
   );
 
-  return system_settings_form($form);
+  $entity_types = entity_get_info();
+  $entity_options = array();
+  foreach ($entity_types as $entity_name => $entity_info) {
+    $entity_options[$entity_name] = $entity_info['label'];
+    $first_bundle_name = key($entity_info['bundles']);
+    // Don't generate a list of bundles if this entity does not have types.
+    if ($entity_info['bundles'] > 1 && $first_bundle_name !== $entity_name) {
+      foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+        $entity_type_options[$entity_name][$bundle_name] = $bundle_info['label'];
+      }
+    }
+  }
+
+  // If any of the below options change we need to rebuild the menu system.
+  // Keep a record of their current values.
+  $recurly_entity_type = variable_get('recurly_entity_type', 'user');
+  $form_state['pages_previous_values'] = array(
+    'recurly_entity_type' => $recurly_entity_type,
+    'recurly_bundle_' . $recurly_entity_type => variable_get('recurly_bundle_' . $recurly_entity_type),
+    'recurly_entity_display_title' => variable_get('recurly_entity_display_title', 'Subscription'),
+  );
+
+  $form['pages'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Built-in subscription/invoice pages'),
+    '#collapsible' => TRUE,
+    '#description' => t('The Recurly module provides built-in pages for letting users view their own recent invoices on the site instead of needing to go to the Recurly site. If enabled, these pages will show up under a particular object type (User, Node, Group, etc.) on that object\'s asset page. If a companion module is enabled such as the Recurly Hosted Pages or RecurlyJS module (both included with this project), appropriate links to update billing information or subscribe will also be displayed on these pages.'),
+  );
+  $form['pages']['recurly_entity_type'] = array(
+    '#title' => t('Enable built-in subscription/invoice pages on each'),
+    '#type' => 'select',
+    '#options' => array('' => 'Nothing (disabled)') + $entity_options,
+    '#default_value' => $recurly_entity_type,
+  );
+  foreach ($entity_type_options as $entity_name => $entity_options) {
+    $form['pages']['recurly_bundles']['recurly_bundle_' . $entity_name] = array(
+      '#title' => t('Specifically the following @entity type', array('@entity' => $entity_types[$entity_name]['label'])),
+      '#type' => 'select',
+      '#options' => $entity_options,
+      '#default_value' => variable_get('recurly_bundle_' . $entity_name),
+      '#states' => array(
+        'visible' => array(
+          'select[name="recurly_entity_type"]' => array('value' => $entity_name),
+        ),
+      ),
+    );
+  }
+  $form['pages']['recurly_entity_display'] = array(
+    '#title' => t('Display subscription/invoice pages as'),
+    '#type' => 'radios',
+    '#options' => array(
+      'tabs' => t('A local task on the object page (similar to the "View" and "Edit" tabs)'),
+      'hidden' => t('Hidden menu callback only (i.e. user/[uid]/subscription)'),
+    ),
+    '#default_value' => variable_get('recurly_entity_display', 'tabs'),
+    '#states' => array(
+      'visible' => array(
+        'select[name="recurly_entity_type"]' => array('!value' => ''),
+      ),
+    ),
+  );
+  $form['pages']['recurly_entity_display_title'] = array(
+    '#title' => t('Subscription tab/page title'),
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#size' => 20,
+    '#default_value' => variable_get('recurly_entity_display_title', 'Subscriptions'),
+    '#description' => t('The text used as the label of the tab (if displayed as a tab) and page title for subscription/invoice pages.'),
+    '#states' => array(
+      'visible' => array(
+        'select[name="recurly_entity_type"]' => array('!value' => ''),
+      ),
+    ),
+  );
+
+  $form = system_settings_form($form);
+  $form['#submit'][] = 'recurly_settings_form_submit';
+  return $form;
 }
 
 /**
@@ -68,9 +145,22 @@ function recurly_settings_form_validate($form, &$form_state) {
     'recurly_private_key',
     'recurly_subdomain',
     'recurly_listener_key',
+    'recurly_entity_display_title',
   );
   foreach ($keys as $key) {
     $form_state['values'][$key] = trim($form_state['values'][$key]);
+  }
+}
+
+/**
+ * Submit handler for recurly_settings_form().
+ */
+function recurly_settings_form_submit($form, &$form_state) {
+  // Rebuild the menu system if any of the built-in page options change.
+  foreach ($form_state['pages_previous_values'] as $variable_name => $previous_value) {
+    if (isset($form_state['values'][$variable_name]) && $form_state['values'][$variable_name] !== $previous_value) {
+      menu_rebuild();
+    }
   }
 }
 
@@ -117,21 +207,21 @@ function recurly_subscription_plans_overview() {
 
     // TODO: Remove reset() calls once Recurly_CurrencyList implements Iterator.
     // See https://github.com/recurly/recurly-client-php/issues/37
-    $unit_amounts = in_array('Iterator', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
-    $setup_fees = in_array('Iterator', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
+    $unit_amounts = in_array('IteratorAggregate', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
+    $setup_fees = in_array('IteratorAggregate', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
 
     $row = array();
     $row[] = check_plain($plan->name) . ' <small>(' . t('Plan code: @code', array('@code' => $plan->plan_code)) . ')</small>' . $description;
 
     $amount_strings = array();
     foreach ($unit_amounts as $unit_amount) {
-      $amount_strings[] = t('@unit_price per @interval_length @interval_unit', array('@unit_price' => number_format($unit_amount->amount(), 2) . ' ' . $unit_amount->currencyCode, '@interval_length' => $plan->plan_interval_length, '@interval_unit' => $plan->plan_interval_unit));
+      $amount_strings[] = t('@unit_price every @interval_length @interval_unit', array('@unit_price' => recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode), '@interval_length' => $plan->plan_interval_length, '@interval_unit' => $plan->plan_interval_unit));
     }
     $row[] = implode('<br />', $amount_strings);
 
     $setup_strings = array();
     foreach ($setup_fees as $setup_fee) {
-      $setup_strings[] = check_plain(number_format($unit_amount->amount(), 2) . ' ' . $unit_amount->currencyCode);
+      $setup_strings[] = recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode);
     }
     $row[] = implode('<br />', $setup_strings);
 
