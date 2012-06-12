@@ -169,52 +169,122 @@ function recurly_invoice_page($entity_type, $entity, $invoice_number) {
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
-  // Load the invoice. For some reason the RecurlySDK returns this as a list,
-  // so a little clean up is necessary.
-  $invoice = Recurly_Invoice::get($invoice_number);
+  // Load the invoice.
+  try {
+    $invoice = Recurly_Invoice::get($invoice_number);
+  }
+  catch (Recurly_NotFoundError $e) {
+    drupal_set_message(t('Invoice not found'));
+    return MENU_NOT_FOUND;
+  }
 
   // Load the invoice account.
   $invoice_account = $invoice->account->get();
 
   // Ensure that the user account is the same as the invoice account.
-  if ($invoice_account->account_code !== $account->account_code) {
-    return MENU_ACCESS_DENIED;
+  if (empty($account) || $invoice_account->account_code !== $account->account_code) {
+    return MENU_NOT_FOUND;
   }
 
-  return 'test';//drupal_render_children($invoice);
+  drupal_set_title(t('Invoice #@number', array('@number' => $invoice->invoice_number)));
+  return theme('recurly_invoice', array('invoice' => $invoice, 'invoice_account' => $invoice_account, 'entity_type' => $entity_type, 'entity' => $entity));
+}
+
+/**
+ * Preprocess variables for invoice pages.
+ */
+function template_preprocess_recurly_invoice(&$variables) {
+  $invoice = $variables['invoice'];
+  $invoice_account = $variables['invoice_account'];
+  $billing_info = $invoice_account->billing_info->get();
+  list($id, $vid, $bundle) = entity_extract_ids($variables['entity_type'], $variables['entity']);
+
+  $due_amount = $invoice->state !== 'collected' ? $invoice->total_in_cents : 0;
+  $paid_amount = $invoice->state === 'collected' ? $invoice->total_in_cents : 0;
+  $variables += array(
+    'invoice_date' => recurly_format_date($invoice->created_at),
+    'pdf_path' => $variables['entity_type'] . '/' . $id . '/subscription/invoices/' . $invoice->invoice_number . '/pdf',
+    'subtotal' => recurly_format_currency($invoice->subtotal_in_cents, $invoice->currency),
+    'total' => recurly_format_currency($invoice->total_in_cents, $invoice->currency),
+    'due' => recurly_format_currency($due_amount, $invoice->currency),
+    'paid' => recurly_format_currency($paid_amount, $invoice->currency),
+    'first_name' => check_plain($billing_info->first_name),
+    'last_name' => check_plain($billing_info->last_name),
+    'address1' => check_plain($billing_info->address1),
+    'address2' => isset($billing_info->address2) ? check_plain($billing_info->address2) : NULL,
+    'city' => check_plain($billing_info->city),
+    'state' => check_plain($billing_info->state),
+    'zip' => check_plain($billing_info->zip),
+    'country' => check_plain($billing_info->country),
+    'line_items' => array(),
+    'transactions' => array(),
+  );
+  foreach ($invoice->line_items as $line_item) {
+    $variables['line_items'][$line_item->uuid] = array(
+      'start_date' => recurly_format_date($line_item->start_date),
+      'end_date' => recurly_format_date($line_item->end_date),
+      'description' => check_plain($line_item->description),
+      'amount' => recurly_format_currency($line_item->total_in_cents, $line_item->currency),
+    );
+  }
+  $transaction_total = 0;
+  foreach ($invoice->transactions as $transaction) {
+    $transaction_total += $transaction->amount_in_cents;
+    $variables['transactions'][$transaction->uuid] = array(
+      'date' => recurly_format_date($transaction->created_at),
+      'description' => recurly_format_transaction_status($transaction->status),
+      'amount' => recurly_format_currency($transaction->amount_in_cents, $transaction->currency),
+    );
+  }
+  $variables['transactions_total'] = recurly_format_currency($transaction_total, $invoice->currency);
+
 }
 
 /**
  * Deliver an invoice PDF file from Recurly.com.
  */
 function recurly_invoice_pdf($entity_type, $entity, $invoice_number) {
-  if (empty($invoice_number) || !is_numeric($uid) || !is_numeric($invoice_number)) {
-    return drupal_set_message(t('An invoice was not found or their was an error retrieving it.'), 'error');
-  }
-
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
     return t('Could not initialize the Recurly client.');
   }
 
-  try {
-    $pdf = Recurly_Invoice::getInvoicePdf($invoice_number, 'en-US');
-    if (!empty($pdf)) {
-      if (headers_sent()) {
-        die("Unable to stream pdf: headers already sent");
-      }
+  // See if we have a local mapping of entity ID to Recurly account code.
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
-      drupal_add_http_header('Content-Type', 'application/pdf', TRUE);
-      drupal_add_http_header('Content-Disposition', 'inline; filename="' . $invoice_number . '.pdf"', TRUE);
-      // I guess below is not necessary plus filesize was not working anyway?!
-      // drupal_add_http_header('Content-Transfer-Encoding', 'binary', TRUE);
-      // drupal_add_http_header('Content-Length', filesize($pdf), TRUE);
-      echo $pdf;
-    }
+  // Load the invoice.
+  try {
+    $invoice = Recurly_Invoice::get($invoice_number);
+    $pdf = Recurly_Invoice::getInvoicePdf($invoice_number);
   }
   catch (Recurly_NotFoundError $e) {
     drupal_set_message(t('Invoice not found'));
     return MENU_NOT_FOUND;
+  }
+
+  // Load the invoice account.
+  $invoice_account = $invoice->account->get();
+
+  // Ensure that the user account is the same as the invoice account.
+  if (empty($account) || $invoice_account->account_code !== $account->account_code) {
+    return MENU_NOT_FOUND;
+  }
+
+  if (!empty($pdf)) {
+    if (headers_sent()) {
+      die("Unable to stream pdf: headers already sent");
+    }
+
+    drupal_add_http_header('Content-Type', 'application/pdf', TRUE);
+    drupal_add_http_header('Content-Disposition', 'inline; filename="' . $invoice_number . '.pdf"', TRUE);
+    drupal_send_headers();
+
+    // I guess below is not necessary plus filesize was not working anyway?!
+    // drupal_add_http_header('Content-Transfer-Encoding', 'binary', TRUE);
+    // drupal_add_http_header('Content-Length', filesize($pdf), TRUE);
+    print $pdf;
+    drupal_exit();
   }
 }
 

@@ -90,8 +90,17 @@ function recurly_menu() {
       'file' => 'includes/recurly.pages.inc',
     );
     $items[$entity_path . '/subscription/invoices/%'] = array(
-      'title' => 'Invoices',
+      'title' => 'Invoice',
       'page callback' => 'recurly_invoice_page',
+      'page arguments' => array($entity_type, 1, 4),
+      'access callback' => $entity_info[$entity_type]['access callback'],
+      'access arguments' => array('update', 1, NULL, $entity_type),
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/invoices/%/pdf'] = array(
+      'title' => 'Invoice PDF',
+      'page callback' => 'recurly_invoice_pdf',
       'page arguments' => array($entity_type, 1, 4),
       'access callback' => $entity_info[$entity_type]['access callback'],
       'access arguments' => array('update', 1, NULL, $entity_type),
@@ -187,6 +196,11 @@ function recurly_theme() {
       'last_four' => NULL,
     ),
     'template' => 'templates/recurly-credit-card-information',
+  );
+  $items['recurly_invoice'] = array(
+    'variables' => array('invoice' => NULL, 'invoice_account' => NULL, 'entity_type' => NULL, 'entity' => NULL),
+    'template' => 'templates/recurly-invoice',
+    'file' => 'includes/recurly.pages.inc',
   );
 
   return $items;
@@ -680,4 +694,20 @@ function recurly_format_currency($price_in_cents, $currency) {
   }
 
   return $formatted;
+}
+
+/**
+ * Simple function to print out human-readable transaction status.
+ */
+function recurly_format_transaction_status($status) {
+  switch ($status) {
+    case 'success':
+      return t('Successful payment');
+    case 'failed':
+      return t('Failed payment');
+    case 'voided':
+      return t('Voided');
+    default:
+      return check_plain($status);
+  }
 }
