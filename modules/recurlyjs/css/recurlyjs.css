@@ -7,6 +7,13 @@
  * elements removed so as to make a more useful set of defaults that may be
  * added upon.
  */
+#subscribe-page .subscription .name {
+  display: none;
+}
+#subscribe-page .subscription {
+  margin-top: -80px;
+}
+
 .recurly {
   display: block;
   position: relative;
@@ -304,19 +311,17 @@
 .recurly .server_errors {
   color: #fff;
   text-shadow: 0 1px 0 #000;
-  margin: 0 20px;
   opacity: 0;
+  margin: 20px 0;
 }
 .recurly .server_errors .error {
   padding-left: 26px;
-  background: rgba(240,250,0,0.50) url("../images/error.png") no-repeat 5px 9px;
+  background: #FFC url("../images/error.png") no-repeat 5px 9px;
 }
 .recurly .server_errors.any {
   opacity: 1;
   -webkit-transition: opacity 0.5s linear;
   -moz-transition: opacity 0.5s linear;
-  margin: 20px 20px;
-  margin-bottom: 0;
 }
 .recurly .contact_info,
 .recurly .billing_info,
@@ -583,6 +588,9 @@
   height: 70px;
   line-height: 67px;
   position: relative;
+}
+.recurly .due_now_hidden {
+  display: none;
 }
 .recurly .due_now .title {
   float: left;

@@ -76,6 +76,7 @@ function recurly_settings_form($form, &$form_state) {
     'recurly_entity_type' => $recurly_entity_type,
     'recurly_bundle_' . $recurly_entity_type => variable_get('recurly_bundle_' . $recurly_entity_type),
     'recurly_entity_display_title' => variable_get('recurly_entity_display_title', 'Subscription'),
+    'recurly_subscription_plans' => variable_get('recurly_subscription_plans', array()),
   );
 
   $form['pages'] = array(
@@ -130,6 +131,24 @@ function recurly_settings_form($form, &$form_state) {
       ),
     ),
   );
+  $plans = recurly_subscription_plans();
+  $plan_options = array();
+  foreach ($plans as $plan) {
+    $plan_options[$plan->plan_code] = $plan->name;
+  }
+  $form['pages']['recurly_subscription_plans'] = array(
+    '#title' => t('Enabled plans'),
+    '#type' => 'checkboxes',
+    '#options' => $plan_options,
+    '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subsription tab.'),
+    '#enabled' => count($plan_options),
+    '#default_value' => variable_get('recurly_subscription_plans', array_keys($plan_options)),
+    '#states' => array(
+      'visible' => array(
+        'select[name="recurly_entity_type"]' => array('!value' => ''),
+      ),
+    ),
+  );
 
   $form = system_settings_form($form);
   $form['#submit'][] = 'recurly_settings_form_submit';
@@ -140,7 +159,7 @@ function recurly_settings_form($form, &$form_state) {
  * Trims user-supplied API text values.
  */
 function recurly_settings_form_validate($form, &$form_state) {
-  static $keys = array(
+  $keys = array(
     'recurly_api_key',
     'recurly_private_key',
     'recurly_subdomain',
@@ -150,6 +169,9 @@ function recurly_settings_form_validate($form, &$form_state) {
   foreach ($keys as $key) {
     $form_state['values'][$key] = trim($form_state['values'][$key]);
   }
+
+  // Clean up checkbox values.
+  $form_state['values']['recurly_subscription_plans'] = array_values(array_filter($form_state['values']['recurly_subscription_plans']));
 }
 
 /**

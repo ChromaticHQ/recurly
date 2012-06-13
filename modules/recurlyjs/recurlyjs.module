@@ -28,15 +28,44 @@ function recurlyjs_menu() {
       'title' => 'Update billing information',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('recurlyjs_update_billing', $entity_type, 1),
-      'access callback' => $entity_info[$entity_type]['access callback'],
-      'access arguments' => array('update', 1, NULL, $entity_type),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'update_billing'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 2,
       'file' => 'includes/recurlyjs.pages.inc',
     );
+
+    $plan_codes = variable_get('recurly_subscribe_plans', array());
+    if ($plan_codes) {
+      $items[$entity_path . '/subscription/signup/%'] = array(
+        'title' => 'Signup',
+        'page callback' => 'recurlyjs_subscribe_page',
+        'page arguments' => array($entity_type, 1, 4),
+        'access callback' => 'recurly_subscription_page_access',
+        'access arguments' => array($entity_type, 1, 'subscribe'),
+        'type' => MENU_CALLBACK,
+        'file' => 'includes/recurlyjs.pages.inc',
+      );
+    }
+
   }
 
   return $items;
+}
+
+/**
+ * Implements hook_recurly_url_info().
+ */
+function recurlyjs_recurly_url_info($operation, $context) {
+  switch ($operation) {
+    case 'update_billing':
+      $entity_info = recurly_account_load(array('account_code' => $context['account']->account_code), TRUE);
+      return url($entity_info->entity_type . '/' . $entity_info->entity_id . '/subscription/billing');
+    case 'subscribe':
+      list($id, $vid, $bundle) = entity_extract_ids($context['entity_type'], $context['entity']);
+      $currency_string = !isset($context['currency']) || $context['currency'] == variable_get('recurly_default_currency', 'USD') ? '' : '/' . $context['currency'];
+      return url($context['entity_type'] . '/' . $id . '/subscription/signup/' . $context['plan_code'] . $currency_string);
+  }
 }
 
 /**
@@ -63,7 +92,7 @@ function recurlyjs_test($form, &$form_state) {
 function recurlyjs_element_info() {
   $common = array(
     '#input' => TRUE,
-    '#recurly_css' => drupal_get_path('module', 'recurlyjs') . '/css/recurly-widget.css',
+    '#recurly_css' => drupal_get_path('module', 'recurlyjs') . '/css/recurlyjs.css',
 
     // Global options:
     // See http://docs.recurly.com/api/recurlyjs/reference#js-config
@@ -123,7 +152,7 @@ function recurlyjs_element_info() {
 
   // Element to update billing information for an existing subscription.
   $types['recurlyjs_billing'] = array(
-    '#process' => array('recurlyjs_element_expand'),
+    '#process' => array('recurlyjs_element_billing_expand', 'recurlyjs_element_expand'),
     '#account_code' => NULL,
     '#recurly_operation' => 'buildBillingInfoUpdateForm',
     '#theme' => array('recurlyjs__billing', 'recurlyjs'),
@@ -131,7 +160,7 @@ function recurlyjs_element_info() {
 
   // Element to do a one-time payment.
   $types['recurlyjs_transaction'] = array(
-    '#process' => array('recurlyjs_element_expand'),
+    '#process' => array('recurlyjs_element_transaction_expand', 'recurlyjs_element_expand'),
     '#recurly_operation' => 'buildTransactionForm',
     '#theme' => array('recurlyjs__transaction', 'recurlyjs'),
 
@@ -162,6 +191,10 @@ function recurlyjs_theme() {
     'render element' => 'form',
     'template' => 'templates/recurlyjs-update-billing',
   );
+  $items['recurlyjs_subscribe_page'] = array(
+    'variables' => array('form' => NULL),
+    'template' => 'templates/recurlyjs-subscribe-page',
+  );
   return $items;
 }
 
@@ -177,8 +210,6 @@ function recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
  * FormAPI #process callback for the recurlyjs_subscription element type.
  */
 function recurlyjs_element_subscription_expand($element) {
-  recurly_client_initialize();
-
   // Keys within the subscription object.
   // http://docs.recurly.com/api/recurlyjs/reference#subscription-object
   $subscription_keys = array(
@@ -194,9 +225,26 @@ function recurlyjs_element_subscription_expand($element) {
       $options['subscription'][$form_key] = $element['#' . $form_key];
     }
   }
+  $element['#signing_options'] = $options;
+  return $element;
+}
 
-  $element['#recurly_options'] = $options;
+/**
+ * FormAPI #process callback for the recurlyjs_billing element type.
+ */
+function recurlyjs_element_billing_expand($element) {
+  $options['account']['account_code'] = $element['#account_code'];
+  $element['#signing_options'] = $options;
+  return $element;
+}
 
+/**
+ * FormAPI #process callback for the recurlyjs_transaction element type.
+ */
+function recurlyjs_element_transaction_expand($element) {
+  $options['transaction']['amount'] = $element['#amount'];
+  $options['transaction']['currency'] = $element['#currency'];
+  $element['#signing_options'] = $options;
   return $element;
 }
 
@@ -211,7 +259,6 @@ function recurlyjs_element_expand($element) {
   // Recurly first here.
   $global_keys = array(
     'subdomain' => NULL,
-    'currency' => NULL,
     'country' => NULL,
     'vatpercent' => 'VATPercent',
     'locale' => NULL,
@@ -230,10 +277,18 @@ function recurlyjs_element_expand($element) {
     }
   }
 
+  // Force currency to be set to a supported currency.
+  if (isset($element['#currency']) && in_array($element['#currency'], array_keys(recurly_currency_list()))) {
+    $global_config['currency'] = $element['#currency'];
+  }
+  else {
+    $global_config['currency'] = variable_get('recurly_default_currency', 'USD');
+  }
+
   // Merge together individual field options with common options shared between
   // multiple field types. Note that not all options listed below apply to all
   // field types, but they have no negative effect if added.
-  $options = isset($element['#recurly_options']) ? $element['#recurly_options'] : array();
+  $options = array();
   $option_keys = array(
     'plan_code' => 'planCode',
     'account_code' => 'accountCode',
@@ -280,7 +335,7 @@ function recurlyjs_element_expand($element) {
 
   // Settings that must exist and cannot be changed.
   $options['target'] = '#' . $element['#id'];
-  $options['signature'] = Recurly_js::sign($options);
+  $options['signature'] = Recurly_js::sign($element['#signing_options']);
   $global_config['beforeInject'] = 'Drupal.recurly.beforeInject';
   $global_config['afterInject'] = 'Drupal.recurly.afterInject';
   $global_config['successHandler'] = 'Drupal.recurly.successHandler';

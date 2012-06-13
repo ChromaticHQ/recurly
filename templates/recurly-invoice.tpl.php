@@ -9,6 +9,7 @@ drupal_add_css(drupal_get_path('module', 'recurly') . '/css/recurly-invoice.css'
 <div class="invoice">
   <div class="invoice-pdf"><?php print l(t('View PDF'), $pdf_path); ?></div>
   <div class="invoice-date"><?php print $invoice_date; ?></div>
+  <?php if ($billing_info): ?>
   <div class="bill-to">
     <b><?php print $first_name; ?> <?php print $last_name; ?></b><br />
     <?php print $address1; ?><br />
@@ -18,6 +19,7 @@ drupal_add_css(drupal_get_path('module', 'recurly') . '/css/recurly-invoice.css'
     <?php print $city; ?>, <?php print $state; ?> <?php print $zip; ?><br />
     <?php print $country; ?>
   </div>
+  <?php endif; ?>
   <div class="invoice-line-items clearfix">
     <h2><?php print t('Services'); ?></h2>
     <table class="line-items grid">

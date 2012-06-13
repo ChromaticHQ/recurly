@@ -10,21 +10,28 @@ Drupal.recurly.beforeInject = function(form) {
   $(form).find('input[type=text]').addClass('form-text').parent().addClass('form-item');
   $(form).find('select').addClass('form-select').parent().addClass('form-item');
 
-   // Remove the submit button. This will be triggered by the form submit.
+  // Remove the submit button. This will be triggered by the form submit.
   $(form).find('.footer').remove();
 };
 
 Drupal.recurly.afterInject = function(form) {
   // Nested form tags cause issues in IE, except if there are two of them.
   // See http://anderwald.info/internet/nesting-form-tags-in-xhtml/
-  $(form).before('<form class="dummy-form" action="#" style="display: none"></form>');
+  var $form = $(form);
+  $form.before('<form class="dummy-form" action="#" style="display: none"></form>');
 
-  $(form).parents('form:first').submit(function(e) {
+  // Make the parent form submit the Recurly form on submit.
+  $form.parents('form:first').submit(function(e) {
     if ($(this).find('input.recurly-token').val().length === 0) {
       e.preventDefault();
-      $(form).triggerHandler('submit');
+      $form.triggerHandler('submit');
     }
   });
+
+  // Hide the total field if there isn't any reason to show it.
+  if ($form.find('.add_on, .coupon').length === 0 && $form.find('.vat .cost').html() === '') {
+    $form.find('.due_now').addClass('due_now_hidden');
+  }
 };
 
 Drupal.recurly.successHandler = function(responseToken) {

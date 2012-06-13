@@ -20,6 +20,11 @@ function recurly_subscription_page($entity_type, $entity) {
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
+  // If the user does not have an account yet, send them to the signup page.
+  if (empty($account)) {
+    drupal_goto($entity_type . '/' . $id . '/subscription/signup');
+  }
+
   // Unlikely that we'd have more than 50 subscriptions, but you never know.
   $per_page = 50;
   $subscription_list = Recurly_SubscriptionList::getForAccount($account->account_code, array('per_page' => $per_page));
@@ -78,7 +83,7 @@ function recurly_subscription_page($entity_type, $entity) {
       '#current_period_ends_at' => recurly_format_date($subscription->current_period_ends_at),
       '#total' => recurly_format_currency($total, $subscription->currency),
       '#subscription_links' => theme('links', array('links' => $subscription_links)),
-      '#message' => recurly_subscription_state_message($subscription->state),
+      '#message' => recurly_subscription_state_message($account),
     );
   }
 
@@ -94,8 +99,8 @@ function recurly_subscription_page($entity_type, $entity) {
 /**
  * Returns a message for a subscription if the subscription state is not active.
  */
-function recurly_subscription_state_message($state) {
-  switch ($state) {
+function recurly_subscription_state_message($account) {
+  switch ($account->state) {
     case 'active':
       return '';
     case 'closed':
@@ -103,9 +108,15 @@ function recurly_subscription_state_message($state) {
     case 'in_trial':
       return t('You are currently in a trial period.');
     case 'past_due':
-      return t('Your account is past due. Please update your billing information');
+      $url = recurly_url('update_billing', array('account' => $account));
+      if ($url) {
+        return t('Your account is past due. Please <a href="!url">update your billing information</a>.', array('!url' => $url));
+      }
+      else {
+        return t('Your account is past due. Please contact an administrator to update your billing information.');
+      }
     case 'canceled':
-      return t('Your previous subscription was canceled. You can reactivate your previous subscription to by clicking Reactivate');
+      return t('Your previous subscription was canceled. You can reactivate your previous subscription to by clicking Reactivate.');
     case 'expired':
       return t('Your previous subscription has expired. Please purchase a new subscription.');
     case 'future':
@@ -196,7 +207,7 @@ function recurly_invoice_page($entity_type, $entity, $invoice_number) {
 function template_preprocess_recurly_invoice(&$variables) {
   $invoice = $variables['invoice'];
   $invoice_account = $variables['invoice_account'];
-  $billing_info = $invoice_account->billing_info->get();
+  $billing_info = isset($invoice->billing_info) ? $invoice->billing_info->get() : NULL;
   list($id, $vid, $bundle) = entity_extract_ids($variables['entity_type'], $variables['entity']);
 
   $due_amount = $invoice->state !== 'collected' ? $invoice->total_in_cents : 0;
@@ -208,17 +219,22 @@ function template_preprocess_recurly_invoice(&$variables) {
     'total' => recurly_format_currency($invoice->total_in_cents, $invoice->currency),
     'due' => recurly_format_currency($due_amount, $invoice->currency),
     'paid' => recurly_format_currency($paid_amount, $invoice->currency),
-    'first_name' => check_plain($billing_info->first_name),
-    'last_name' => check_plain($billing_info->last_name),
-    'address1' => check_plain($billing_info->address1),
-    'address2' => isset($billing_info->address2) ? check_plain($billing_info->address2) : NULL,
-    'city' => check_plain($billing_info->city),
-    'state' => check_plain($billing_info->state),
-    'zip' => check_plain($billing_info->zip),
-    'country' => check_plain($billing_info->country),
+    'billing_info' => isset($billing_info),
     'line_items' => array(),
     'transactions' => array(),
   );
+  if ($billing_info) {
+    $variables += array(
+      'first_name' => check_plain($billing_info->first_name),
+      'last_name' => check_plain($billing_info->last_name),
+      'address1' => check_plain($billing_info->address1),
+      'address2' => isset($billing_info->address2) ? check_plain($billing_info->address2) : NULL,
+      'city' => check_plain($billing_info->city),
+      'state' => check_plain($billing_info->state),
+      'zip' => check_plain($billing_info->zip),
+      'country' => check_plain($billing_info->country),
+    );
+  }
   foreach ($invoice->line_items as $line_item) {
     $variables['line_items'][$line_item->uuid] = array(
       'start_date' => recurly_format_date($line_item->start_date),
@@ -285,6 +301,62 @@ function recurly_invoice_pdf($entity_type, $entity, $invoice_number) {
     // drupal_add_http_header('Content-Length', filesize($pdf), TRUE);
     print $pdf;
     drupal_exit();
+  }
+}
+
+/**
+ * Signup page that lists all the available plans for an object.
+ */
+function recurly_subscription_signup($entity_type, $entity, $currency = NULL) {
+  // Initialize the Recurly client with the site-wide settings.
+  if (!recurly_client_initialize()) {
+    return t('Could not initialize the Recurly client.');
+  }
+
+  $currency = isset($currency) ? $currency : variable_get('recurly_default_currency', 'USD');
+  $all_plans = recurly_subscription_plans();
+  $enabled_plan_keys = variable_get('recurly_subscription_plans', array());
+  $enabled_plans = array();
+  foreach ($all_plans as $plan) {
+    if (in_array($plan->plan_code, $enabled_plan_keys)) {
+      $enabled_plans[$plan->plan_code] = $plan;
+    }
+  }
+  return theme('recurly_subscription_signup', array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency));
+}
+
+/**
+ * Preprocess variables for the presentation of the signup page.
+ */
+function template_preprocess_recurly_subscription_signup(&$variables) {
+  $plans = $variables['plans'];
+  $currency = $variables['currency'];
+  $variables['filtered_plans'] = array();
+  foreach ($plans as $plan_code => $plan) {
+    $setup_fee_amount = NULL;
+    foreach ($plan->setup_fee_in_cents as $setup_currency) {
+      if ($setup_currency->currencyCode === $currency) {
+        $setup_fee_amount = recurly_format_currency($setup_currency->amount_in_cents, $setup_currency->currencyCode, TRUE);
+        break;
+      }
+    }
+    $unit_amount = NULL;
+    foreach ($plan->unit_amount_in_cents as $unit_currency) {
+      if ($unit_currency->currencyCode === $currency) {
+        $unit_amount = recurly_format_currency($unit_currency->amount_in_cents, $unit_currency->currencyCode, TRUE);
+        break;
+      }
+    }
+    $variables['filtered_plans'][$plan_code] = array(
+      'plan_code' => check_plain($plan_code),
+      'name' => check_plain($plan->name),
+      'description' => check_plain($plan->description),
+      'setup_fee' => $setup_fee_amount,
+      'amount' => $unit_amount,
+      'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
+      'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
+      'signup_url' => recurly_url('subscribe', array('entity_type' => $variables['entity_type'], 'entity' => $variables['entity'], 'plan_code' => $plan_code, 'currency' => $currency)),
+    );
   }
 }
 

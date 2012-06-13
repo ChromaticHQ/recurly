@@ -63,18 +63,18 @@ function recurly_menu() {
       'title' => variable_get('recurly_entity_display_title', 'Billing'),
       'page callback' => 'recurly_subscription_page',
       'page arguments' => array($entity_type, 1),
-      'access callback' => $entity_info[$entity_type]['access callback'],
-      'access arguments' => array('update', 1, NULL, $entity_type),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'summary'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 10,
       'file' => 'includes/recurly.pages.inc',
     );
-    $items[$entity_path . '/subscription/summary'] = array(
+    $items[$entity_path . '/subscription/list'] = array(
       'title' => 'Summary',
       'page callback' => 'recurly_subscription_page',
       'page arguments' => array($entity_type, 1),
-      'access callback' => $entity_info[$entity_type]['access callback'],
-      'access arguments' => array('update', 1, NULL, $entity_type),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'subscriptions'),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => 0,
       'file' => 'includes/recurly.pages.inc',
@@ -83,8 +83,8 @@ function recurly_menu() {
       'title' => 'Invoices',
       'page callback' => 'recurly_invoices_page',
       'page arguments' => array($entity_type, 1),
-      'access callback' => $entity_info[$entity_type]['access callback'],
-      'access arguments' => array('update', 1, NULL, $entity_type),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'invoices'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 1,
       'file' => 'includes/recurly.pages.inc',
@@ -93,8 +93,8 @@ function recurly_menu() {
       'title' => 'Invoice',
       'page callback' => 'recurly_invoice_page',
       'page arguments' => array($entity_type, 1, 4),
-      'access callback' => $entity_info[$entity_type]['access callback'],
-      'access arguments' => array('update', 1, NULL, $entity_type),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'invoices'),
       'type' => MENU_CALLBACK,
       'file' => 'includes/recurly.pages.inc',
     );
@@ -102,9 +102,19 @@ function recurly_menu() {
       'title' => 'Invoice PDF',
       'page callback' => 'recurly_invoice_pdf',
       'page arguments' => array($entity_type, 1, 4),
-      'access callback' => $entity_info[$entity_type]['access callback'],
-      'access arguments' => array('update', 1, NULL, $entity_type),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'invoices'),
       'type' => MENU_CALLBACK,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/signup'] = array(
+      'title' => 'Signup',
+      'page callback' => 'recurly_subscription_signup',
+      'page arguments' => array($entity_type, 1),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'subscribe'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => 0,
       'file' => 'includes/recurly.pages.inc',
     );
   }
@@ -200,6 +210,11 @@ function recurly_theme() {
   $items['recurly_invoice'] = array(
     'variables' => array('invoice' => NULL, 'invoice_account' => NULL, 'entity_type' => NULL, 'entity' => NULL),
     'template' => 'templates/recurly-invoice',
+    'file' => 'includes/recurly.pages.inc',
+  );
+  $items['recurly_subscription_signup'] = array(
+    'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL),
+    'template' => 'templates/recurly-subscription-signup',
     'file' => 'includes/recurly.pages.inc',
   );
 
@@ -536,6 +551,37 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $data 
 }
 
 /**
+ * Access check for built-in subscription tab pages.
+ */
+function recurly_subscription_page_access($entity_type, $entity, $operation) {
+  $entity_info = entity_get_info();
+  $access_callback = $entity_info[$entity_type]['access callback'];
+  $update_access = $access_callback('update', $entity, NULL, $entity_type);
+
+  // If the user does not have access to update this entity, they do not have
+  // the ability to update the subscription.
+  if (!$update_access) {
+    return FALSE;
+  }
+
+  // If the operation is anything but subscribe, do not allow access to the page
+  // because it does not make logical sense to show invoices/billing/etc. for
+  // an object that does not have a subscription at all.
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
+  $subscription_plans = variable_get('recurly_subscription_plans', array());
+  if ($operation === 'summary') {
+    return $account || $subscription_plans;
+  }
+  elseif ($operation === 'subscribe') {
+    return empty($account) && $subscription_plans;
+  }
+  else {
+    return !empty($account);
+  }
+}
+
+/**
  * Returns an array of subscription plan objects for the current account,
  * retrieving them from a local cache if possible.
  *
@@ -547,24 +593,21 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $data 
  *   An array of subscription plan objects.
  */
 function recurly_subscription_plans($reset_cache = FALSE) {
+  static $plans;
+
   // If we haven't specified a cache reset, attempt to retrieve plans from the
   // cache before getting them from Recurly.
-  if (!$reset_cache) {
-    $plans = cache_get('recurly-subscription-plans:' . variable_get('recurly_subdomain', ''));
+  if (!$reset_cache && isset($plans)) {
+    return $plans;
+  }
 
-    // If plans were found, return them now.
-    if (!empty($plans->data)) {
-      return $plans->data;
-    }
+  // Initialize the Recurly client with the site-wide settings.
+  if (!recurly_client_initialize()) {
+    return FALSE;
   }
 
   // Retrieve the subscription plans from Recurly.
   $plans = Recurly_PlanList::get();
-
-  // If data was actually returned, cache it for the current subdomain.
-  if (!empty($plans)) {
-    cache_set('recurly-subscription-plans:' . variable_get('recurly_subdomain', ''), $plans, 'cache', CACHE_TEMPORARY);
-  }
 
   return $plans;
 }
@@ -579,20 +622,81 @@ function recurly_subscription_plans($reset_cache = FALSE) {
  *   The URL for the plan's edit page at Recurly.
  */
 function recurly_subscription_plan_edit_url($plan) {
-  return recurly_url('company/plans/' . $plan->plan_code);
+  return recurly_hosted_url('company/plans/' . $plan->plan_code);
 }
 
 /**
  * Returns the base Recurly URL for the current account with an optional path
  * appended to it.
  */
-function recurly_url($path = '') {
+function recurly_hosted_url($path = '') {
   // Generate the subdomain to use for the current account.
   $subdomain = variable_get('recurly_subdomain', '');
 
   return url('https://' . $subdomain . '.recurly.com/' . $path);
 }
 
+/**
+ * Return a URL for a specified operation.
+ *
+ * This function should be used when generating links to operations that may
+ * have variable locations, such as updating billing information or changing
+ * plan levels.
+ *
+ * $param $operation
+ *   May be one of the following operations:
+ *    - update_billing ($context contains account_code)
+ *    - subscribe ($context contains plan_code)
+ * $param $context
+ *   An array of contextual information needed for generating the link.
+ * @return
+ *   A string containing a URL for the operation, or NULL if no module is
+ *   available to handle the operation.
+ */
+function recurly_url($operation, $context) {
+  $urls = module_invoke_all('recurly_url_info', $operation, $context);
+  $return_url = NULL;
+  foreach ($urls as $url) {
+    if ($url) {
+      $return_url = $url;
+    }
+  }
+  return $return_url;
+}
+
+/**
+ * Provide a list of currencies supported by Recurly.
+ */
+function recurly_currency_list() {
+  // Provide native support for the same currencies that Recurly supports:
+  // Currency code => array(
+  //   0 => 'symbol before',
+  //   1 => 'symbol after',
+  //   2 => 'thousand separator',
+  //   3 => 'decimal_separator',
+  //   4 => 'decimals',
+  //   5 => 'rounding_step',
+  // );
+  $currencies = array(
+    'USD' => array('$', ' USD'),
+    'AUD' => array('$', ' AUD'),
+    'CAD' => array('$', ' CAD'),
+    'EUR' => array('', ' €', ' ', ','),
+    'GBP' => array('£', ''),
+    'CZK' => array('', ' Kč', ' ', ','),
+    'DKK' => array('', ' kr.', ' ', ','),
+    'HUF' => array('', ' Ft', NULL, NULL, 0),
+    'JPY' => array('¥', ''),
+    'NOK' => array('', ' Nkr', ' ', ','),
+    'NZD' => array('NZ$', ''),
+    'PLN' => array('', ' zł', ' ', ','),
+    'SGD' => array('S$', ''),
+    'SEK' => array('', ' kr', ' ', ','),
+    'CHF' => array('', ' Fr.', NULL, NULL, NULL, '0.05'),
+    'ZAR' => array('R', ''),
+  );
+  return $currencies;
+}
 /**
  * Format a date for use in invoices.
  */
@@ -634,66 +738,101 @@ function recurly_format_state($state) {
 /**
  * Format a price for display.
  */
-function recurly_format_currency($price_in_cents, $currency) {
+function recurly_format_currency($price_in_cents, $currency, $html = FALSE) {
   // Commerce module provides a more flexible and complete currency formatter.
   if (module_exists('commerce')) {
-    return commerce_currency_format($price_in_cents, $currency, NULL, TRUE);
-  }
-
-  // Provide native support for the same currencies that Recurly supports:
-  // Currency code => array(
-  //   0 => 'symbol before',
-  //   1 => 'symbol after',
-  //   2 => 'thousand separator',
-  //   3 => 'decimal_separator',
-  //   4 => 'decimals',
-  //   5 => 'rounding_step',
-  // );
-  $currencies = array(
-    'USD' => array('$', ' USD'),
-    'AUD' => array('$', ' AUD'),
-    'CAD' => array('$', ' CAD'),
-    'EUR' => array('', ' €', ' ', ','),
-    'GBP' => array('£', ''),
-    'CZK' => array('', ' Kč', ' ', ','),
-    'DKK' => array('', ' kr.', ' ', ','),
-    'HUF' => array('', ' Ft', NULL, NULL, 0),
-    'JPY' => array('¥', ''),
-    'NOK' => array('', ' Nkr', ' ', ','),
-    'NZD' => array('NZ$', ''),
-    'PLN' => array('', ' zł', ' ', ','),
-    'SGD' => array('S$', ''),
-    'SEK' => array('', ' kr', ' ', ','),
-    'CHF' => array('', ' Fr.', NULL, NULL, NULL, '0.05'),
-    'ZAR' => array('R', ''),
-  );
-
-  if (isset($currencies[$currency])) {
-    $currency_info = $currencies[$currency];
-    $prefix = $currency_info[0] ? $currency_info[0] : '';
-    $suffix = $currency_info[1] ? $currency_info[1] : '';
-    $thousands_separator = isset($currency_info[2]) ? $currency_info[2] : ',';
-    $decimal_separator = isset($currency_info[3]) ? $currency_info[3] : '.';
-    $decimals = isset($currency_info[4]) ? $currency_info[4] : 2;
-    $rounding_step = isset($currency_info[5]) ? $currency_info[5] : NULL;
-
-    // Convert to a decimal amount.
-    $float = $price_in_cents/100;
-
-    // Round the amount if necessary i.e. Francs round up to the nearest 0.05.
-    if ($rounding_step) {
-      $modifier = 1 / $rounding_step;
-      $float = round($float * $modifier) / $modifier;
-    }
-
-    // Format the number.
-    $formatted = $prefix . number_format($float, $decimals, $decimal_separator, $thousands_separator) . $suffix;
+    $formatted = commerce_currency_format($price_in_cents, $currency, NULL, TRUE);
   }
   else {
-    $formatted = number_format($price_in_cents/100, 2, '.', ',') . ' ' . $currency;
+    $currencies = recurly_currency_list();
+    if (isset($currencies[$currency])) {
+      $currency_info = $currencies[$currency];
+      $prefix = $currency_info[0] ? $currency_info[0] : '';
+      $suffix = $currency_info[1] ? $currency_info[1] : '';
+      $thousands_separator = isset($currency_info[2]) ? $currency_info[2] : ',';
+      $decimal_separator = isset($currency_info[3]) ? $currency_info[3] : '.';
+      $decimals = isset($currency_info[4]) ? $currency_info[4] : 2;
+      $rounding_step = isset($currency_info[5]) ? $currency_info[5] : NULL;
+  
+      // Convert to a decimal amount.
+      $float = $price_in_cents/100;
+  
+      // Round the amount if necessary i.e. Francs round up to the nearest 0.05.
+      if ($rounding_step) {
+        $modifier = 1 / $rounding_step;
+        $float = round($float * $modifier) / $modifier;
+      }
+  
+      // Format the number.
+      $formatted = $prefix . number_format($float, $decimals, $decimal_separator, $thousands_separator) . $suffix;
+    }
+    else {
+      $formatted = number_format($price_in_cents/100, 2, '.', ',') . ' ' . $currency;
+    }
+  }
+
+  // Wrap each part in HTML if requested.
+  if ($html) {
+    $amount_string = '';
+    $amount_array = array();
+    preg_match('/([^0-9]*)?([0-9' . preg_quote($thousands_separator) . ']+)([0-9' . preg_quote($decimal_separator) . ']+)(.*)?/', $formatted, $amount_array);
+    if ($amount_array[1]) {
+      $amount_string .= '<span class="currency-prefix">' . $amount_array[1] . '</span>';
+    }
+    if ($amount_array[2]) {
+      $amount_string .= '<span class="currency-dollars">' . $amount_array[2] . '</span>';
+    }
+    if ($amount_array[3]) {
+      $amount_string .= '<span class="currency-cents">' . $amount_array[3] . '</span>';
+    }
+    if ($amount_array[4]) {
+      $amount_string .= '<span class="currency-suffix">' . $amount_array[4] . '</span>';
+    }
+    $formatted = $amount_string;
   }
 
   return $formatted;
+}
+
+/**
+ * Format an interval of time in a human-readable way.
+ */
+function recurly_format_price_interval($amount, $count, $unit, $html = FALSE) {
+  if ($amount === NULL) {
+    if ($unit == 'days') {
+      return format_plural($count, '1 day trial', '@count day trial');
+    }
+    else {
+      return format_plural($count, '1 month trial', '@count month trial');
+    }
+  }
+
+  $replacements = array(
+    '!count' => $html ? check_plain($count) : '<span class="plan-count">' . check_plain($count) . '<span>',
+    '!amount' => $html ? $amount : '<span class="plan-amount">' . $amount . '</span>',
+  );
+  if ($count == 1) {
+    switch ($unit) {
+      case 'days':
+        return t('!amount per day', $replacements);
+      case 'months':
+        return t('!amount per month', $replacements);
+    }
+  }
+  elseif ($count == 7 && $unit == 'days') {
+    return t('!amount per week', $replacements);
+  }
+  elseif ($count == 12 && $unit == 'months') {
+    return t('!amount per year', $replacements);
+  }
+  else {
+    switch ($unit) {
+      case 'days':
+        return t('!amount every !count days', $replacements);
+      case 'months':
+        return t('!amount every !count months', $replacements);
+    }
+  }
 }
 
 /**

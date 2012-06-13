@@ -91,6 +91,23 @@ function recurly_hosted_user_view($account, $view_mode, $langcode) {
 }
 
 /**
+ * Implements hook_recurly_url_info().
+ */
+function recurly_hosted_recurly_url_info($operation, $context) {
+  switch ($operation) {
+    case 'update_billing':
+      return recurly_hosted_account_manage_url($context['account'], TRUE);
+    case 'subscribe':
+      $entity = $context['entity'];
+      $entity_type = $context['entity_type'];
+      list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+      $account_code = $entity_type . '-' . $id;
+      $username = isset($entity->name) ? $entity->name : $entity->title;
+      return recurly_hosted_subscription_plan_purchase_url($context['plan_code'], $account_code, $username);
+  }
+}
+
+/**
  * Returns an edit URL for a Recurly account.
  *
  * @param $recurly_account
@@ -100,7 +117,7 @@ function recurly_hosted_user_view($account, $view_mode, $langcode) {
  *   The URL for the plan's edit page at Recurly.
  */
 function recurly_hosted_account_edit_url($recurly_account) {
-  return recurly_url('accounts/' . $recurly_account->account_code);
+  return recurly_hosted_url('accounts/' . $recurly_account->account_code);
 }
 
 /**
@@ -119,10 +136,10 @@ function recurly_hosted_account_edit_url($recurly_account) {
 function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token = FALSE) {
   // Return a URL using the hosted login token if available.
   if ($hosted_login_token && !empty($recurly_account->hosted_login_token)) {
-    return recurly_url('account/' . $recurly_account->hosted_login_token);
+    return recurly_hosted_url('account/' . $recurly_account->hosted_login_token);
   }
 
-  return recurly_url('account');
+  return recurly_hosted_url('account');
 }
 
 /**
@@ -130,6 +147,12 @@ function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token
  *
  * @param $plan
  *   The subscription plan object returned by the Recurly client.
+ * @param $account_code
+ *   Optional. The account code to assign to this new subscriber. This unique
+ *   identifier is permanent and is used to bind the account to Drupal IDs.
+ * @param $username
+ *   Optional. The username that will be stored at Recurly for this subscriber.
+ *   Usually just used for reference.
  * @param $settings
  *   An optional array of settings used to pre-populate the payment form.
  *   - first_name: the customer's first name
@@ -139,40 +162,18 @@ function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token
  * @return
  *   The URL for the plan's Hosted Payment Page at Recurly.
  */
-function recurly_hosted_subscription_plan_purchase_url($plan, $settings = NULL) {
-  $query = '';
-
-  if (!empty($settings)) {
-    $query = '?' . drupal_http_build_query($settings);
+function recurly_hosted_subscription_plan_purchase_url($plan_code, $account_code = NULL, $username = NULL, $settings = NULL) {
+  $url = 'subscribe/' . $plan_code;
+  if ($account_code) {
+    $url .= '/' . $account_code;
+    if ($username) {
+      $url .= '/' . $username;
+    }
   }
 
-  return recurly_url('subscribe/' . $plan->plan_code . $query);
-}
+  if (!empty($settings)) {
+    $url .= '?' . drupal_http_build_query($settings);
+  }
 
-/**
- * Returns a form with a submit button that redirects the user to the Hosted
- * Payment Page for the given plan.
- *
- * @param $plan
- *   A subscription plan object that contains at least a valid plan code.
- */
-function recurly_hosted_subscription_plan_purchase_redirect_form($form, &$form_state, $plan) {
-  $form['plan'] = array(
-    '#type' => 'value',
-    '#value' => $plan,
-  );
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Subscribe'),
-  );
-
-  return $form;
-}
-
-/**
- * Submit callback: redirect the user to the specified Hosted Payment Page.
- */
-function recurly_hosted_subscription_plan_purchase_redirect_form_submit($form, &$form_state) {
-  $form_state['redirect'] = recurly_hosted_subscription_plan_purchase_url($form_state['values']['plan']);
+  return recurly_hosted_url($url);
 }
