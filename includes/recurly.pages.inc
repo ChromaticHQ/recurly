@@ -31,9 +31,13 @@ function recurly_subscription_page($entity_type, $entity) {
   $page_subscriptions = recurly_pager_results($subscription_list, $per_page);
 
   $subscriptions['subscriptions']['#attached']['css'] = array(
-    drupal_get_path('module', 'recurly') . '/css/recurly-subscription.css',
+    drupal_get_path('module', 'recurly') . '/css/recurly.css',
   );
+
   foreach ($page_subscriptions as $subscription) {
+    // Determine the state of this subscription.
+    $states = recurly_subscription_get_states($subscription, $account);
+
     // Generate the list of links for this subscription.
     $subscription_links = array();
     $subscription_links['update'] = array(
@@ -70,11 +74,18 @@ function recurly_subscription_page($entity_type, $entity) {
       $total += $add_on->unit_amount_in_cents * $add_on->quantity;
     }
     $total += $subscription->unit_amount_in_cents * $subscription->quantity;
+
+    $message = '';
+    foreach ($states as $state) {
+      $message = recurly_subscription_state_message($state, $account);
+      break;
+    }
+
     $subscriptions['subscriptions'][$plan->plan_code] = array(
       '#theme' => 'recurly_subscription_summary',
       '#plan_code' => $plan->plan_code,
       '#plan_name' => check_plain($plan->name),
-      '#state' => $subscription->state,
+      '#state_array' => $states,
       '#cost' => recurly_format_currency($subscription->unit_amount_in_cents, $subscription->currency),
       '#quantity' => $subscription->quantity,
       '#add_ons' => $add_ons,
@@ -82,8 +93,8 @@ function recurly_subscription_page($entity_type, $entity) {
       '#current_period_start' => recurly_format_date($subscription->current_period_started_at),
       '#current_period_ends_at' => recurly_format_date($subscription->current_period_ends_at),
       '#total' => recurly_format_currency($total, $subscription->currency),
-      '#subscription_links' => theme('links', array('links' => $subscription_links)),
-      '#message' => recurly_subscription_state_message($account),
+      '#subscription_links' => theme('links', array('links' => $subscription_links, 'attributes' => array('class' => array('inline', 'links')))),
+      '#message' => $message,
     );
   }
 
@@ -99,31 +110,76 @@ function recurly_subscription_page($entity_type, $entity) {
 /**
  * Returns a message for a subscription if the subscription state is not active.
  */
-function recurly_subscription_state_message($account) {
-  switch ($account->state) {
+function recurly_subscription_state_message($state, $account) {
+  switch ($state) {
     case 'active':
       return '';
     case 'closed':
-      return t('Your previous account is now closed. Please repurchase a subscription.');
+      return t('This account is closed.');
     case 'in_trial':
-      return t('You are currently in a trial period.');
+      return t('Currently in trial period.');
     case 'past_due':
       $url = recurly_url('update_billing', array('account' => $account));
       if ($url) {
-        return t('Your account is past due. Please <a href="!url">update your billing information</a>.', array('!url' => $url));
+        return t('This account is past due. Please <a href="!url">update your billing information</a>.', array('!url' => $url));
       }
       else {
-        return t('Your account is past due. Please contact an administrator to update your billing information.');
+        return t('This account is past due. Please contact an administrator to update your billing information.');
       }
     case 'canceled':
-      return t('Your previous subscription was canceled. You can reactivate your previous subscription to by clicking Reactivate.');
+      return t('This subscription is canceled and will not renew. You may reactivate the subscription to by clicking "Reactivate".');
     case 'expired':
-      return t('Your previous subscription has expired. Please purchase a new subscription.');
+      return t('This subscription has expired. Please purchase a new subscription.');
     case 'future':
-      return t('Your subscription has not started yet. Please contact support if you have any questions.');
+      return t('This subscription has not started yet. Please contact support if you have any questions.');
     default:
       return '';
   }
+}
+
+/**
+ * Get a list of all states in which a subscription exists currently.
+ *
+ * @param $subscription
+ *   A Recurly subscription object.
+ * @param $account
+ *   A Recurly account object.
+ */
+function recurly_subscription_get_states($subscription, $account) {
+  static $past_due = array();
+  $states = array();
+
+  // Determine if in a trial.
+  if ($subscription->trial_started_at && $subscription->trial_ends_at) {
+    $subscription->trial_started_at->setTimezone(new DateTimeZone('UTC'));
+    $subscription->trial_ends_at->setTimezone(new DateTimeZone('UTC'));
+    $start = $subscription->trial_started_at->format('U');
+    $end = $subscription->trial_ends_at->format('U');
+    if (REQUEST_TIME > $start && REQUEST_TIME < $end) {
+      $states[] = 'in_trial';
+    }
+  }
+
+  // Determine if non-renewing.
+  if (!empty($subscription->total_billing_cycles)) {
+    $states[] = 'non_renewing';
+  }
+
+  // Retrieve past due subscriptions.
+  if (!isset($past_due[$account->account_code])) {
+    $subscriptions = Recurly_SubscriptionList::getForAccount($account->account_code, array('state' => 'past_due'));
+    $past_due[$account->account_code] = array();
+    foreach ($subscriptions as $past_due_subscription) {
+      $past_due[$account->account_code][] = $past_due_subscription->uuid;
+    }
+  }
+
+  if (in_array($subscription->uuid, $past_due[$account->account_code])) {
+    $states[] = 'past_due';
+  }
+
+  $states[] = $subscription->state;
+  return $states;
 }
 
 /**
@@ -139,32 +195,49 @@ function recurly_invoices_page($entity_type, $entity) {
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
-  $per_page = 5;
+  $per_page = 20;
   $invoice_list = Recurly_InvoiceList::getForAccount($account->account_code, array('per_page' => $per_page));
-  $page_invoices = recurly_pager_results($invoice_list, $per_page);
+  $invoices = recurly_pager_results($invoice_list, $per_page);
+
+  return theme('recurly_invoice_list', array('invoices' => $invoices, 'entity_type' => $entity_type, 'entity' => $entity, 'per_page' => $per_page, 'total' => $invoice_list->count()));
+}
+
+/**
+ * Preprocess variables for the recurly-invoice-list.tpl.php file.
+ */
+function template_preprocess_recurly_invoice_list(&$variables) {
+  $invoices = $variables['invoices'];
+  $entity_type = $variables['entity_type'];
+  $entity = $variables['entity'];
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
   $header = array(t('Number'), t('Date'), t('Total'));
   $rows = array();
-  foreach ($page_invoices as $invoice) {
+  foreach ($invoices as $invoice) {
+    $status = '';
+    if ($invoice->state === 'past_due') {
+      $status = ' (' . t('Past due') . ')';
+    }
+    elseif ($invoice->state === 'failed') {
+      $status = ' (' . t('Failed') . ')';
+    }
+
     $row = array();
-    $row[] = l($invoice->invoice_number, $entity_type . '/' . $id . '/subscription/invoices/' . $invoice->invoice_number);
+    $row[] = l($invoice->invoice_number . $status, $entity_type . '/' . $id . '/subscription/invoices/' . $invoice->invoice_number);
     $row[] = recurly_format_date($invoice->created_at);
     $row[] = recurly_format_currency($invoice->total_in_cents, $invoice->currency);
-    $rows[] = $row;
+    $rows[] = array(
+      'data' => $row,
+      'class' => array(check_plain($invoice->state)),
+    );
   }
 
-  $invoices['table']['#attached']['css'] = array(
-    drupal_get_path('module', 'recurly') . '/css/recurly-subscription.css',
+  $variables['table'] = array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('class' => array('invoice-list')),
+    'sticky' => FALSE,
   );
-  $invoices['table'] = array(
-    '#markup' => theme('table', array('header' => $header, 'rows' => $rows)),
-  );
-  $invoices['pager'] = array(
-    '#markup' => theme('pager'),
-    '#access' => $invoice_list->count() > $per_page,
-  );
-
-  return $invoices;
 }
 
 /**

@@ -5,7 +5,7 @@
  */
 ?>
 <div class="subscription mini clearfix">
-  <div class="subscription-summary clearfix">
+  <div class="subscription-summary clearfix <?php print implode(' ', $state_array); ?>">
     <h2><?php print $plan_name; ?></h2>
     <?php if (!empty($message)) : ?>
       <div class="messages warning"><h2 class="element-invisible"><?php print('Warning message'); ?></h2><?php print $message; ?></div>
@@ -13,14 +13,14 @@
     <table class="properties">
       <tr class="status">
         <th><?php print t('Status'); ?></th>
-        <td><?php print recurly_format_state($state); ?></td>
+        <td><?php print recurly_format_state(reset($state_array)); ?></td>
       </tr>
       <tr>
-        <th>Start Date</th>
+        <th><?php print t('Start Date'); ?></th>
         <td><?php print $start_date; ?></td>
       </tr>
       <tr>
-        <th>Next Invoice</th>
+        <th><?php print in_array('canceled', $state_array) || in_array('non_renewing', $state_array) && !in_array('in_trial', $state_array) ? t('Expiration Date') : t('Next Invoice'); ?></th>
         <td><?php print $current_period_ends_at; ?></td>
       </tr>
     </table>

@@ -1,7 +1,9 @@
 /**
  * @file
- * CSS for subscription information. Typically under user/x/subscription.
+ * CSS for subscription information.
  */
+
+/* Subscription list (user/x/subscription) */
 .subscription {
   border: 1px solid #CCC;
   border-radius: 10px;
@@ -10,6 +12,10 @@
 .subscription h2 {
   padding: 0;
   margin: 0;
+}
+.subscription .messages {
+  margin: 8px 0;
+  font-size: 90%;
 }
 .subscription table {
   width: auto;
@@ -82,4 +88,16 @@
   top: 100%;
   left: 0;
   background: red;
+}
+.subscription .subscription-links {
+  text-align: right;
+}
+.subscription ul.links {
+  font-size: inherit;
+}
+
+/* Invoice list (user/x/subscription/invoices) */
+table.invoice-list tr.past_due,
+table.invoice-list tr.failed {
+  background-color: #EEB9B9;
 }

@@ -11,6 +11,9 @@
   right: 0;
   top: -36px;
 }
+.invoice .messages {
+  margin: 8px 0;
+}
 .invoice-date {
   float: right;
 }

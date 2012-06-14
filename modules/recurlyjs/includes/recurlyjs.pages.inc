@@ -23,7 +23,7 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
       'full' => t('Full'),
     ),
     '#default_value' => variable_get('recurlyjs_address_requirement', 'none'),
-    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts.'),
+    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".', array('!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'), recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
   );
   $form['recurlyjs']['recurlyjs_enable_add_ons'] = array(
     '#title' => t('Enable Add-ons'),
@@ -87,6 +87,7 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     '#plan_code' => $plan_code,
     '#currency' => in_array($currency, $currency_list) ? $currency : variable_get('recurly_default_currency', 'USD'),
     '#account_code' => $entity_type . '-' . $id,
+    '#username' => entity_label($entity_type, $entity),
     '#address_requirement' => variable_get('recurlyjs_address_requirement', 'none'),
     '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
     '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),

@@ -29,7 +29,7 @@ Drupal.recurly.afterInject = function(form) {
   });
 
   // Hide the total field if there isn't any reason to show it.
-  if ($form.find('.add_on, .coupon').length === 0 && $form.find('.vat .cost').html() === '') {
+  if ($form.find('.add_on, .coupon, .setup_fee').length === 0 && $form.find('.vat .cost').html() === '') {
     $form.find('.due_now').addClass('due_now_hidden');
   }
 };

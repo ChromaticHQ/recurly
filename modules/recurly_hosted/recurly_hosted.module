@@ -102,7 +102,7 @@ function recurly_hosted_recurly_url_info($operation, $context) {
       $entity_type = $context['entity_type'];
       list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
       $account_code = $entity_type . '-' . $id;
-      $username = isset($entity->name) ? $entity->name : $entity->title;
+      $username = entity_label($entity_type, $entity);
       return recurly_hosted_subscription_plan_purchase_url($context['plan_code'], $account_code, $username);
   }
 }

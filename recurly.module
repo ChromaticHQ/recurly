@@ -182,7 +182,7 @@ function recurly_theme() {
     'variables' => array(
       'plan_code' => NULL,
       'plan_name' => NULL,
-      'state' => NULL,
+      'state_array' => NULL,
       'cost' => NULL,
       'quantity' => NULL,
       'add_ons' => array(),
@@ -210,6 +210,11 @@ function recurly_theme() {
   $items['recurly_invoice'] = array(
     'variables' => array('invoice' => NULL, 'invoice_account' => NULL, 'entity_type' => NULL, 'entity' => NULL),
     'template' => 'templates/recurly-invoice',
+    'file' => 'includes/recurly.pages.inc',
+  );
+  $items['recurly_invoice_list'] = array(
+    'variables' => array('invoices' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'per_page' => NULL, 'total' => NULL),
+    'template' => 'templates/recurly-invoice-list',
     'file' => 'includes/recurly.pages.inc',
   );
   $items['recurly_subscription_signup'] = array(
@@ -309,7 +314,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
 
         // Attempt to find a matching user account by e-mail address if the
         // enabled entity type is user.
-        if ($entity_type === 'user' && ($user = user_load_by_mail($recurly_account->email))) {
+        elseif ($entity_type === 'user' && ($user = user_load_by_mail($recurly_account->email))) {
           recurly_account_save($recurly_account, 'user', $user->uid);
         }
       }
@@ -721,7 +726,7 @@ function recurly_format_state($state) {
     case 'active':
       return t('Active');
     case 'canceled':
-      return t('Canceled');
+      return t('Canceled (will not renew)');
     case 'expired':
       return t('Expired');
     case 'future':
