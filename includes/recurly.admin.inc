@@ -149,6 +149,22 @@ function recurly_settings_form($form, &$form_state) {
       ),
     ),
   );
+  $form['pages']['recurly_subscription_change_timeframe'] = array(
+    '#title' => t('Change plan behavior'),
+    '#type' => 'radios',
+    '#options' => array(
+      'now' => t('Change plan immediately (pro-rating billing period usage)'),
+      'renewal' => t('On next renewal'),
+    ),
+    '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.'),
+    '#enabled' => count($plan_options),
+    '#default_value' => variable_get('recurly_subscription_change_timeframe', 'now'),
+    '#states' => array(
+      'visible' => array(
+        'select[name="recurly_entity_type"]' => array('!value' => ''),
+      ),
+    ),
+  );
 
   $form = system_settings_form($form);
   $form['#submit'][] = 'recurly_settings_form_submit';

@@ -8,7 +8,7 @@
 /**
  * Menu callback; Display a summary of a Recurly account subscriptions.
  */
-function recurly_subscription_page($entity_type, $entity) {
+function recurly_subscription_list_page($entity_type, $entity) {
   $subscriptions = array();
 
   // Initialize the Recurly client with the site-wide settings.
@@ -16,7 +16,8 @@ function recurly_subscription_page($entity_type, $entity) {
     return t('Could not initialize the Recurly client.');
   }
 
-  // See if we have a local mapping of entity ID to Recurly account code.
+  // Load the account information. This should already be cached by the access
+  // check to this page by recurly_subscription_page_access().
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
@@ -40,11 +41,11 @@ function recurly_subscription_page($entity_type, $entity) {
 
     // Generate the list of links for this subscription.
     $subscription_links = array();
-    $subscription_links['update'] = array(
-      'href' => $entity_type . '/' . $id . '/subscription/id/' . $subscription->uuid,
-      'title' => t('Change plan'),
-    );
     if ($subscription->state === 'active') {
+      $subscription_links['change'] = array(
+        'href' => $entity_type . '/' . $id . '/subscription/id/' . $subscription->uuid,
+        'title' => t('Change plan'),
+      );
       $subscription_links['cancel'] = array(
         'href' => $entity_type . '/' . $id . '/subscription/id/' . $subscription->uuid . '/cancel',
         'title' => t('Cancel'),
@@ -103,7 +104,7 @@ function recurly_subscription_page($entity_type, $entity) {
     '#access' => $subscription_list->count() > $per_page,
   );
 
-  drupal_alter('recurly_subscription_page', $subscriptions);
+  drupal_alter('recurly_subscription_list_page', $subscriptions);
   return $subscriptions;
 }
 
@@ -182,6 +183,210 @@ function recurly_subscription_get_states($subscription, $account) {
   return $states;
 }
 
+
+/**
+ * Menu callback; Show a list of available plans to which a user may subscribe.
+ *
+ * This menu callback is used both for new subscriptions and for updating
+ * existing subscriptions.
+ *
+ * @param $entity_type
+ *   The type of the entity whose subscription is being changed.
+ * @param $entity
+ *   The entity whose subscription is being changed.
+ * @param $currency
+ *   If this is a new subscription, the currency to be used.
+ * @param $subscription_id
+ *   The UUID of the current subscription if changing the plan on an existing
+ *   subscription.
+ */
+function recurly_subscription_plan_list($entity_type, $entity, $currency = NULL, $subscription_id = NULL) {
+  // Initialize the Recurly client with the site-wide settings.
+  if (!recurly_client_initialize()) {
+    return t('Could not initialize the Recurly client.');
+  }
+
+  // If loading an existing subscription.
+  if ($subscription_id) {
+    try {
+      $subscription = Recurly_Subscription::get($subscription_id);
+      $currency = $subscription->plan->currency;
+      $mode = 'change';
+    }
+    catch (Recurly_NotFoundError $e) {
+      drupal_set_message(t('Subscription not found'));
+      return MENU_NOT_FOUND;
+    }
+  }
+  else {
+    $subscription = NULL;
+    $currency = isset($currency) ? $currency : variable_get('recurly_default_currency', 'USD');
+    $mode = 'subscribe';
+  }
+
+  $all_plans = recurly_subscription_plans();
+  $enabled_plan_keys = variable_get('recurly_subscription_plans', array());
+  $enabled_plans = array();
+  foreach ($all_plans as $plan) {
+    if (in_array($plan->plan_code, $enabled_plan_keys)) {
+      $enabled_plans[$plan->plan_code] = $plan;
+    }
+  }
+  return theme('recurly_subscription_plan_list', array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency, 'mode' => $mode, 'subscription' => $subscription));
+}
+
+/**
+ * Shared preprocess function for the presentation of the signup and change page.
+ */
+function template_preprocess_recurly_subscription_plan_list(&$variables) {
+  $plans = $variables['plans'];
+  $currency = $variables['currency'];
+  $entity_type = $variables['entity_type'];
+  $entity = $variables['entity'];
+  $subscription = $variables['subscription'];
+  $variables['filtered_plans'] = array();
+  foreach ($plans as $plan_code => $plan) {
+    $setup_fee_amount = NULL;
+    foreach ($plan->setup_fee_in_cents as $setup_currency) {
+      if ($setup_currency->currencyCode === $currency) {
+        $setup_fee_amount = recurly_format_currency($setup_currency->amount_in_cents, $setup_currency->currencyCode, TRUE);
+        break;
+      }
+    }
+    $unit_amount = NULL;
+    foreach ($plan->unit_amount_in_cents as $unit_currency) {
+      if ($unit_currency->currencyCode === $currency) {
+        $unit_amount = recurly_format_currency($unit_currency->amount_in_cents, $unit_currency->currencyCode, TRUE);
+        break;
+      }
+    }
+    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+    $variables['filtered_plans'][$plan_code] = array(
+      'plan_code' => check_plain($plan_code),
+      'name' => check_plain($plan->name),
+      'description' => check_plain($plan->description),
+      'setup_fee' => $setup_fee_amount,
+      'amount' => $unit_amount,
+      'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
+      'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
+      'signup_url' => recurly_url('subscribe', array('entity_type' => $entity_type, 'entity' => $entity, 'plan_code' => $plan_code, 'currency' => $currency)),
+      'change_url' => $subscription ? url($entity_type . '/' . $id . '/subscription/id/' . $subscription->uuid . '/change/' . $plan_code) : NULL,
+    );
+  }
+}
+
+/**
+ * Page callback; Prepare the call to recurly_subscription_plan_change_confirm().
+ */
+function recurly_subscription_plan_change_page($entity_type, $entity, $subscription_id, $new_plan_code) {
+  // Initialize the Recurly client with the site-wide settings.
+  if (!recurly_client_initialize()) {
+    return t('Could not initialize the Recurly client.');
+  }
+
+  // Load the subscription.
+  try {
+    $subscription = Recurly_Subscription::get($subscription_id);
+    // Fully load the plan.
+    $previous_plan = Recurly_Plan::get($subscription->plan->plan_code);
+  }
+  catch (Recurly_NotFoundError $e) {
+    drupal_set_message(t('Subscription not found'));
+    return MENU_NOT_FOUND;
+  }
+
+  // Load the plan.
+  try {
+    $new_plan = Recurly_Plan::get($new_plan_code);
+  }
+  catch (Recurly_NotFoundError $e) {
+    drupal_set_message(t('Plan code not found'));
+    return MENU_NOT_FOUND;
+  }
+
+  return drupal_get_form('recurly_subscription_plan_change_confirm', $entity_type, $entity, $subscription, $previous_plan, $new_plan);
+}
+
+/**
+ * Form callback; Display a confirmation form for changing a subscription plan.
+ */
+function recurly_subscription_plan_change_confirm($form, $form_state, $entity_type, $entity, $subscription, $previous_plan, $new_plan) {
+  // Note that currently Recurly does not have the ability to change the
+  // subscription currency after it has started.
+  // See http://docs.recurly.com/currencies
+  $currency = $subscription->currency;
+  $previous_amount = $previous_plan->unit_amount_in_cents[$currency];
+  $new_amount = $new_plan->unit_amount_in_cents[$currency];
+
+  drupal_set_title(t('Confirm switch to @plan?', array('@plan' => $new_plan->name)), FALSE);
+
+  $form['#entity_type'] = $entity_type;
+  $form['#entity'] = $entity;
+  $form['#subscription'] = $subscription;
+  $form['#previous_plan'] = $previous_plan;
+  $form['#new_plan'] = $new_plan;
+
+  $timeframe = variable_get('recurly_subscription_change_timeframe', 'now');
+  $form['timeframe'] = array(
+    '#type' => 'radios',
+    '#title' => t('Changes take effect'),
+    '#options' => array(
+      'now' => t('Immediately'),
+      'renewal' => t('On next renewal'),
+    ),
+    '#description' => t('If changes take effect immediately, the price difference will either result in a credit applied when the subscription renews or will trigger a prorated charge within the hour.'),
+    '#default_value' => $timeframe,
+    '#access' => user_access('administer recurly'),
+  );
+
+  // TODO: We could potentially calculate the charge/credit amount here, but
+  // math gets messy when switching between plans with different lengths.
+  if ($timeframe === 'now') {
+    $timeframe_message = '<p>' . t('The new plan will take effect immediately and a prorated charge (or credit) will be applied to this account.') . '</p>';
+  }
+  else {
+    $timeframe_message = '<p>' . t('The new plan will take effect on the next billing cycle.') . '</p>';
+  }
+  $form['timeframe_help'] = array(
+    '#markup' => $timeframe_message,
+    '#access' => !user_access('administer recurly'),
+  );
+  $form['actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Change plan'),
+  );
+  return $form;
+}
+
+function recurly_subscription_plan_change_confirm_submit($form, &$form_state) {
+  $entity = $form['#entity'];
+  $entity_type = $form['#entity_type'];
+  $subscription = $form['#subscription'];
+  $new_plan = $form['#new_plan'];
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+
+  // Update the plan.
+  $subscription->plan_code = $new_plan->plan_code;
+  try {
+    if ($form_state['values']['timeframe'] === 'now') {
+      $subscription->updateImmediately();
+    }
+    else {
+      $subscription->updateAtRenewal();
+    }
+  }
+  catch (Recurly_Error $e) {
+    drupal_set_message(t('The plan could not be updated because the billing service encountered an error.'));
+    return;
+  }
+
+  drupal_set_message(t('Plan changed to @plan!', array('@plan' => $new_plan->name)));
+  $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
+}
+
 /**
  * Menu callback; Display a list of all invoices for a user.
  */
@@ -191,7 +396,8 @@ function recurly_invoices_page($entity_type, $entity) {
     return t('Could not initialize the Recurly client.');
   }
 
-  // See if we have a local mapping of entity ID to Recurly account code.
+  // Load the account information. This should already be cached by the access
+  // check to this page by recurly_subscription_page_access().
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
@@ -249,7 +455,8 @@ function recurly_invoice_page($entity_type, $entity, $invoice_number) {
     return t('Could not initialize the Recurly client.');
   }
 
-  // See if we have a local mapping of entity ID to Recurly account code.
+  // Load the account information. This should already be cached by the access
+  // check to this page by recurly_subscription_page_access().
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
@@ -338,7 +545,8 @@ function recurly_invoice_pdf($entity_type, $entity, $invoice_number) {
     return t('Could not initialize the Recurly client.');
   }
 
-  // See if we have a local mapping of entity ID to Recurly account code.
+  // Load the account information. This should already be cached by the access
+  // check to this page by recurly_subscription_page_access().
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
@@ -374,62 +582,6 @@ function recurly_invoice_pdf($entity_type, $entity, $invoice_number) {
     // drupal_add_http_header('Content-Length', filesize($pdf), TRUE);
     print $pdf;
     drupal_exit();
-  }
-}
-
-/**
- * Signup page that lists all the available plans for an object.
- */
-function recurly_subscription_signup($entity_type, $entity, $currency = NULL) {
-  // Initialize the Recurly client with the site-wide settings.
-  if (!recurly_client_initialize()) {
-    return t('Could not initialize the Recurly client.');
-  }
-
-  $currency = isset($currency) ? $currency : variable_get('recurly_default_currency', 'USD');
-  $all_plans = recurly_subscription_plans();
-  $enabled_plan_keys = variable_get('recurly_subscription_plans', array());
-  $enabled_plans = array();
-  foreach ($all_plans as $plan) {
-    if (in_array($plan->plan_code, $enabled_plan_keys)) {
-      $enabled_plans[$plan->plan_code] = $plan;
-    }
-  }
-  return theme('recurly_subscription_signup', array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency));
-}
-
-/**
- * Preprocess variables for the presentation of the signup page.
- */
-function template_preprocess_recurly_subscription_signup(&$variables) {
-  $plans = $variables['plans'];
-  $currency = $variables['currency'];
-  $variables['filtered_plans'] = array();
-  foreach ($plans as $plan_code => $plan) {
-    $setup_fee_amount = NULL;
-    foreach ($plan->setup_fee_in_cents as $setup_currency) {
-      if ($setup_currency->currencyCode === $currency) {
-        $setup_fee_amount = recurly_format_currency($setup_currency->amount_in_cents, $setup_currency->currencyCode, TRUE);
-        break;
-      }
-    }
-    $unit_amount = NULL;
-    foreach ($plan->unit_amount_in_cents as $unit_currency) {
-      if ($unit_currency->currencyCode === $currency) {
-        $unit_amount = recurly_format_currency($unit_currency->amount_in_cents, $unit_currency->currencyCode, TRUE);
-        break;
-      }
-    }
-    $variables['filtered_plans'][$plan_code] = array(
-      'plan_code' => check_plain($plan_code),
-      'name' => check_plain($plan->name),
-      'description' => check_plain($plan->description),
-      'setup_fee' => $setup_fee_amount,
-      'amount' => $unit_amount,
-      'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
-      'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
-      'signup_url' => recurly_url('subscribe', array('entity_type' => $variables['entity_type'], 'entity' => $variables['entity'], 'plan_code' => $plan_code, 'currency' => $currency)),
-    );
   }
 }
 

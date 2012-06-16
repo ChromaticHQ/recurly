@@ -61,7 +61,7 @@ function recurly_menu() {
     $entity_path = $entity_type . '/%' . $entity_type;
     $items[$entity_path . '/subscription'] = array(
       'title' => variable_get('recurly_entity_display_title', 'Billing'),
-      'page callback' => 'recurly_subscription_page',
+      'page callback' => 'recurly_subscription_list_page',
       'page arguments' => array($entity_type, 1),
       'access callback' => 'recurly_subscription_page_access',
       'access arguments' => array($entity_type, 1, 'summary'),
@@ -77,6 +77,52 @@ function recurly_menu() {
       'access arguments' => array($entity_type, 1, 'subscriptions'),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => 0,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/signup'] = array(
+      'title' => 'Signup',
+      'page callback' => 'recurly_subscription_plan_list',
+      'page arguments' => array($entity_type, 1),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'subscribe'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => 0,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/id/%'] = array(
+      'title' => 'Select a new plan',
+      'page callback' => 'recurly_subscription_plan_list',
+      'page arguments' => array($entity_type, 1, NULL, 4),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'change'),
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/id/%/change/%'] = array(
+      'title' => 'Change subscription',
+      'page callback' => 'recurly_subscription_plan_change_page',
+      'page arguments' => array($entity_type, 1, 4, 6),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'change'),
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/id/%/cancel'] = array(
+      'title' => 'Cancel subscription',
+      'page callback' => 'recurly_subscription_cancel_page',
+      'page arguments' => array($entity_type, 1, 4),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'cancel'),
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/id/%/reactivate'] = array(
+      'title' => 'Reactivate subscription',
+      'page callback' => 'recurly_subscription_reactivate_page',
+      'page arguments' => array($entity_type, 1, 4),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'reactivate'),
+      'type' => MENU_CALLBACK,
       'file' => 'includes/recurly.pages.inc',
     );
     $items[$entity_path . '/subscription/invoices'] = array(
@@ -105,16 +151,6 @@ function recurly_menu() {
       'access callback' => 'recurly_subscription_page_access',
       'access arguments' => array($entity_type, 1, 'invoices'),
       'type' => MENU_CALLBACK,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/signup'] = array(
-      'title' => 'Signup',
-      'page callback' => 'recurly_subscription_signup',
-      'page arguments' => array($entity_type, 1),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'subscribe'),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => 0,
       'file' => 'includes/recurly.pages.inc',
     );
   }
@@ -217,9 +253,9 @@ function recurly_theme() {
     'template' => 'templates/recurly-invoice-list',
     'file' => 'includes/recurly.pages.inc',
   );
-  $items['recurly_subscription_signup'] = array(
-    'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL),
-    'template' => 'templates/recurly-subscription-signup',
+  $items['recurly_subscription_plan_list'] = array(
+    'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'currency' => NULL, 'mode' => 'subscribe', 'subscription' => NULL),
+    'template' => 'templates/recurly-subscription-plan-list',
     'file' => 'includes/recurly.pages.inc',
   );
 
@@ -324,9 +360,10 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
         recurly_account_save($recurly_account, $local_account->entity_type, $local_account->entity_id, $local_account->data);
       }
     }
-  }
 
-  module_invoke_all('recurly_process_push_notification', $subdomain, $notification);
+    // Allow other modules to respond to incoming notifications.
+    module_invoke_all('recurly_process_push_notification', $subdomain, $notification);
+  }
 }
 
 /**
