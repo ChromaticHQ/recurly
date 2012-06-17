@@ -9,16 +9,9 @@
  * Implements hook_menu().
  */
 function recurlyjs_menu() {
-  $items['recurlyjs/test'] = array(
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('recurlyjs_test'),
-    'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
-  );
-
   // Configure built-in pages if enabled.
   $entity_type = variable_get('recurly_entity_type', 'user');
-  if ($entity_type) {
+  if ($entity_type && variable_get('recurly_pages', '1')) {
     $entity_info = entity_get_info();
     $bundle = variable_get('recurly_bundle_' . $entity_type, NULL);
     $bundle = empty($bundle) ? $entity_type : $bundle;
@@ -66,24 +59,6 @@ function recurlyjs_recurly_url_info($operation, $context) {
       $currency_string = !isset($context['currency']) || $context['currency'] == variable_get('recurly_default_currency', 'USD') ? '' : '/' . $context['currency'];
       return url($context['entity_type'] . '/' . $id . '/subscription/signup/' . $context['plan_code'] . $currency_string);
   }
-}
-
-/**
- * Test page.
- */
-function recurlyjs_test($form, &$form_state) {
-  $form['payment'] = array(
-    '#type' => 'recurlyjs_subscribe',
-    '#plan_code' => 'sg1-plus',
-    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'none'),
-  );
-
-  $form['actions']['#type'] = 'actions';
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Submit'),
-  );
-  return $form;
 }
 
 /**

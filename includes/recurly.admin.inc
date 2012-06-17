@@ -75,27 +75,29 @@ function recurly_settings_form($form, &$form_state) {
   $form_state['pages_previous_values'] = array(
     'recurly_entity_type' => $recurly_entity_type,
     'recurly_bundle_' . $recurly_entity_type => variable_get('recurly_bundle_' . $recurly_entity_type),
+    'recurly_pages' => variable_get('recurly_pages', '1'),
     'recurly_entity_display_title' => variable_get('recurly_entity_display_title', 'Subscription'),
     'recurly_subscription_plans' => variable_get('recurly_subscription_plans', array()),
   );
 
-  $form['pages'] = array(
+  $form['sync'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Built-in subscription/invoice pages'),
+    '#title' => t('Recurly account syncing'),
     '#collapsible' => TRUE,
-    '#description' => t('The Recurly module provides built-in pages for letting users view their own recent invoices on the site instead of needing to go to the Recurly site. If enabled, these pages will show up under a particular object type (User, Node, Group, etc.) on that object\'s asset page. If a companion module is enabled such as the Recurly Hosted Pages or RecurlyJS module (both included with this project), appropriate links to update billing information or subscribe will also be displayed on these pages.'),
+    '#collapsed' => empty($recurly_entity_type),
+    '#description' => t("Each time a particular object type (User, Node, Group, etc.) is updated, you may have information sent to Recurly to keep the contact information kept up-to-date. It is extremely important to maintain updated contact information in Recurly, as when an account enters the dunning process, the e-mail account in Recurly is the primary contact address."),
   );
-  $form['pages']['recurly_entity_type'] = array(
-    '#title' => t('Enable built-in subscription/invoice pages on each'),
+  $form['sync']['recurly_entity_type'] = array(
+    '#title' => t('Send Recurly account updates for each'),
     '#type' => 'select',
     '#options' => array('' => 'Nothing (disabled)') + $entity_options,
     '#default_value' => $recurly_entity_type,
   );
-  foreach ($entity_type_options as $entity_name => $entity_options) {
-    $form['pages']['recurly_bundles']['recurly_bundle_' . $entity_name] = array(
+  foreach ($entity_type_options as $entity_name => $bundles) {
+    $form['sync']['recurly_bundles']['recurly_bundle_' . $entity_name] = array(
       '#title' => t('Specifically the following @entity type', array('@entity' => $entity_types[$entity_name]['label'])),
       '#type' => 'select',
-      '#options' => $entity_options,
+      '#options' => $bundles,
       '#default_value' => variable_get('recurly_bundle_' . $entity_name),
       '#states' => array(
         'visible' => array(
@@ -104,6 +106,67 @@ function recurly_settings_form($form, &$form_state) {
       ),
     );
   }
+  $mapping = variable_get('recurly_token_mapping', array('email' => '[user:mail]', 'first_name' => '', 'last_name' => '', 'company' => ''));
+  $form['sync']['recurly_token_mapping'] = array(
+    '#title' => t('Token mappings'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#tree' => TRUE,
+    '#parents' => array('recurly_token_mapping'),
+    '#description' => t('Each Recurly account field is displayed below, specify a token that will be used to update the Recurly account each time the object (node or user) is updated. The Recurly "username" field is automatically populated with the object name (for users) or title (for nodes).'),
+  );
+  $form['sync']['recurly_token_mapping']['email'] = array(
+    '#title' => t('Email'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['email'],
+    '#description' => t('i.e. [user:mail] or [node:author:mail]'),
+  );
+  $form['sync']['recurly_token_mapping']['first_name'] = array(
+    '#title' => t('First name'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['first_name'],
+  );
+  $form['sync']['recurly_token_mapping']['last_name'] = array(
+    '#title' => t('Last name'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['last_name'],
+  );
+  $form['sync']['recurly_token_mapping']['company'] = array(
+    '#title' => t('Company'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['company'],
+  );
+  $form['sync']['recurly_token_mapping']['help'] = array(
+    '#theme' => 'token_tree',
+    '#token_types' => array_keys($entity_options),
+    '#global_types' => FALSE,
+  );
+  $form['pages'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Built-in subscription/invoice pages'),
+    '#collapsible' => TRUE,
+    '#collapsed' => !variable_get('recurly_pages', '1'),
+    '#description' => t('The Recurly module provides built-in pages for letting users view their own recent invoices on the site instead of needing to go to the Recurly site. If a companion module is enabled such as the Recurly Hosted Pages or RecurlyJS module (both included with this project), appropriate links to update billing information or subscribe will also be displayed on these pages.'),
+    '#states' => array(
+      'visible' => array(
+        'select[name="recurly_entity_type"]' => array('!value' => ''),
+      ),
+    ),
+  );
+  $form['pages']['recurly_pages'] = array(
+    '#title' => t('Enable built-in pages'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('recurly_pages', '1'),
+    '#description' => t('Hosted pages will be enabled on the same object type as the "Account Syncing" option above.'),
+  );
+
+  // All the settings below are dependent upon the type being selected.
+  $type_selected = array(
+    'visible' => array(
+      'input[name=recurly_pages]' => array('checked' => TRUE),
+    ),
+  );
   $form['pages']['recurly_entity_display'] = array(
     '#title' => t('Display subscription/invoice pages as'),
     '#type' => 'radios',
@@ -112,18 +175,7 @@ function recurly_settings_form($form, &$form_state) {
       'hidden' => t('Hidden menu callback only (i.e. user/[uid]/subscription)'),
     ),
     '#default_value' => variable_get('recurly_entity_display', 'tabs'),
-    '#states' => array(
-      'visible' => array(
-        'select[name="recurly_entity_type"]' => array('!value' => ''),
-      ),
-    ),
-  );
-
-  // All the settings below are dependent upon the type being selected.
-  $type_selected = array(
-    'visible' => array(
-      'select[name="recurly_entity_type"]' => array('!value' => ''),
-    ),
+    '#states' => $type_selected,
   );
   $form['pages']['recurly_entity_display_title'] = array(
     '#title' => t('Subscription tab/page title'),

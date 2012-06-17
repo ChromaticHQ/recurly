@@ -53,7 +53,7 @@ function recurly_menu() {
 
   // Configure built-in pages if enabled.
   $entity_type = variable_get('recurly_entity_type', 'user');
-  if ($entity_type) {
+  if ($entity_type && variable_get('recurly_pages', '1')) {
     $entity_info = entity_get_info();
     $bundle = variable_get('recurly_bundle_' . $entity_type, NULL);
     $bundle = empty($bundle) ? $entity_type : $bundle;
@@ -266,6 +266,54 @@ function recurly_theme() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_entity_update().
+ *
+ * Update the Recurly remote account when the local Drupal entity is updated.
+ */
+function recurly_entity_update($entity, $entity_type) {
+  // If this isn't the enabled Recurly entity type, do nothing.
+  if (variable_get('recurly_entity_type', 'user') !== $entity_type) {
+    return;
+  }
+
+  // Check if this entity has a remote Recurly account that we should sync.
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
+  if (!$local_account) {
+    return;
+  }
+
+  // Check if any of the mapping tokens have changed.
+  $mapping = variable_get('recurly_token_mapping', array('email' => '[user:mail]', 'first_name' => '', 'last_name' => '', 'company' => ''));
+  $original_entity = $entity->original;
+  $original_values = array();
+  $updated_values = array();
+  foreach ($mapping as $recurly_field => $token) {
+    $original_values[$recurly_field] = token_replace($token, array($entity_type => $original_entity), array('clear' => TRUE, 'sanitize' => FALSE));
+    $updated_values[$recurly_field] = token_replace($token, array($entity_type => $entity), array('clear' => TRUE, 'sanitize' => FALSE));
+  }
+  $original_values['username'] = entity_label($entity_type, $original_entity);
+  $updated_values['username'] = entity_label($entity_type, $entity);
+
+  // If there are any changes, push them to Recurly.
+  if ($original_values !== $updated_values) {
+    try {
+      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+      foreach ($updated_values as $field => $value) {
+        if (strlen($value)) {
+          $recurly_account->{$field} = $value;
+        }
+      }
+      $recurly_account->update();
+    }
+    catch (Recurly_Error $e) {
+      drupal_set_message(t('The billing system reported an error: "@error" To ensure proper billing, please correct the problem if possible or contact support.', array('@error' => $e->getMessage())), 'warning');
+      watchdog('recurly', 'Account information could not be sent to the Recurly, it reported "@error" while trying to update !title with the values @values.', array('@error' => $e->getMessage(), '!title' => l(entity_label($entity_type, $entity), $entity_type . '/' . $id), '@values' => print_r($updated_values, 1)), WATCHDOG_ERROR);
+    }
+  }
 }
 
 /**
