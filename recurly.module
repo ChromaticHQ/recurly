@@ -904,36 +904,31 @@ function recurly_format_state($state) {
  * Format a price for display.
  */
 function recurly_format_currency($price_in_cents, $currency, $html = FALSE) {
+  $currencies = recurly_currency_list();
+  $currency_info = isset($currencies[$currency]) ? $currencies[$currency] : array('', ' ' . $currency);
+  $prefix = $currency_info[0] ? $currency_info[0] : '';
+  $suffix = $currency_info[1] ? $currency_info[1] : '';
+  $thousands_separator = isset($currency_info[2]) ? $currency_info[2] : ',';
+  $decimal_separator = isset($currency_info[3]) ? $currency_info[3] : '.';
+  $decimals = isset($currency_info[4]) ? $currency_info[4] : 2;
+  $rounding_step = isset($currency_info[5]) ? $currency_info[5] : NULL;
+
   // Commerce module provides a more flexible and complete currency formatter.
   if (module_exists('commerce')) {
     $formatted = commerce_currency_format($price_in_cents, $currency, NULL, TRUE);
   }
   else {
-    $currencies = recurly_currency_list();
-    if (isset($currencies[$currency])) {
-      $currency_info = $currencies[$currency];
-      $prefix = $currency_info[0] ? $currency_info[0] : '';
-      $suffix = $currency_info[1] ? $currency_info[1] : '';
-      $thousands_separator = isset($currency_info[2]) ? $currency_info[2] : ',';
-      $decimal_separator = isset($currency_info[3]) ? $currency_info[3] : '.';
-      $decimals = isset($currency_info[4]) ? $currency_info[4] : 2;
-      $rounding_step = isset($currency_info[5]) ? $currency_info[5] : NULL;
-  
-      // Convert to a decimal amount.
-      $float = $price_in_cents/100;
-  
-      // Round the amount if necessary i.e. Francs round up to the nearest 0.05.
-      if ($rounding_step) {
-        $modifier = 1 / $rounding_step;
-        $float = round($float * $modifier) / $modifier;
-      }
-  
-      // Format the number.
-      $formatted = $prefix . number_format($float, $decimals, $decimal_separator, $thousands_separator) . $suffix;
+    // Convert to a decimal amount.
+    $float = $price_in_cents/100;
+
+    // Round the amount if necessary i.e. Francs round up to the nearest 0.05.
+    if ($rounding_step) {
+      $modifier = 1 / $rounding_step;
+      $float = round($float * $modifier) / $modifier;
     }
-    else {
-      $formatted = number_format($price_in_cents/100, 2, '.', ',') . ' ' . $currency;
-    }
+
+    // Format the number.
+    $formatted = $prefix . number_format($float, $decimals, $decimal_separator, $thousands_separator) . $suffix;
   }
 
   // Wrap each part in HTML if requested.

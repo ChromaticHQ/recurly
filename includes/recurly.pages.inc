@@ -292,6 +292,11 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
   $entity = $variables['entity'];
   $subscription = $variables['subscription'];
 
+  // If currency is undefined, use the subscription currency.
+  if (empty($currency) && $subscription) {
+    $currency = $subscription->currency;
+  }
+
   // Prepare an easy to loop-through list of subscriptions.
   $variables['filtered_plans'] = array();
   foreach ($plans as $plan_code => $plan) {
