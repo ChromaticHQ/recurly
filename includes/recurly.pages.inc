@@ -23,11 +23,14 @@ function recurly_subscription_list_page($entity_type, $entity) {
 
   // If the user does not have an account yet, send them to the signup page.
   if (empty($account)) {
-    drupal_goto($entity_type . '/' . $id . '/subscription/signup');
+    if ($url = recurly_url('select_plan', array('entity_type' => $entity_type, 'entity_id' => $id))) {
+      drupal_goto($url);
+    }
   }
 
   // Unlikely that we'd have more than 50 subscriptions, but you never know.
   $per_page = 50;
+  $subscription_type = variable_get('recurly_subscription_display', 'live');
   $subscription_list = Recurly_SubscriptionList::getForAccount($account->account_code, array('per_page' => $per_page));
   $page_subscriptions = recurly_pager_results($subscription_list, $per_page);
 
@@ -35,25 +38,45 @@ function recurly_subscription_list_page($entity_type, $entity) {
     drupal_get_path('module', 'recurly') . '/css/recurly.css',
   );
 
+  $total_displayed = 0;
   foreach ($page_subscriptions as $subscription) {
+    // Do not show subscriptions that are not active if only showing active.
+    // TODO: Figure out if Recurly_SubscriptionList can only return active
+    // subscriptions to begin with, rather than hiding them like this.
+    if ($subscription->state === 'expired' && $subscription_type === 'live') {
+      continue;
+    }
+    $total_displayed++;
+
     // Determine the state of this subscription.
     $states = recurly_subscription_get_states($subscription, $account);
 
     // Generate the list of links for this subscription.
+    $url_context = array(
+      'entity_type' => $entity_type,
+      'entity' => $entity,
+      'subscription' => $subscription,
+      'account' => $account,
+    );
     $subscription_links = array();
     if ($subscription->state === 'active') {
       $subscription_links['change'] = array(
-        'href' => $entity_type . '/' . $id . '/subscription/id/' . $subscription->uuid,
+        'href' => recurly_url('change_plan', $url_context),
+        'external' => TRUE,
         'title' => t('Change plan'),
       );
       $subscription_links['cancel'] = array(
-        'href' => $entity_type . '/' . $id . '/subscription/id/' . $subscription->uuid . '/cancel',
+        'href' => recurly_url('cancel', $url_context),
+        'external' => TRUE,
         'title' => t('Cancel'),
+        // Pass in the past_due flag to accurately calculate refunds.
+        'query' => in_array('past_due', $states) ? array('past_due' => '1') : NULL,
       );
     }
     elseif ($subscription->state === 'canceled') {
       $subscription_links['reactivate'] = array(
-        'href' => $entity_type . '/' . $id . '/subscription/id/' . $subscription->uuid . '/reactivate',
+        'href' => recurly_url('reactivate', $url_context),
+        'external' => TRUE,
         'title' => t('Reactivate'),
       );
     }
@@ -78,7 +101,7 @@ function recurly_subscription_list_page($entity_type, $entity) {
 
     $message = '';
     foreach ($states as $state) {
-      $message = recurly_subscription_state_message($state, $account);
+      $message = recurly_subscription_state_message($state, array('account' => $account, 'subscription' => $subscription));
       break;
     }
 
@@ -91,6 +114,7 @@ function recurly_subscription_list_page($entity_type, $entity) {
       '#quantity' => $subscription->quantity,
       '#add_ons' => $add_ons,
       '#start_date' => recurly_format_date($subscription->activated_at),
+      '#end_date' => isset($subscription->expires_at) ? recurly_format_date($subscription->expires_at) : NULL,
       '#current_period_start' => recurly_format_date($subscription->current_period_started_at),
       '#current_period_ends_at' => recurly_format_date($subscription->current_period_ends_at),
       '#total' => recurly_format_currency($total, $subscription->currency),
@@ -105,13 +129,19 @@ function recurly_subscription_list_page($entity_type, $entity) {
   );
 
   drupal_alter('recurly_subscription_list_page', $subscriptions);
+
+  // If the user doesn't have any active subscriptions, redirect to the signup.
+  if (count(element_children($subscriptions['subscriptions'])) === 0) {
+    drupal_goto($entity_type . '/' . $id . '/subscription/signup');
+  }
+
   return $subscriptions;
 }
 
 /**
  * Returns a message for a subscription if the subscription state is not active.
  */
-function recurly_subscription_state_message($state, $account) {
+function recurly_subscription_state_message($state, $context) {
   switch ($state) {
     case 'active':
       return '';
@@ -120,7 +150,7 @@ function recurly_subscription_state_message($state, $account) {
     case 'in_trial':
       return t('Currently in trial period.');
     case 'past_due':
-      $url = recurly_url('update_billing', array('account' => $account));
+      $url = recurly_url('update_billing', $context);
       if ($url) {
         return t('This account is past due. Please <a href="!url">update your billing information</a>.', array('!url' => $url));
       }
@@ -128,11 +158,23 @@ function recurly_subscription_state_message($state, $account) {
         return t('This account is past due. Please contact an administrator to update your billing information.');
       }
     case 'canceled':
-      return t('This subscription is canceled and will not renew. You may reactivate the subscription to by clicking "Reactivate".');
+      $url = recurly_url('reactivate', $context);
+      if ($url) {
+        return t('This plan is canceled and will not renew.') . ' ' . t('You may  <a href="!url">reactivate the plan</a> to resume billing.', array('!url' => $url));
+      }
+      else {
+        return t('This plan is canceled and will not renew.');
+      }
     case 'expired':
-      return t('This subscription has expired. Please purchase a new subscription.');
+      $url = recurly_url('select_plan', $context);
+      if ($url) {
+        return t('This plan has expired.') . ' ' . t('Please <a href="!url">purchase a new subscription</a>.', array('!url' => $url));
+      }
+      else {
+        return t('This plan has expired.');
+      }
     case 'future':
-      return t('This subscription has not started yet. Please contact support if you have any questions.');
+      return t('This plan has not started yet. Please contact support if you have any questions.');
     default:
       return '';
   }
@@ -183,7 +225,6 @@ function recurly_subscription_get_states($subscription, $account) {
   return $states;
 }
 
-
 /**
  * Menu callback; Show a list of available plans to which a user may subscribe.
  *
@@ -200,7 +241,7 @@ function recurly_subscription_get_states($subscription, $account) {
  *   The UUID of the current subscription if changing the plan on an existing
  *   subscription.
  */
-function recurly_subscription_plan_list($entity_type, $entity, $currency = NULL, $subscription_id = NULL) {
+function recurly_subscription_plan_select($entity_type, $entity, $currency = NULL, $subscription_id = NULL) {
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
     return t('Could not initialize the Recurly client.');
@@ -218,10 +259,16 @@ function recurly_subscription_plan_list($entity_type, $entity, $currency = NULL,
       return MENU_NOT_FOUND;
     }
   }
+  // If signing up to a new subscription, ensure the user doesn't have a plan.
   else {
     $subscription = NULL;
     $currency = isset($currency) ? $currency : variable_get('recurly_default_currency', 'USD');
     $mode = 'subscribe';
+    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+    $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+    if ($account && recurly_account_has_active_subscriptions($account)) {
+      drupal_goto($entity_type . '/' . $id . '/subscription');
+    }
   }
 
   $all_plans = recurly_subscription_plans();
@@ -232,18 +279,20 @@ function recurly_subscription_plan_list($entity_type, $entity, $currency = NULL,
       $enabled_plans[$plan->plan_code] = $plan;
     }
   }
-  return theme('recurly_subscription_plan_list', array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency, 'mode' => $mode, 'subscription' => $subscription));
+  return theme('recurly_subscription_plan_select', array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency, 'mode' => $mode, 'subscription' => $subscription));
 }
 
 /**
  * Shared preprocess function for the presentation of the signup and change page.
  */
-function template_preprocess_recurly_subscription_plan_list(&$variables) {
+function template_preprocess_recurly_subscription_plan_select(&$variables) {
   $plans = $variables['plans'];
   $currency = $variables['currency'];
   $entity_type = $variables['entity_type'];
   $entity = $variables['entity'];
   $subscription = $variables['subscription'];
+
+  // Prepare an easy to loop-through list of subscriptions.
   $variables['filtered_plans'] = array();
   foreach ($plans as $plan_code => $plan) {
     $setup_fee_amount = NULL;
@@ -270,8 +319,16 @@ function template_preprocess_recurly_subscription_plan_list(&$variables) {
       'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
       'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
       'signup_url' => recurly_url('subscribe', array('entity_type' => $entity_type, 'entity' => $entity, 'plan_code' => $plan_code, 'currency' => $currency)),
-      'change_url' => $subscription ? url($entity_type . '/' . $id . '/subscription/id/' . $subscription->uuid . '/change/' . $plan_code) : NULL,
+      'change_url' => $subscription ? recurly_url('change_plan', array('entity_type' => $entity_type, 'entity' => $entity, 'subscription' => $subscription, 'plan_code' => $plan_code)) : NULL,
     );
+  }
+
+  // Check if this is an account that is creating a new subscription.
+  $variables['expired_subscriptions'] = FALSE;
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+  if ($account) {
+    $variables['expired_subscriptions'] = !recurly_account_has_active_subscriptions($account);
   }
 }
 
@@ -361,6 +418,9 @@ function recurly_subscription_plan_change_confirm($form, $form_state, $entity_ty
   return $form;
 }
 
+/**
+ * Submit handler for recurly_subscription_plan_change_confirm().
+ */
 function recurly_subscription_plan_change_confirm_submit($form, &$form_state) {
   $entity = $form['#entity'];
   $entity_type = $form['#entity_type'];
@@ -385,6 +445,176 @@ function recurly_subscription_plan_change_confirm_submit($form, &$form_state) {
 
   drupal_set_message(t('Plan changed to @plan!', array('@plan' => $new_plan->name)));
   $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
+}
+
+/**
+ * Menu callback; Present confirmation form for canceling an account.
+ */
+function recurly_subscription_cancel_page($entity_type, $entity, $subscription_id) {
+  // Initialize the Recurly client with the site-wide settings.
+  if (!recurly_client_initialize()) {
+    return t('Could not initialize the Recurly client.');
+  }
+
+  // Load the subscription.
+  try {
+    $subscription = Recurly_Subscription::get($subscription_id);
+  }
+  catch (Recurly_NotFoundError $e) {
+    drupal_set_message(t('Subscription not found'));
+    return MENU_NOT_FOUND;
+  }
+
+  return drupal_get_form('recurly_subscription_cancel_confirm', $entity_type, $entity, $subscription);
+}
+
+/**
+ * Form callback; Display a confirmation form for changing a subscription plan.
+ */
+function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $entity, $subscription) {
+  drupal_set_title(t('Really cancel @plan?', array('@plan' => $subscription->plan->name)), FALSE);
+
+  $form['#entity_type'] = $entity_type;
+  $form['#entity'] = $entity;
+  $form['#subscription'] = $subscription;
+
+  $cancel_behavior = variable_get('recurly_subscription_cancel_behavior', 'cancel');
+  $past_due = isset($_GET['past_due']) && $_GET['past_due'] === '1';
+
+  $form['cancel'] = array(
+    '#access' => user_access('administer recurly') || $cancel_behavior === 'cancel',
+  );
+  $form['cancel']['description'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p>' . t('Canceling a subscription will cause it not to renew. If you cancel the subscription, it will continue until <strong>@date</strong>. On that date, the subscription will expire and not be invoiced again. The subscription can be reactivated before it expires.', array('@date' => recurly_format_date($subscription->current_period_ends_at)))  . '</p>',
+  );
+  $form['cancel']['actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['cancel']['actions']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('Cancel at Renewal'),
+  );
+
+  $form['terminate'] = array(
+    '#access' => user_access('administer recurly') || $cancel_behavior !== 'cancel',
+  );
+  $form['terminate']['refund_amount'] = array(
+    '#type' => 'radios',
+    '#title' => t('Refund amount'),
+    '#options' => array(
+      'terminate_none' => t('@amount - None', array('@amount' => recurly_format_currency(0, $subscription->currency))),
+    ),
+    '#default_value' => $cancel_behavior === 'cancel' ? NULL : $cancel_behavior,
+    '#weight' => 1,
+  );
+
+  if (!$past_due && $prorated_amount = recurly_subscription_calculate_refund($subscription, 'prorated')) {
+    $form['terminate']['refund_amount']['#options']['terminate_prorated'] =  t('@amount - Prorated', array('@amount' => recurly_format_currency($prorated_amount, $subscription->currency)));
+  }
+  if (!$past_due && $full_amount = recurly_subscription_calculate_refund($subscription, 'full')) {
+    $form['terminate']['refund_amount']['#options']['terminate_full'] =  t('@amount - Full', array('@amount' => recurly_format_currency($full_amount, $subscription->currency)));
+  }
+
+  $form['terminate']['description'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p>' . t('If you would like the subscription to end immediately, you may terminate the subscription now. Optionally, you may also issue a refund for the time remaining (prorated) or for the full amount. New subscriptions to this account will need to sign up for a new plan.') . '</p>',
+  );
+  $form['terminate']['actions'] = array(
+    '#type' => 'actions',
+    '#weight' => 2,
+  );
+  $form['terminate']['actions']['terminate'] = array(
+    '#type' => 'submit',
+    '#value' => t('Terminate Immediately'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for recurly_subscription_plan_change_confirm().
+ */
+function recurly_subscription_cancel_confirm_submit($form, &$form_state) {
+  $entity = $form['#entity'];
+  $entity_type = $form['#entity_type'];
+  $subscription = $form['#subscription'];
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+
+  if ($form['cancel']['actions']['cancel']['#value'] === $form_state['values']['op']) {
+    try {
+      $subscription->cancel();
+      drupal_set_message(t('Plan @plan canceled! It will expire on @date.', array('@plan' => $subscription->plan->name, '@date' => recurly_format_date($subscription->current_period_ends_at))));
+      $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
+    }
+    catch (Recurly_Error $e) {
+      drupal_set_message(t('The plan could not be canceled because the billing service encountered an error.'), 'error');
+      return;
+    }
+  }
+  elseif ($form['terminate']['actions']['terminate']['#value'] === $form_state['values']['op']) {
+    try {
+      switch ($form_state['values']['refund_amount']) {
+        case 'terminate_none':
+          $subscription->terminateWithoutRefund();
+          break;
+        case 'terminate_prorated':
+          $subscription->terminateAndPartialRefund();
+          break;
+        case 'terminate_full':
+          $subscription->terminateAndRefund();
+          break;
+      }
+      drupal_set_message(t('Plan @plan terminated!', array('@plan' => $subscription->plan->name)));
+      $form_state['redirect'] = $entity_type . '/' . $id;
+    }
+    catch (Recurly_Error $e) {
+      drupal_set_message(t('The plan could not be terminated because the billing service encountered an error: "@message".', array('@message' => $e->getMessage())), 'error');
+      return;
+    }
+  }
+
+}
+
+/**
+ * Preprocess variables for recurly-subscription-cancel-confirm.tpl.php.
+ */
+function template_preprocess_recurly_subscription_cancel_confirm(&$variables) {
+  $variables['subscription'] = $variables['form']['#subscription'];
+  $variables['past_due'] = isset($_GET['past_due']) && $_GET['past_due'] === '1';
+}
+
+
+/**
+ * Menu callback; Reactivate a subscription immediately and redirect.
+ */
+function recurly_subscription_reactivate($entity_type, $entity, $subscription_id) {
+  // Initialize the Recurly client with the site-wide settings.
+  if (!recurly_client_initialize()) {
+    return t('Could not initialize the Recurly client.');
+  }
+
+  // Load the subscription.
+  try {
+    $subscription = Recurly_Subscription::get($subscription_id);
+  }
+  catch (Recurly_NotFoundError $e) {
+    drupal_set_message(t('Subscription not found'));
+    return MENU_NOT_FOUND;
+  }
+
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+
+  try {
+    $subscription->reactivate();
+    drupal_set_message(t('Plan @plan reactivated! Normal billing will resume on @date.', array('@plan' => $subscription->plan->name, '@date' => recurly_format_date($subscription->current_period_ends_at))));
+  }
+  catch (Recurly_Error $e) {
+    drupal_set_message(t('The plan could not be reactivated because the billing service encountered an error.'));
+    return;
+  }
+
+  drupal_goto($entity_type . '/' . $id . '/subscription');
 }
 
 /**
@@ -525,12 +755,17 @@ function template_preprocess_recurly_invoice(&$variables) {
   }
   $transaction_total = 0;
   foreach ($invoice->transactions as $transaction) {
-    $transaction_total += $transaction->amount_in_cents;
     $variables['transactions'][$transaction->uuid] = array(
       'date' => recurly_format_date($transaction->created_at),
       'description' => recurly_format_transaction_status($transaction->status),
       'amount' => recurly_format_currency($transaction->amount_in_cents, $transaction->currency),
     );
+    if ($transaction->status == 'success') {
+      $transaction_total += $transaction->amount_in_cents;
+    }
+    else {
+      $variables['transactions'][$transaction->uuid]['amount'] = '('. $variables['transactions'][$transaction->uuid]['amount'] . ')';
+    }
   }
   $variables['transactions_total'] = recurly_format_currency($transaction_total, $invoice->currency);
 
@@ -615,8 +850,8 @@ function recurly_pager_results($pager_object, $per_page, $page_num = NULL) {
   $page_end = min($start + $per_page, $total);
   $page_results = array();
   for ($n = $start; $n < $page_end; $n++) {
-    $invoice = $pager_object->current();
-    $page_results[$invoice->invoice_number] = $invoice;
+    $item = $pager_object->current();
+    $page_results[$item->uuid] = $item;
     $pager_object->next();
   }
 

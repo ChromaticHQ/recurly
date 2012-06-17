@@ -64,7 +64,7 @@ function recurly_menu() {
       'page callback' => 'recurly_subscription_list_page',
       'page arguments' => array($entity_type, 1),
       'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'summary'),
+      'access arguments' => array($entity_type, 1, 'main'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 10,
       'file' => 'includes/recurly.pages.inc',
@@ -74,14 +74,14 @@ function recurly_menu() {
       'page callback' => 'recurly_subscription_page',
       'page arguments' => array($entity_type, 1),
       'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'subscriptions'),
+      'access arguments' => array($entity_type, 1, 'list'),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => 0,
       'file' => 'includes/recurly.pages.inc',
     );
     $items[$entity_path . '/subscription/signup'] = array(
       'title' => 'Signup',
-      'page callback' => 'recurly_subscription_plan_list',
+      'page callback' => 'recurly_subscription_plan_select',
       'page arguments' => array($entity_type, 1),
       'access callback' => 'recurly_subscription_page_access',
       'access arguments' => array($entity_type, 1, 'subscribe'),
@@ -91,7 +91,7 @@ function recurly_menu() {
     );
     $items[$entity_path . '/subscription/id/%'] = array(
       'title' => 'Select a new plan',
-      'page callback' => 'recurly_subscription_plan_list',
+      'page callback' => 'recurly_subscription_plan_select',
       'page arguments' => array($entity_type, 1, NULL, 4),
       'access callback' => 'recurly_subscription_page_access',
       'access arguments' => array($entity_type, 1, 'change'),
@@ -118,7 +118,7 @@ function recurly_menu() {
     );
     $items[$entity_path . '/subscription/id/%/reactivate'] = array(
       'title' => 'Reactivate subscription',
-      'page callback' => 'recurly_subscription_reactivate_page',
+      'page callback' => 'recurly_subscription_reactivate',
       'page arguments' => array($entity_type, 1, 4),
       'access callback' => 'recurly_subscription_page_access',
       'access arguments' => array($entity_type, 1, 'reactivate'),
@@ -223,6 +223,7 @@ function recurly_theme() {
       'quantity' => NULL,
       'add_ons' => array(),
       'start_date' => NULL,
+      'end_date' => NULL,
       'current_period_start' => NULL,
       'current_period_ends_at'=> NULL,
       'total' => NULL,
@@ -253,9 +254,14 @@ function recurly_theme() {
     'template' => 'templates/recurly-invoice-list',
     'file' => 'includes/recurly.pages.inc',
   );
-  $items['recurly_subscription_plan_list'] = array(
+  $items['recurly_subscription_plan_select'] = array(
     'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'currency' => NULL, 'mode' => 'subscribe', 'subscription' => NULL),
-    'template' => 'templates/recurly-subscription-plan-list',
+    'template' => 'templates/recurly-subscription-plan-select',
+    'file' => 'includes/recurly.pages.inc',
+  );
+  $items['recurly_subscription_cancel_confirm'] = array(
+    'render element' => 'form',
+    'template' => 'templates/recurly-subscription-cancel-confirm',
     'file' => 'includes/recurly.pages.inc',
   );
 
@@ -382,8 +388,15 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
  *   TRUE or FALSE indicating whether or not the client was initialized with the
  *   specified account settings.
  */
-function recurly_client_initialize($settings = NULL) {
+function recurly_client_initialize($settings = NULL, $reset = FALSE) {
+  static $initialized = FALSE;
   $client = NULL;
+
+  // Skip the process if we're not setting up a new connection and we're already
+  // set up with a configuration.
+  if ($initialized && !$reset) {
+    return TRUE;
+  }
 
   // If no settings array was given, use the default account settings.
   if (empty($settings)) {
@@ -411,6 +424,7 @@ function recurly_client_initialize($settings = NULL) {
     return FALSE;
   }
 
+  $initialized = TRUE;
   return TRUE;
 }
 
@@ -496,6 +510,7 @@ function recurly_account_load($conditions = array(), $local = FALSE) {
 
   // Attempt to load the full account from Recurly.
   try {
+    recurly_client_initialize();
     $recurly_account = Recurly_Account::get($data->account_code);
 
     // Return the orphaned data if no account was found at Recurly.
@@ -593,6 +608,20 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $data 
 }
 
 /**
+ * Check if an account has any active subscriptions.
+ */
+function recurly_account_has_active_subscriptions($account) {
+  recurly_client_initialize();
+  $subscription_list = Recurly_SubscriptionList::getForAccount($account->account_code, array('per_page' => 200));
+  foreach ($subscription_list as $subscription) {
+    if ($subscription->state === 'active') {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
  * Access check for built-in subscription tab pages.
  */
 function recurly_subscription_page_access($entity_type, $entity, $operation) {
@@ -610,13 +639,19 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
   // because it does not make logical sense to show invoices/billing/etc. for
   // an object that does not have a subscription at all.
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
+  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
   $subscription_plans = variable_get('recurly_subscription_plans', array());
-  if ($operation === 'summary') {
-    return $account || $subscription_plans;
+  if ($operation === 'main') {
+    return ($account || $subscription_plans);
   }
   elseif ($operation === 'subscribe') {
-    return empty($account) && $subscription_plans;
+    // This tab is only visible when visited directly.
+    return !empty($subscription_plans) && arg(3) === 'signup';
+  }
+  elseif ($operation === 'list') {
+    // This is a hack to make it so that the list of subscriptions does not show
+    // up as a sub-tab when showing the signup page.
+    return !empty($account) && arg(3) !== 'signup';
   }
   else {
     return !empty($account);
@@ -668,6 +703,22 @@ function recurly_subscription_plan_edit_url($plan) {
 }
 
 /**
+ * Determine if a Recurly subscription object is currently in a trial.
+ */
+function recurly_subscription_in_trial($subscription) {
+  if ($subscription->trial_started_at && $subscription->trial_ends_at) {
+    $subscription->trial_started_at->setTimezone(new DateTimeZone('UTC'));
+    $subscription->trial_ends_at->setTimezone(new DateTimeZone('UTC'));
+    $start = $subscription->trial_started_at->format('U');
+    $end = $subscription->trial_ends_at->format('U');
+    if (REQUEST_TIME > $start && REQUEST_TIME < $end) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
  * Returns the base Recurly URL for the current account with an optional path
  * appended to it.
  */
@@ -687,8 +738,10 @@ function recurly_hosted_url($path = '') {
  *
  * $param $operation
  *   May be one of the following operations:
+ *    - select_plan ($context contains account_code or entity_type/entity_id)
  *    - update_billing ($context contains account_code)
  *    - subscribe ($context contains plan_code)
+ *    - reactivate ($context contains account_code or entity_type/entity_id)
  * $param $context
  *   An array of contextual information needed for generating the link.
  * @return
@@ -704,6 +757,48 @@ function recurly_url($operation, $context) {
     }
   }
   return $return_url;
+}
+
+/**
+ * Implements hook_recurly_url_info().
+ */
+function recurly_recurly_url_info($operation, $context) {
+  // Only provide URLs for built-in page types.
+  $recurly_entity_type = variable_get('recurly_entity_type', 'user');
+  if (!$recurly_entity_type || !($parts = _recurly_url_entity_url_parts($context))) {
+    return;
+  }
+
+  switch ($operation) {
+    case 'select_plan':
+      return url($parts[0] . '/' . $parts[1] . '/subscription/signup');
+    case 'change_plan':
+      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
+    case 'cancel':
+      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/cancel');
+    case 'reactivate':
+      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
+  }
+}
+
+/**
+ * Load the parts of a URL given a context for hook_recurly_url_info().
+ */
+function _recurly_url_entity_url_parts($context) {
+  if (isset($context['entity_type']) && isset($context['entity'])) {
+    $entity = $context['entity'];
+    $entity_type = $context['entity_type'];
+  }
+  elseif (isset($context['account'])) {
+    if ($account = recurly_account_load(array('account_code' => $context['account']->account_code), TRUE)) {
+      $entity = reset(entity_load($account->entity_type, array($account->entity_id)));
+      $entity_type = $account->entity_type;
+    }
+  }
+  if (isset($entity)) {
+    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+    return array($entity_type, $id);
+  }
 }
 
 /**
@@ -739,6 +834,34 @@ function recurly_currency_list() {
   );
   return $currencies;
 }
+
+/**
+ * Calculate a prorated refund amount.
+ */
+function recurly_subscription_calculate_refund($subscription, $type = 'prorated') {
+  if ($type == 'none' || recurly_subscription_in_trial($subscription)) {
+    return 0;
+  }
+
+  $subscription->current_period_started_at->setTimezone(new DateTimeZone('UTC'));
+  $subscription->current_period_ends_at->setTimezone(new DateTimeZone('UTC'));
+  $start = $subscription->current_period_started_at->format('U');
+  $end = $subscription->current_period_ends_at->format('U');
+  $total_period_time = $end - $start;
+  $remaining_time = $end - REQUEST_TIME;
+
+  // Past due subscriptions get no refund.
+  if ($remaining_time < 0) {
+    return 0;
+  }
+  if ($type == 'full') {
+    return $subscription->unit_amount_in_cents;
+  }
+  elseif ($type === 'prorated') {
+    return $subscription->unit_amount_in_cents * $remaining_time / $total_period_time;
+  }
+}
+
 /**
  * Format a date for use in invoices.
  */
@@ -888,6 +1011,8 @@ function recurly_format_transaction_status($status) {
       return t('Failed payment');
     case 'voided':
       return t('Voided');
+    case 'declined':
+      return t('Card declined');
     default:
       return check_plain($status);
   }

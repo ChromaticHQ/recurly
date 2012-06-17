@@ -118,6 +118,13 @@ function recurly_settings_form($form, &$form_state) {
       ),
     ),
   );
+
+  // All the settings below are dependent upon the type being selected.
+  $type_selected = array(
+    'visible' => array(
+      'select[name="recurly_entity_type"]' => array('!value' => ''),
+    ),
+  );
   $form['pages']['recurly_entity_display_title'] = array(
     '#title' => t('Subscription tab/page title'),
     '#type' => 'textfield',
@@ -125,13 +132,25 @@ function recurly_settings_form($form, &$form_state) {
     '#size' => 20,
     '#default_value' => variable_get('recurly_entity_display_title', 'Subscriptions'),
     '#description' => t('The text used as the label of the tab (if displayed as a tab) and page title for subscription/invoice pages.'),
-    '#states' => array(
-      'visible' => array(
-        'select[name="recurly_entity_type"]' => array('!value' => ''),
-      ),
-    ),
+    '#states' => $type_selected,
   );
-  $plans = recurly_subscription_plans();
+  $form['pages']['recurly_subscription_display'] = array(
+    '#title' => t('List subscriptions'),
+    '#type' => 'radios',
+    '#options' => array(
+      'live' => t('Live subscriptions (active, trials, canceled, and past due)'),
+      'all' => t('All (includes expired subscriptions)'),
+    ),
+    '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subsription tab.'),
+    '#default_value' => variable_get('recurly_subscription_display', 'live'),
+    '#states' => $type_selected,
+  );
+  try {
+    $plans = recurly_subscription_plans();
+  }
+  catch (Recurly_Error $e) {
+    $plans = array();
+  }
   $plan_options = array();
   foreach ($plans as $plan) {
     $plan_options[$plan->plan_code] = $plan->name;
@@ -141,13 +160,9 @@ function recurly_settings_form($form, &$form_state) {
     '#type' => 'checkboxes',
     '#options' => $plan_options,
     '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subsription tab.'),
-    '#enabled' => count($plan_options),
+    '#access' => count($plan_options),
     '#default_value' => variable_get('recurly_subscription_plans', array_keys($plan_options)),
-    '#states' => array(
-      'visible' => array(
-        'select[name="recurly_entity_type"]' => array('!value' => ''),
-      ),
-    ),
+    '#states' => $type_selected,
   );
   $form['pages']['recurly_subscription_change_timeframe'] = array(
     '#title' => t('Change plan behavior'),
@@ -156,14 +171,24 @@ function recurly_settings_form($form, &$form_state) {
       'now' => t('Change plan immediately (pro-rating billing period usage)'),
       'renewal' => t('On next renewal'),
     ),
+    '#access' => count($plan_options),
     '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.'),
     '#enabled' => count($plan_options),
     '#default_value' => variable_get('recurly_subscription_change_timeframe', 'now'),
-    '#states' => array(
-      'visible' => array(
-        'select[name="recurly_entity_type"]' => array('!value' => ''),
-      ),
+    '#states' => $type_selected,
+  );
+  $form['pages']['recurly_subscription_cancel_behavior'] = array(
+    '#title' => t('Cancel plan behavior'),
+    '#type' => 'radios',
+    '#options' => array(
+      'cancel' => t('Cancel at renewal (leave active until end of period)'),
+      'terminate_prorated' => t('Terminate immediately (prorated refund)'),
+      'terminate_full' => t('Terminate immediately (full refund)'),
     ),
+    '#description' => t('Affects users canceling their own accounts. Overriddable when canceling plans as users with "Administer Recurly" permission.'),
+    '#enabled' => count($plan_options),
+    '#default_value' => variable_get('recurly_subscription_cancel_behavior', 'cancel'),
+    '#states' => $type_selected,
   );
 
   $form = system_settings_form($form);
@@ -188,6 +213,22 @@ function recurly_settings_form_validate($form, &$form_state) {
 
   // Clean up checkbox values.
   $form_state['values']['recurly_subscription_plans'] = array_values(array_filter($form_state['values']['recurly_subscription_plans']));
+
+  // Check that the API key is valid.
+  if ($form_state['values']['recurly_api_key']) {
+    try {
+      $settings = array(
+        'api_key' => $form_state['values']['recurly_api_key'],
+        'private_key' => $form_state['values']['recurly_private_key'],
+        'subdomain' => $form_state['values']['recurly_subdomain'],
+      );
+      recurly_client_initialize($settings, TRUE);
+      $plans = recurly_subscription_plans();
+    }
+    catch (Recurly_UnauthorizedError $e) {
+      form_set_error('recurly_api_key', t('Your API Key is not authorized to connect to Recurly.'));
+    }
+  }
 }
 
 /**

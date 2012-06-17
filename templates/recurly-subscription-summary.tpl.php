@@ -20,8 +20,14 @@
         <td><?php print $start_date; ?></td>
       </tr>
       <tr>
-        <th><?php print in_array('canceled', $state_array) || in_array('non_renewing', $state_array) && !in_array('in_trial', $state_array) ? t('Expiration Date') : t('Next Invoice'); ?></th>
-        <td><?php print $current_period_ends_at; ?></td>
+        <th>
+          <?php if (count(array_intersect(array('canceled', 'non_renewing', 'expired'), $state_array)) && !in_array('in_trial', $state_array)): ?>
+            <?php print t('Expiration Date'); ?>
+          <?php else: ?>
+            <?php print t('Next Invoice'); ?>
+          <?php endif; ?>
+        </th>
+        <td><?php print isset($end_date) ? $end_date : $current_period_ends_at; ?></td>
       </tr>
     </table>
     <div class="line-items">

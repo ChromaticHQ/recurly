@@ -57,7 +57,6 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
   catch (Recurly_NotFoundError $e) {
     return MENU_NOT_FOUND;
   }
-  drupal_set_title($plan->name);
   return theme('recurlyjs_subscribe_page', array('form' => $form));
 }
 
@@ -82,11 +81,12 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     $currency_list[] = $unit_currency->currencyCode;
   }
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
   $form['update'] = array(
     '#type' => 'recurlyjs_subscribe',
     '#plan_code' => $plan_code,
     '#currency' => in_array($currency, $currency_list) ? $currency : variable_get('recurly_default_currency', 'USD'),
-    '#account_code' => $entity_type . '-' . $id,
+    '#account_code' => isset($account->account_code) ? $account->account_code : $entity_type . '-' . $id,
     '#username' => entity_label($entity_type, $entity),
     '#address_requirement' => variable_get('recurlyjs_address_requirement', 'none'),
     '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
@@ -98,7 +98,7 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Update'),
+    '#value' => t('Purchase'),
   );
 
   return $form;
