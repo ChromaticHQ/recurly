@@ -9,6 +9,8 @@
  * Implements hook_menu().
  */
 function recurlyjs_menu() {
+  $items = array();
+
   // Configure built-in pages if enabled.
   $entity_type = variable_get('recurly_entity_type', 'user');
   if ($entity_type && variable_get('recurly_pages', '1')) {
