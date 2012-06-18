@@ -6,6 +6,19 @@
  */
 
 /**
+ * Menu callback; Redirects a Recurly account code subscription management page.
+ */
+function recurly_subscription_redirect($account_code) {
+  $account = recurly_account_load(array('account_code' => $account_code), TRUE);
+  if ($account) {
+    drupal_goto($account->entity_type . '/' . $account->entity_id . '/subscription');
+  }
+  else {
+    return MENU_NOT_FOUND;
+  }
+}
+
+/**
  * Menu callback; Display a summary of a Recurly account subscriptions.
  */
 function recurly_subscription_list_page($entity_type, $entity) {

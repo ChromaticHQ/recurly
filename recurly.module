@@ -51,6 +51,18 @@ function recurly_menu() {
     'file' => 'includes/recurly.admin.inc',
   );
 
+  // Account redirection pages. While intended to work with the built-in pages,
+  // the simple redirect won't do any harm if it goes to a non-existent
+  // location and it allows other modules to use it.
+  $items['manage-subscription/%'] = array(
+    'title' => 'Account redirect',
+    'page callback' => 'recurly_subscription_redirect',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/recurly.pages.inc',
+  );
+
   // Configure built-in pages if enabled.
   $entity_type = variable_get('recurly_entity_type', 'user');
   if ($entity_type && variable_get('recurly_pages', '1')) {
