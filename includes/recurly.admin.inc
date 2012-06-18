@@ -76,7 +76,6 @@ function recurly_settings_form($form, &$form_state) {
     'recurly_entity_type' => $recurly_entity_type,
     'recurly_bundle_' . $recurly_entity_type => variable_get('recurly_bundle_' . $recurly_entity_type),
     'recurly_pages' => variable_get('recurly_pages', '1'),
-    'recurly_entity_display_title' => variable_get('recurly_entity_display_title', 'Subscription'),
     'recurly_subscription_plans' => variable_get('recurly_subscription_plans', array()),
   );
 
@@ -167,25 +166,6 @@ function recurly_settings_form($form, &$form_state) {
       'input[name=recurly_pages]' => array('checked' => TRUE),
     ),
   );
-  $form['pages']['recurly_entity_display'] = array(
-    '#title' => t('Display subscription/invoice pages as'),
-    '#type' => 'radios',
-    '#options' => array(
-      'tabs' => t('A local task on the object page (similar to the "View" and "Edit" tabs)'),
-      'hidden' => t('Hidden menu callback only (i.e. user/[uid]/subscription)'),
-    ),
-    '#default_value' => variable_get('recurly_entity_display', 'tabs'),
-    '#states' => $type_selected,
-  );
-  $form['pages']['recurly_entity_display_title'] = array(
-    '#title' => t('Subscription tab/page title'),
-    '#type' => 'textfield',
-    '#required' => TRUE,
-    '#size' => 20,
-    '#default_value' => variable_get('recurly_entity_display_title', 'Subscriptions'),
-    '#description' => t('The text used as the label of the tab (if displayed as a tab) and page title for subscription/invoice pages.'),
-    '#states' => $type_selected,
-  );
   $form['pages']['recurly_subscription_display'] = array(
     '#title' => t('List subscriptions'),
     '#type' => 'radios',
@@ -257,7 +237,6 @@ function recurly_settings_form_validate($form, &$form_state) {
     'recurly_private_key',
     'recurly_subdomain',
     'recurly_listener_key',
-    'recurly_entity_display_title',
   );
   foreach ($keys as $key) {
     $form_state['values'][$key] = trim($form_state['values'][$key]);

@@ -72,7 +72,7 @@ function recurly_menu() {
 
     $entity_path = $entity_type . '/%' . $entity_type;
     $items[$entity_path . '/subscription'] = array(
-      'title' => variable_get('recurly_entity_display_title', 'Billing'),
+      'title' => 'Subscriptions',
       'page callback' => 'recurly_subscription_list_page',
       'page arguments' => array($entity_type, 1),
       'access callback' => 'recurly_subscription_page_access',
