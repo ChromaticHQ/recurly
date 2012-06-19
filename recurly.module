@@ -72,7 +72,7 @@ function recurly_menu() {
 
     $entity_path = $entity_type . '/%' . $entity_type;
     $items[$entity_path . '/subscription'] = array(
-      'title' => 'Subscriptions',
+      'title' => 'Subscription',
       'page callback' => 'recurly_subscription_list_page',
       'page arguments' => array($entity_type, 1),
       'access callback' => 'recurly_subscription_page_access',
@@ -180,33 +180,10 @@ function recurly_permission() {
       'description' => t('Allows users to configure site-wide Recurly account settings and grants access to all integration activities.'),
       'restrict access' => TRUE,
     ),
-    'edit subscription plans' => array(
-      'title' => t('Edit subscription plans'),
-      'description' => t('Determines whether or not the user should see links to edit subscription plans at Recurly. Grants of this permission should coordinate with user permissions at Recurly.'),
-      'restrict access' => TRUE,
+    'manage recurly subscription' => array(
+      'title' => t('Access Recurly "Subscription" tab'),
+      'description' => t('Determines if users can see the "Subscription" tab on <em>any account on which they have also "edit" permission</em>. Should be applied to both both end-users managing their own subscriptions and administrators.'),
     ),
-    'view all recurly accounts' => array(
-      'title' => t('View all Recurly accounts'),
-      'description' => t('Allows users to view the Recurly account information linked to any user on the site.'),
-      'restrict access' => TRUE,
-    ),
-    'edit all recurly accounts' => array(
-      'title' => t('Edit all Recurly accounts'),
-      'description' => t('Determines whether or not the user should see links to edit accounts in the Recurly administrative interface. Grants of this permission should coordinate with user permissions at Recurly.'),
-      'restrict access' => TRUE,
-    ),
-    'view own recurly account' => array(
-      'title' => t('View own Recurly account'),
-      'description' => t('Allows users to view Recurly account information linked to their user accounts.'),
-    ),
-    'edit own recurly account' => array(
-      'title' => t('Edit own Recurly account'),
-      'description' => t('Determines whether or not users should see links to edit their own account information on the hosted account management page at Recurly.'),
-    ),
-    'edit own recurly account without login' => array(
-      'title' => t('Edit own Recurly account without login'),
-      'description' => t('Gives users direct edit links for their Recurly accounts if available that bypasses the normal login process on the hosted account management page.'),
-    )
   );
 
   return $permissions;
@@ -529,47 +506,6 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
 }
 
 /**
- * Determines whether or not the given account has access to perform the
- * requested operation on the target account's Recurly account information.
- *
- * @param $op
- *   The operation to perform on the Recurly account; 'view' or 'edit'.
- * @param $target_account
- *   The Drupal user account whose Recurly account information would be
- *   operated on.
- * @param $account
- *   The Drupal user account performing the operation; defaults to the current
- *   user.
- *
- * @return
- */
-function recurly_account_access($op, $target_account, $account = NULL) {
-  global $user;
-
-  // Initialize the account to the current user if it's empty.
-  if (empty($account)) {
-    $account = clone($user);
-  }
-
-  // Allow administrators to perform any operation.
-  if (user_access('administer recurly', $account)) {
-    return TRUE;
-  }
-
-  // Allow users with access to view or edit all accounts to perform operations.
-  if (user_access($op . ' all recurly accounts', $account)) {
-    return TRUE;
-  }
-
-  // Allow users with access to view or edit their own accounts.
-  if (user_access($op . ' own recurly account') && $account->uid == $target_account->uid) {
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
-/**
  * Loads a Recurly account record based on the given conditions.
  *
  * @param $conditions
@@ -785,7 +721,7 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
 
   // If the user does not have access to update this entity, they do not have
   // the ability to update the subscription.
-  if (!$update_access) {
+  if (!$update_access || !user_access('manage recurly subscription')) {
     return FALSE;
   }
 

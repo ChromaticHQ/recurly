@@ -9,85 +9,31 @@
  */
 
 /**
- * Implements hook_user_view().
- *
- * If enabled, adds Recurly account information and management links to user
- * profiles linked to accounts.
+ * Implements hook_menu().
  */
-function recurly_hosted_user_view($account, $view_mode, $langcode) {
-  global $user;
+function recurly_hosted_menu() {
+  $items = array();
 
-  // If account display on user profiles is enabled, this is an authenticated
-  // account, and the current user has access to view its account information...
-  if ($account->uid && recurly_account_access('view', $account)) {
-    // Initialize the Recurly client.
-    recurly_client_initialize();
+  // Configure built-in pages if enabled.
+  $entity_type = variable_get('recurly_entity_type', 'user');
+  if ($entity_type && variable_get('recurly_pages', '1')) {
+    $entity_info = entity_get_info();
+    $bundle = variable_get('recurly_bundle_' . $entity_type, NULL);
+    $bundle = empty($bundle) ? $entity_type : $bundle;
 
-    // If the account is linked to a Recurly account...
-    if ($recurly_account = recurly_account_load(array('uid' => $account->uid))) {
-      // Add it to the content array.
-      $account->content['recurly_account'] = array(
-        '#type' => 'user_profile_category',
-        '#title' => t('Subscription information'),
-        '#weight' => 0,
-      );
-
-      // Build an account holder string based on available data.
-      if (empty($recurly_account->company_name)) {
-        $account_holder = t('@first_name @last_name', array('@first_name' => $recurly_account->first_name, '@last_name' => $recurly_account->last_name));
-      }
-      else {
-        $account_holder = t('@first_name @last_name, @company_name', array('@first_name' => $recurly_account->first_name, '@last_name' => $recurly_account->last_name, '@company_name' => $recurly_account->company_name));
-      }
-
-      $account->content['recurly_account']['account_holder'] = array(
-        '#type' => 'user_profile_item',
-        '#title' => t('Account holder'),
-        '#markup' => $account_holder,
-      );
-
-      // Add the account e-mail address if available.
-      if (!empty($recurly_account->email)) {
-        $account->content['recurly_account']['account_email'] = array(
-          '#type' => 'user_profile_item',
-          '#title' => t('Account e-mail address'),
-          '#markup' => check_plain($recurly_account->email),
-        );
-      }
-
-      // Tell the user if the account is closed.
-      if ((empty($recurly_account->state) && $recurly_account->status == 'closed') ||
-        (!empty($recurly_account->state) && $recurly_account->state == 'closed')) {
-        $account->content['recurly_account']['account_closed'] = array(
-          '#type' => 'user_profile_item',
-          '#title' => t('Account status'),
-          '#markup' => t('Our records indicate your account is closed. We are not currently billing your for any subscriptions.'),
-        );
-      }
-
-      // Add an appropriate account edit link if the user has access.
-      if (recurly_account_access('edit', $account)) {
-        // Give administrators a link to the back end.
-        if (user_access('administer recurly') || user_access('edit all recurly accounts')) {
-          $account->content['recurly_account']['edit_account_link'] = array(
-            '#type' => 'user_profile_item',
-            '#title' => t('Administer account'),
-            '#markup' => l(t('Edit this account at Recurly.'), recurly_hosted_account_edit_url($recurly_account)),
-          );
-        }
-
-        // If Hosted Payment Pages are enabled, give users a link to their own
-        // account management page if their account is active.
-        if ($user->uid == $account->uid && $recurly_account->state == 'active') {
-          // Give users manage links for their own accounts.
-          $account->content['recurly_account']['manage_account_link'] = array(
-            '#type' => 'user_profile_item',
-            '#title' => t('Manage account'),
-            '#markup' => l(t('Update your subscription and billing information at Recurly.'), recurly_hosted_account_manage_url($recurly_account, user_access('edit own recurly account without login'))),          );
-        }
-      }
-    }
+    $entity_path = $entity_type . '/%' . $entity_type;
+    $items[$entity_path . '/subscription/billing'] = array(
+      'title' => 'Update billing information',
+      'page callback' => 'recurly_hosted_account_redirect',
+      'page arguments' => array($entity_type, 1),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'update_billing'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 2,
+    );
   }
+
+  return $items;
 }
 
 /**
@@ -104,6 +50,25 @@ function recurly_hosted_recurly_url_info($operation, $context) {
       $account_code = $entity_type . '-' . $id;
       $username = entity_label($entity_type, $entity);
       return recurly_hosted_subscription_plan_purchase_url($context['plan_code'], $account_code, $username);
+  }
+}
+
+/**
+ * Menu callback; Redirect an entity to Recurly.com for management.
+ *
+ * Note that because this function logs the user into the Recurly front-end
+ * interface without a password, it should only be called if the user has
+ * already passed the recurly_subscription_page_access() check.
+ */
+function recurly_hosted_account_redirect($entity_type, $entity) {
+  global $user;
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+  if ($recurly_account) {
+    drupal_goto(recurly_hosted_account_manage_url($recurly_account, TRUE));
+  }
+  else {
+    return MENU_NOT_FOUND;
   }
 }
 
