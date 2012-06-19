@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Uses RecurlyJS to provide a Form API field to subscribe to a service.
+ * Uses Recurly.js to provide a Form API field to subscribe to a service.
  */
 
 /**
@@ -327,7 +327,7 @@ function recurlyjs_element_expand($element) {
   $global_config = str_replace('"Drupal.recurly.afterInject"', 'Drupal.recurly.afterInject', $global_config);
   $global_config = str_replace('"Drupal.recurly.successHandler"', 'Drupal.recurly.successHandler', $global_config);
 
-  // Add RecurlyJS and the inline code to the page.
+  // Add Recurly.js and the inline code to the page.
   $element['#attached']['js'][] = recurlyjs_path() . '/build/recurly.js';
   $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
   $element['#attached']['js'][] = array(
@@ -364,7 +364,7 @@ function recurly_element_token_validate($element, &$form_state) {
 }
 
 /**
- * Retrieve the path to the RecurlyJS library file.
+ * Retrieve the path to the Recurly.js library file.
  */
 function recurlyjs_path() {
   // If we can find a path in the libraries directory to the Recurly PHP client

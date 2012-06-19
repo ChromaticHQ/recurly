@@ -3,9 +3,9 @@
  * Styling of the Recurly payment widgets. Used for new subscriptions, one-time
  * payments and billing information updates.
  *
- * This CSS is based upon the RecurlyJS default theme, but with overly stylistic
- * elements removed so as to make a more useful set of defaults that may be
- * added upon.
+ * This CSS is based upon the Recurly.js default theme, but with overly
+ * stylistic elements removed so as to make a more useful set of defaults that
+ * may be added upon.
  */
 .recurly {
   display: block;

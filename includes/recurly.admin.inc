@@ -146,7 +146,7 @@ function recurly_settings_form($form, &$form_state) {
     '#title' => t('Built-in subscription/invoice pages'),
     '#collapsible' => TRUE,
     '#collapsed' => !variable_get('recurly_pages', '1'),
-    '#description' => t('The Recurly module provides built-in pages for letting users view their own recent invoices on the site instead of needing to go to the Recurly site. If a companion module is enabled such as the Recurly Hosted Pages or RecurlyJS module (both included with this project), appropriate links to update billing information or subscribe will also be displayed on these pages.'),
+    '#description' => t('The Recurly module provides built-in pages for letting users view their own recent invoices on the site instead of needing to go to the Recurly site. If a companion module is enabled such as the Recurly Hosted Pages or Recurly.js module (both included with this project), appropriate links to update billing information or subscribe will also be displayed on these pages.'),
     '#states' => array(
       'visible' => array(
         'select[name="recurly_entity_type"]' => array('!value' => ''),
@@ -300,12 +300,10 @@ function recurly_subscription_plans_overview() {
     }
 
     // Add an edit link if available for the current user.
-    if (user_access('edit subscription plans')) {
-      $operations[] = array(
-        'title' => t('edit'),
-        'href' => recurly_subscription_plan_edit_url($plan),
-      );
-    }
+    $operations[] = array(
+      'title' => t('edit'),
+      'href' => recurly_subscription_plan_edit_url($plan),
+    );
 
     // Add a purchase link if Hosted Payment Pages are enabled.
     if (module_exists('recurly_hosted')) {

@@ -16,9 +16,9 @@ the following caveats:
   use multiple-step forms with only the recurly element on the last page by
   itself.
 - Users must have JavaScript enabled in their browser to submit payment.
-- RecurlyJS is compatible with IE7 and higher.
-- RecurlyJS recommends jQuery 1.5.2 or higher. Drupal 7 comes with jQuery 1.4.4
-  out of the box, however we are not aware of any issues with using RecurlyJS
+- Recurly.js is compatible with IE7 and higher.
+- Recurly.js recommends jQuery 1.5.2 or higher. Drupal 7 comes with jQuery 1.4.4
+  out of the box, however we are not aware of any issues with using Recurly.js
   with this older version of jQuery.
 
 Requirements

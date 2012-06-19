@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Prints the RecurlyJS form elements. This template is responsible for all
+ * Prints the Recurly.js form elements. This template is responsible for all
  * three different form types:
  *  - recurlyjs_subscribe
  *  - recurlyjs_billing

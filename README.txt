@@ -30,7 +30,7 @@ Installation
 
 By default, the Recurly module will provide built-in pages for managing
 subscriptions on a one-subscription-per-user basis. You may also enable the
-RecurlyJS module *OR* the Recurly Managed Pages module to allow users to update
+Recurly.js module *OR* the Recurly Managed Pages module to allow users to update
 their billing information securely. If you're using a more complicated
 subscription system, you should look into the Commerce Recurly module (not
 included as part of the main Recurly package).

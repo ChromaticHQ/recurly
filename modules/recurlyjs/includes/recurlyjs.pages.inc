@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Menu callbacks for the RecurlyJS module.
+ * Menu callbacks for the Recurly.js module.
  */
 
 /**
@@ -9,7 +9,7 @@
  */
 function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
   $form['recurlyjs'] = array(
-    '#title' => t('RecurlyJS settings'),
+    '#title' => t('Recurly.js settings'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
   );
@@ -35,7 +35,7 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
     '#title' => t('Enable coupons'),
     '#type' => 'checkbox',
     '#default_value' => variable_get('recurlyjs_enable_coupons', 0),
-    '#description' => t('Display the <em>Coupon Code</em> field on RecurlyJS subscription forms.'),
+    '#description' => t('Display the <em>Coupon Code</em> field on Recurly.js subscription forms.'),
   );
 }
 
