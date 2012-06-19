@@ -329,6 +329,46 @@ function recurly_entity_update($entity, $entity_type) {
 }
 
 /**
+ * Implements hook_user_cancel().
+ *
+ * Cancel a Recurly account when the user account is canceled. It's important to
+ * note this hook is *not* called if the user account is just being straight-up
+ * deleted, which is fine because hook_entity_delete() will be called for that
+ * situation.
+ */
+function recurly_user_cancel($edit, $account, $method) {
+  $entity_type = variable_get('recurly_entity_type', 'user');
+  if ($entity_type === 'user') {
+    // Check for a local account first, no need to attempt to close an account
+    // if we don't have any information about it.
+    $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $account->uid), TRUE);
+    if ($local_account) {
+      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $account->uid));
+      recurly_account_close($recurly_account);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_delete().
+ *
+ * This hook is *not* called when a user cancels their account through any
+ * mechanism other than "delete account". This fires when user accounts are
+ * being deleted, or when subscriptions are on other entities, such as nodes.
+ */
+function recurly_entity_delete($entity, $entity_type) {
+  if (variable_get('recurly_entity_type', 'user') === $entity_type) {
+    // Check for a local account first, no need to attempt to close an account
+    // if we don't have any information about it.
+    $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
+    if ($local_account) {
+      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+      recurly_account_delete($recurly_account);
+    }
+  }
+}
+
+/**
  * Processes an incoming push notification.
  *
  * Push notifications are configured at Recurly, where you can setup the URL
@@ -384,7 +424,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
     }
 
     // If this is a new, canceled, or updated account set the database record.
-    if (in_array($notification->type, array('new_account_notification', 'canceled_account_notification', 'billing_info_updated_notification'))) {
+    if (in_array($notification->type, array('new_account_notification', 'canceled_account_notification', 'reactivated_account_notification', 'billing_info_updated_notification'))) {
       // Retrieve the full account record from Recurly.
       try {
         $recurly_account = Recurly_Account::get($notification->account->account_code);
@@ -571,10 +611,11 @@ function recurly_account_load($conditions = array(), $local = FALSE) {
   // Attempt to load the full account from Recurly.
   try {
     recurly_client_initialize();
-    $recurly_account = Recurly_Account::get($data->account_code);
-
-    // Return the orphaned data if no account was found at Recurly.
-    if (empty($recurly_account)) {
+    try {
+      $recurly_account = Recurly_Account::get($data->account_code);
+    }
+    catch (Recurly_NotFoundError $e) {
+      // Return the orphaned data if no account was found at Recurly.
       $data->orphaned = TRUE;
       return $data;
     }
@@ -664,6 +705,59 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $data 
   return db_merge('recurly_account')
     ->key(array('account_code' => $recurly_account->account_code))
     ->fields($fields)
+    ->execute();
+}
+
+/**
+ * Cancel a remote Recurly account.
+ */
+function recurly_account_close($recurly_account, $cancelation_method = NULL) {
+  if (empty($cancelation_method)) {
+    $cancelation_method = variable_get('recurly_subscription_cancel_behavior', 'cancel');
+  }
+
+  if (empty($recurly_account->orphaned)) {
+    try {
+      // By default, closing an account will cancel all the subscriptions in
+      // that account. If refunding accounts upon cancelation, we must manually
+      // terminate each active subscription.
+      if ($cancelation_method !== 'cancel') {
+        $subscription_list = Recurly_SubscriptionList::getForAccount($recurly_account->account_code);
+        foreach ($subscription_list as $subscription) {
+          if ($subscription->state === 'active') {
+            $username = $recurly_account->username ? $recurly_account->username : $recurly_account->account_code;
+            if ($cancelation_method === 'terminate_prorated') {
+              drupal_set_message(t('Prorated refund for @plan refunded to @username.', array('@plan' => $subscription->plan->name, '@username' => $username)));
+              $subscription->terminateAndPartialRefund();
+            }
+            else {
+              drupal_set_message(t('Full refund for @plan refunded to @username.', array('@plan' => $subscription->plan->name, '@username' => $username)));
+              $subscription->terminateAndRefund();
+            }
+          }
+        }
+      }
+      // Then close the account.
+      $recurly_account->close();
+    }
+    catch (Recurly_Error $e) {
+      // Throw the highest level alert. Failure could result in accounts getting
+      // charged after the Drupal account is deleted.
+      watchdog('recurly', 'A Recurly account with the account code @code was intended to be closed, but may still open! The Recurly API returned the error "@error".', array('@code' => $recurly_account->account_code, '@error' => $e->getMessage()), WATCHDOG_ALERT);
+      return FALSE;
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Delete a Recurly database record and the account on Recurly.com.
+ */
+function recurly_account_delete($recurly_account, $cancelation_method = NULL) {
+  recurly_account_close($recurly_account, $cancelation_method);
+  db_delete('recurly_account')
+    ->condition('account_code', $recurly_account->account_code)
     ->execute();
 }
 
@@ -825,7 +919,8 @@ function recurly_url($operation, $context) {
 function recurly_recurly_url_info($operation, $context) {
   // Only provide URLs for built-in page types.
   $recurly_entity_type = variable_get('recurly_entity_type', 'user');
-  if (!$recurly_entity_type || !($parts = _recurly_url_entity_url_parts($context))) {
+  $parts = _recurly_url_entity_url_parts($context);
+  if (empty($recurly_entity_type) || empty($parts)) {
     return;
   }
 

@@ -217,7 +217,7 @@ function recurly_settings_form($form, &$form_state) {
       'terminate_prorated' => t('Terminate immediately (prorated refund)'),
       'terminate_full' => t('Terminate immediately (full refund)'),
     ),
-    '#description' => t('Affects users canceling their own accounts. Overriddable when canceling plans as users with "Administer Recurly" permission.'),
+    '#description' => t('Affects users canceling their own subscription plans. Overriddable when canceling plans as users with "Administer Recurly" permission. Note that this behavior is also used when content associated with a Recurly account is deleted, or when users associated with an account are canceled.'),
     '#enabled' => count($plan_options),
     '#default_value' => variable_get('recurly_subscription_cancel_behavior', 'cancel'),
     '#states' => $type_selected,

@@ -36,8 +36,11 @@ function recurly_subscription_list_page($entity_type, $entity) {
 
   // If the user does not have an account yet, send them to the signup page.
   if (empty($account)) {
-    if ($url = recurly_url('select_plan', array('entity_type' => $entity_type, 'entity_id' => $id))) {
-      drupal_goto($url);
+    if ($url = recurly_url('select_plan', array('entity_type' => $entity_type, 'entity' => $entity))) {
+      drupal_goto($url, array('external' => TRUE));
+    }
+    else {
+      return MENU_NOT_FOUND;
     }
   }
 
