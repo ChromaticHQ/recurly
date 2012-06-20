@@ -93,6 +93,15 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),
   );
 
+  // Prepopulate fields based on the entity's tokens.
+  $mapping = variable_get('recurly_token_mapping', array('email' => '[user:mail]', 'first_name' => '', 'last_name' => '', 'company' => ''));
+  foreach ($mapping as $recurly_field => $token) {
+    $value = token_replace($token, array($entity_type => $entity), array('clear' => TRUE, 'sanitize' => FALSE));
+    if ($value) {
+      $form['update']['#account_' . $recurly_field] = $value;
+    }
+  }
+
   $form['actions'] = array(
     '#type' => 'actions',
   );

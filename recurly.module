@@ -181,7 +181,7 @@ function recurly_permission() {
       'restrict access' => TRUE,
     ),
     'manage recurly subscription' => array(
-      'title' => t('Access Recurly "Subscription" tab'),
+      'title' => t('Access Recurly subscription pages'),
       'description' => t('Determines if users can see the "Subscription" tab on <em>any account on which they have also "edit" permission</em>. Should be applied to both both end-users managing their own subscriptions and administrators.'),
     ),
   );
