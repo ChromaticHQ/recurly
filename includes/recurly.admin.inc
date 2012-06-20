@@ -340,7 +340,7 @@ function recurly_subscription_plans_overview() {
   }
 
   if (empty($rows)) {
-    $rows[] = array(array('data' => t('No subscription plans found.'), 'colspan' => 5));
+    $rows[] = array(array('data' => t('No subscription plans found. You can start by creating one on !link.', array('!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'), recurly_hosted_url('plans')) : t('your Recurly account'))), 'colspan' => 6));
   }
 
   return theme('table', array('header' => $header, 'rows' => $rows));
