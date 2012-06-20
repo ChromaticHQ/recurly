@@ -173,7 +173,7 @@ function recurly_settings_form($form, &$form_state) {
       'live' => t('Live subscriptions (active, trials, canceled, and past due)'),
       'all' => t('All (includes expired subscriptions)'),
     ),
-    '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subsription tab.'),
+    '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subscription tab.'),
     '#default_value' => variable_get('recurly_subscription_display', 'live'),
     '#states' => $type_selected,
   );
@@ -191,7 +191,7 @@ function recurly_settings_form($form, &$form_state) {
     '#title' => t('Enabled plans'),
     '#type' => 'checkboxes',
     '#options' => $plan_options,
-    '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subsription tab.'),
+    '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subscription tab.'),
     '#access' => count($plan_options),
     '#default_value' => variable_get('recurly_subscription_plans', array_keys($plan_options)),
     '#states' => $type_selected,
