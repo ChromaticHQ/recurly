@@ -528,6 +528,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
     ),
     '#default_value' => $cancel_behavior === 'cancel' ? NULL : $cancel_behavior,
     '#weight' => 1,
+    '#access' => user_access('administer recurly'),
   );
 
   if (!$past_due && $prorated_amount = recurly_subscription_calculate_refund($subscription, 'prorated')) {
@@ -537,9 +538,27 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
     $form['terminate']['refund_amount']['#options']['terminate_full'] =  t('@amount - Full', array('@amount' => recurly_format_currency($full_amount, $subscription->currency)));
   }
 
-  $form['terminate']['description'] = array(
+  $form['terminate']['admin_description'] = array(
     '#type' => 'markup',
     '#markup' => '<p>' . t('If you would like the subscription to end immediately, you may terminate the subscription now. Optionally, you may also issue a refund for the time remaining (prorated) or for the full amount. New subscriptions to this account will need to sign up for a new plan.') . '</p>',
+    '#access' => user_access('administer recurly'),
+  );
+
+  // Use a more friendly description of the process for non-administrators.
+  $friendly_description = t('This subscription will be ended immediately. If you would like to subscribe again, you will need to start a new subscription.');
+  if ($past_due) {
+    $friendly_description .= '';
+  }
+  elseif ($cancel_behavior === 'terminate_prorated') {
+    $friendly_description .= ' ' . t('A refund of @amount will be credited to your account.', array('@amount' => recurly_format_currency($prorated_amount, $subscription->currency)));
+  }
+  elseif ($cancel_behavior === 'terminate_full') {
+    $friendly_description .= ' ' . t('A refund of @amount will be credited to your account.', array('@amount' => recurly_format_currency($full_amount, $subscription->currency)));
+  }
+  $form['terminate']['user_description'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p>' . $friendly_description . '</p>',
+    '#access' => !user_access('administer recurly'),
   );
   $form['terminate']['actions'] = array(
     '#type' => 'actions',
@@ -547,7 +566,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   );
   $form['terminate']['actions']['terminate'] = array(
     '#type' => 'submit',
-    '#value' => t('Terminate Immediately'),
+    '#value' => user_access('administer recurly') ? t('Terminate Immediately') : t('Cancel Plan'),
   );
 
   return $form;
@@ -590,7 +609,7 @@ function recurly_subscription_cancel_confirm_submit($form, &$form_state) {
       $form_state['redirect'] = $entity_type . '/' . $id;
     }
     catch (Recurly_Error $e) {
-      drupal_set_message(t('The plan could not be terminated because the billing service encountered an error: "@message".', array('@message' => $e->getMessage())), 'error');
+      drupal_set_message(t('The plan could not be terminated because the billing service encountered an error: "@message"', array('@message' => $e->getMessage())), 'error');
       return;
     }
   }
