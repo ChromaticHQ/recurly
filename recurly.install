@@ -1,6 +1,30 @@
 <?php
 
 /**
+ * Implements hook_requirements().
+ */
+function recurly_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  if ($phase == 'runtime') {
+    $requirements['recurly'] = array(
+      'title' => $t('Recurly'),
+    );
+    // Verify that the recurly php library is present.
+    $path = libraries_get_path('recurly');
+    if (!(($path = libraries_get_path('recurly')) && file_exists($path . '/lib/recurly.php'))) {
+      $requirements['recurly']['value'] = $t('The required Recurly PHP library is installed.');
+      $requirements['recurly']['severity'] = REQUIREMENT_OK;
+    }
+    else {
+      $requirements['recurly']['value'] = $t('The required Recurly PHP library is missing. Download the Recurly PHP library from <a href="https://github.com/recurly/recurly-client-php">https://github.com/recurly/recurly-client-php</a> and place it in sites/all/libraries so that "recurly.php" is located at sites/all/libraries/recurly/lib/recurly.php');
+      $requirements['recurly']['severity'] = REQUIREMENT_ERROR;
+    }
+  }
+  return $requirements;
+}
+
+/**
  * Implements hook_schema().
  */
 function recurly_schema() {
