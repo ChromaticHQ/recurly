@@ -12,7 +12,7 @@ function recurly_requirements($phase) {
     );
     // Verify that the recurly php library is present.
     $path = libraries_get_path('recurly');
-    if (!(($path = libraries_get_path('recurly')) && file_exists($path . '/lib/recurly.php'))) {
+    if (($path = libraries_get_path('recurly')) && file_exists($path . '/lib/recurly.php')) {
       $requirements['recurly']['value'] = $t('The required Recurly PHP library is installed.');
       $requirements['recurly']['severity'] = REQUIREMENT_OK;
     }
@@ -21,6 +21,16 @@ function recurly_requirements($phase) {
       $requirements['recurly']['severity'] = REQUIREMENT_ERROR;
     }
   }
+
+  // Ensure cURL exists if SimpleTest hasn't checked it already.
+  if (!module_exists('simpletest') && !function_exists('curl_init')) {
+    $requirements['recurly_curl'] = array(
+      'title' => $t('cURL'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('Recurly module requires the <a href="http://php.net/manual/en/curl.setup.php">PHP cURL library</a>.'),
+    );
+  }
+
   return $requirements;
 }
 
