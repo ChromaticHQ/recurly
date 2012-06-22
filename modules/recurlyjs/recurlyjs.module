@@ -26,7 +26,7 @@ function recurlyjs_menu() {
       'access callback' => 'recurly_subscription_page_access',
       'access arguments' => array($entity_type, 1, 'update_billing'),
       'type' => MENU_LOCAL_TASK,
-      'weight' => 2,
+      'weight' => 4,
       'file' => 'includes/recurlyjs.pages.inc',
     );
 
@@ -37,7 +37,7 @@ function recurlyjs_menu() {
         'page callback' => 'recurlyjs_subscribe_page',
         'page arguments' => array($entity_type, 1, 4),
         'access callback' => 'recurly_subscription_page_access',
-        'access arguments' => array($entity_type, 1, 'subscribe'),
+        'access arguments' => array($entity_type, 1, 'signup'),
         'type' => MENU_CALLBACK,
         'file' => 'includes/recurlyjs.pages.inc',
       );

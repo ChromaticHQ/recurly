@@ -77,6 +77,7 @@ function recurly_settings_form($form, &$form_state) {
     'recurly_bundle_' . $recurly_entity_type => variable_get('recurly_bundle_' . $recurly_entity_type),
     'recurly_pages' => variable_get('recurly_pages', '1'),
     'recurly_subscription_plans' => variable_get('recurly_subscription_plans', array()),
+    'recurly_subscription_max' => variable_get('recurly_subscription_max', '1'),
   );
 
   $form['sync'] = array(
@@ -194,6 +195,19 @@ function recurly_settings_form($form, &$form_state) {
     '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subscription tab.'),
     '#access' => count($plan_options),
     '#default_value' => variable_get('recurly_subscription_plans', array_keys($plan_options)),
+    '#states' => $type_selected,
+  );
+  $form['pages']['recurly_subscription_max'] = array(
+    '#title' => t('Multiple plans'),
+    '#type' => 'radios',
+    // Allows the number of plans to be some arbitrary amount in the future.
+    '#options' => array(
+      '1' => t('Single-plan mode'),
+      '0' => t('Multiple-plan mode'),
+    ),
+    '#description' => t('Single-plan mode allows users are only one subscription at a time, preventing them from having multiple plans active at the same time. If users are allowed to sign up for more than one subscription, use Multiple-plan mode.'),
+    '#access' => count($plan_options),
+    '#default_value' => variable_get('recurly_subscription_max', '1'),
     '#states' => $type_selected,
   );
   $form['pages']['recurly_subscription_change_timeframe'] = array(

@@ -116,6 +116,7 @@
 .recurly-plan-list .plan-hover {
   background-color: #FFFDF2;
   border-color: #ED5;
+  cursor: pointer;
 }
 .recurly-plan-list .plan-selected {
   background-color: #FFFCE5;

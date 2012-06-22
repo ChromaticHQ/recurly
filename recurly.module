@@ -82,7 +82,7 @@ function recurly_menu() {
       'file' => 'includes/recurly.pages.inc',
     );
     $items[$entity_path . '/subscription/list'] = array(
-      'title' => 'Summary',
+      'title' => variable_get('recurly_subscription_max', '1') === '1' ? 'Summary' : 'List',
       'page callback' => 'recurly_subscription_page',
       'page arguments' => array($entity_type, 1),
       'access callback' => 'recurly_subscription_page_access',
@@ -92,13 +92,43 @@ function recurly_menu() {
       'file' => 'includes/recurly.pages.inc',
     );
     $items[$entity_path . '/subscription/signup'] = array(
-      'title' => 'Signup',
+      'title' => variable_get('recurly_subscription_max', '1') === '1' ? 'Signup' : 'Add plan',
       'page callback' => 'recurly_subscription_plan_select',
       'page arguments' => array($entity_type, 1),
       'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'subscribe'),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => 0,
+      'access arguments' => array($entity_type, 1, 'select_plan'),
+      'type' => variable_get('recurly_subscription_max', '1') === '1' ? MENU_DEFAULT_LOCAL_TASK : MENU_LOCAL_TASK,
+      'weight' => 1,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/change'] = array(
+      'title' => 'Change plan',
+      'page callback' => 'recurly_subscription_plan_select',
+      'page arguments' => array($entity_type, 1, NULL, 'latest'),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'change_plan_latest'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 5,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/cancel'] = array(
+      'title' => 'Cancel',
+      'page callback' => 'recurly_subscription_cancel_page',
+      'page arguments' => array($entity_type, 1, 'latest'),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'cancel_latest'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 10,
+      'file' => 'includes/recurly.pages.inc',
+    );
+    $items[$entity_path . '/subscription/reactivate'] = array(
+      'title' => 'Reactivate',
+      'page callback' => 'recurly_subscription_reactivate',
+      'page arguments' => array($entity_type, 1, 'latest'),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'reactivate_latest'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 10,
       'file' => 'includes/recurly.pages.inc',
     );
     $items[$entity_path . '/subscription/id/%'] = array(
@@ -106,7 +136,7 @@ function recurly_menu() {
       'page callback' => 'recurly_subscription_plan_select',
       'page arguments' => array($entity_type, 1, NULL, 4),
       'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'change'),
+      'access arguments' => array($entity_type, 1, 'change_plan'),
       'type' => MENU_CALLBACK,
       'file' => 'includes/recurly.pages.inc',
     );
@@ -115,7 +145,7 @@ function recurly_menu() {
       'page callback' => 'recurly_subscription_plan_change_page',
       'page arguments' => array($entity_type, 1, 4, 6),
       'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'change'),
+      'access arguments' => array($entity_type, 1, 'change_plan'),
       'type' => MENU_CALLBACK,
       'file' => 'includes/recurly.pages.inc',
     );
@@ -144,7 +174,7 @@ function recurly_menu() {
       'access callback' => 'recurly_subscription_page_access',
       'access arguments' => array($entity_type, 1, 'invoices'),
       'type' => MENU_LOCAL_TASK,
-      'weight' => 1,
+      'weight' => 2,
       'file' => 'includes/recurly.pages.inc',
     );
     $items[$entity_path . '/subscription/invoices/%'] = array(
@@ -244,7 +274,7 @@ function recurly_theme() {
     'file' => 'includes/recurly.pages.inc',
   );
   $items['recurly_subscription_plan_select'] = array(
-    'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'currency' => NULL, 'mode' => 'subscribe', 'subscription' => NULL),
+    'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'currency' => NULL, 'mode' => 'subscribe', 'subscriptions' => NULL, 'subscription_id' => NULL),
     'template' => 'templates/recurly-subscription-plan-select',
     'file' => 'includes/recurly.pages.inc',
   );
@@ -401,7 +431,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
     }
 
     // If this is a new, canceled, or updated account set the database record.
-    if (in_array($notification->type, array('new_account_notification', 'canceled_account_notification', 'reactivated_account_notification', 'billing_info_updated_notification'))) {
+    if (in_array($notification->type, array('new_account_notification', 'new_subscription_notification', 'canceled_account_notification', 'reactivated_account_notification', 'billing_info_updated_notification'))) {
       // Retrieve the full account record from Recurly.
       try {
         $recurly_account = Recurly_Account::get($notification->account->account_code);
@@ -699,16 +729,46 @@ function recurly_account_delete($recurly_account, $cancelation_method = NULL) {
 
 /**
  * Check if an account has any active subscriptions.
+ *
+ * @return
+ *   Boolean TRUE if the user has an active subscription, or FALSE if no
+ *   active subscriptions are located.
  */
-function recurly_account_has_active_subscriptions($account) {
-  recurly_client_initialize();
-  $subscription_list = Recurly_SubscriptionList::getForAccount($account->account_code, array('per_page' => 200));
-  foreach ($subscription_list as $subscription) {
-    if ($subscription->state === 'active') {
-      return TRUE;
+function recurly_account_has_active_subscriptions($account_code) {
+  return count(recurly_account_get_subscriptions($account_code, 'active'));
+}
+
+/**
+ * Get a list of active subscriptions for a particular account code.
+ */
+function recurly_account_get_subscriptions($account_code, $state) {
+  static $accounts;
+
+  if (!isset($accounts[$account_code])) {
+    $accounts[$account_code] = array();
+
+    recurly_client_initialize();
+    $subscription_list = Recurly_SubscriptionList::getForAccount($account_code, array('per_page' => 200));
+    $accounts[$account_code] = array('active' => array(), 'expired' => array());
+    foreach ($subscription_list as $subscription) {
+      if ($subscription->state !== 'expired') {
+        $accounts[$account_code]['active'][$subscription->uuid] = $subscription;
+      }
+      else {
+        $accounts[$account_code]['expired'][$subscription->uuid] = $subscription;
+      }
     }
   }
-  return FALSE;
+
+  if ($state === 'active') {
+    return $accounts[$account_code]['active'];
+  }
+  elseif ($state === 'expired') {
+    return $accounts[$account_code]['expired'];
+  }
+
+  // Otherwise return all subscriptions.
+  return $accounts[$account_code] + $accounts[$account_code];
 }
 
 /**
@@ -729,23 +789,54 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
   // because it does not make logical sense to show invoices/billing/etc. for
   // an object that does not have a subscription at all.
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+  $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
   $subscription_plans = variable_get('recurly_subscription_plans', array());
   if ($operation === 'main') {
-    return ($account || $subscription_plans);
+    return ($local_account || $subscription_plans);
   }
-  elseif ($operation === 'subscribe') {
-    // This tab is only visible when visited directly.
-    return !empty($subscription_plans) && arg(3) === 'signup';
+  elseif ($operation === 'select_plan') {
+    // This tab is only visible when visited directly or if multiple plans are
+    // allowed.
+    return !empty($subscription_plans) && arg(3) === 'signup' || variable_get('recurly_subscription_max', '1') !== '1';
   }
   elseif ($operation === 'list') {
     // This is a hack to make it so that the list of subscriptions does not show
     // up as a sub-tab when showing the signup page.
-    return !empty($account) && arg(3) !== 'signup';
+    $access = !empty($local_account) && arg(3) !== 'signup';
+    if (variable_get('recurly_subscription_max', '1') !== '1') {
+      $access = $access || (!empty($local_account) && recurly_account_has_active_subscriptions($local_account->account_code));
+    }
+    return $access;
   }
-  else {
-    return !empty($account);
+  // These pages are only accessible if using the single-page mode. This
+  // requires loading the latest active account for an entity.
+  elseif (variable_get('recurly_subscription_max', '1') === '1') {
+    $active_subscriptions = $local_account ? recurly_account_get_subscriptions($local_account->account_code, 'active') : array();
+    $active_subscription = reset($active_subscriptions);
+    if ($operation === 'change_plan_latest') {
+      return !empty($local_account) && count($subscription_plans) && !empty($active_subscription);
+    }
+    elseif ($operation === 'cancel_latest') {
+      return !empty($local_account) && !empty($active_subscription) && $active_subscription->state == 'active';
+    }
+    elseif ($operation === 'reactivate_latest') {
+      return !empty($local_account) && !empty($active_subscription) && $active_subscription->state == 'canceled';
+    }
+    elseif ($operation === 'signup') {
+      // POST is included here to allow the signup form to finish processing, in
+      // the event that the push notification comes so fast it finishes before
+      // Drupal processes the form that contained a Recurly.js element.
+      return empty($local_account) || empty($active_subscriptions) || !empty($_POST);
+    }
   }
+  elseif (in_array($operation, array('change_plan_latest', 'cancel_latest', 'reactivate_latest'))) {
+    return FALSE;
+  }
+  elseif ($operation === 'signup' && variable_get('recurly_subscription_max', '1') !== '1') {
+    return TRUE;
+  }
+
+  return !empty($local_account);
 }
 
 /**
@@ -829,6 +920,8 @@ function recurly_hosted_url($path = '') {
  * $param $operation
  *   May be one of the following operations:
  *    - select_plan ($context contains account_code or entity_type/entity_id)
+ *    - change_plan
+ *    - cancel
  *    - update_billing ($context contains account_code)
  *    - subscribe ($context contains plan_code)
  *    - reactivate ($context contains account_code or entity_type/entity_id)

@@ -48,6 +48,29 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
     return t('Could not initialize the Recurly client.');
   }
 
+  // Ensure the account does not already have this exact same plan. Recurly
+  // does not support a single account having multiple of the same plan.
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
+  if ($local_account) {
+    $current_subscriptions = recurly_account_get_subscriptions($local_account->account_code, 'active');
+
+    // If the account is only allowed one subscription total, they shouldn't
+    // ever see this signup page.
+    if (variable_get('recurly_subscription_max', '1') === '1' && count($current_subscriptions) && empty($_POST)) {
+      $current_subscription = reset($current_subscriptions);
+      drupal_set_message(t('This account already has a @plan plan!', array('@plan' => $current_subscription->plan->name)));
+      drupal_goto($entity_type . '/' . $id . '/subscription');
+    }
+
+    // Otherwise check if they already have one of this same plan.
+    foreach ($current_subscriptions as $current_subscription) {
+      if ($current_subscription->plan->plan_code === $plan_code && empty($_POST)) {
+        drupal_set_message(t('This account already has a @plan plan!', array('@plan' => $current_subscription->plan->name)));
+        drupal_goto($entity_type . '/' . $id . '/subscription/signup');
+      }
+    }
+  }
   // Although this menu callback contains little else besides the subscription
   // form, it's a separate function because it's highly likely to need theming.
   $form = drupal_get_form('recurlyjs_subscribe_form', $entity_type, $entity, $plan_code, $currency);
@@ -123,7 +146,7 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
 
   drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $form_state['redirect'] = $entity_type . '/' . $id;
+  $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
 }
 
 /**

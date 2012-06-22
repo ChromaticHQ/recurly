@@ -48,7 +48,9 @@
       <div class="total"><?php print $total; ?></div>
     </div>
   </div>
+  <?php if ($subscription_links): ?>
   <div class="subscription-links clearfix">
     <?php print $subscription_links; ?>
   </div>
+  <?php endif; ?>
 </div>
