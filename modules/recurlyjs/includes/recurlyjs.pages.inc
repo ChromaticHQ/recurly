@@ -17,12 +17,12 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
     '#title' => t('Address requirement level'),
     '#type' => 'select',
     '#options' => array(
-      'none' => t('None'),
-      'zip' => t('Zip code'),
-      'zipstreet' => t('Zip code and street'),
       'full' => t('Full'),
+      'zipstreet' => t('Zip code and street'),
+      'zip' => t('Zip code only'),
+      'none' => t('None'),
     ),
-    '#default_value' => variable_get('recurlyjs_address_requirement', 'none'),
+    '#default_value' => variable_get('recurlyjs_address_requirement', 'full'),
     '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".', array('!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'), recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
   );
   $form['recurlyjs']['recurlyjs_enable_add_ons'] = array(
@@ -111,7 +111,7 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     '#currency' => in_array($currency, $currency_list) ? $currency : variable_get('recurly_default_currency', 'USD'),
     '#account_code' => isset($account->account_code) ? $account->account_code : $entity_type . '-' . $id,
     '#username' => entity_label($entity_type, $entity),
-    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'none'),
+    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
     '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
     '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),
   );
@@ -184,7 +184,7 @@ function recurlyjs_update_billing($form, $form_state, $entity_type, $entity) {
   $form['update'] = array(
     '#type' => 'recurlyjs_billing',
     '#account_code' => $account->account_code,
-    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'none'),
+    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
   );
 
   $form['actions'] = array(
