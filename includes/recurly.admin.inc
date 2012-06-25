@@ -210,17 +210,30 @@ function recurly_settings_form($form, &$form_state) {
     '#default_value' => variable_get('recurly_subscription_max', '1'),
     '#states' => $type_selected,
   );
-  $form['pages']['recurly_subscription_change_timeframe'] = array(
-    '#title' => t('Change plan behavior'),
+  $form['pages']['recurly_subscription_upgrade_timeframe'] = array(
+    '#title' => t('Upgrade plan behavior'),
     '#type' => 'radios',
     '#options' => array(
-      'now' => t('Change plan immediately (pro-rating billing period usage)'),
+      'now' => t('Upgrade immediately (pro-rating billing period usage)'),
       'renewal' => t('On next renewal'),
     ),
     '#access' => count($plan_options),
-    '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.'),
+    '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.') . ' ' . t('An upgrade is considered moving to any plan that costs more than the current plan (regardless of billing cycle).'),
     '#enabled' => count($plan_options),
-    '#default_value' => variable_get('recurly_subscription_change_timeframe', 'now'),
+    '#default_value' => variable_get('recurly_subscription_upgrade_timeframe', 'now'),
+    '#states' => $type_selected,
+  );
+  $form['pages']['recurly_subscription_downgrade_timeframe'] = array(
+    '#title' => t('Downgrade plan behavior'),
+    '#type' => 'radios',
+    '#options' => array(
+      'now' => t('Downgrade immediately (pro-rating billing period usage)'),
+      'renewal' => t('On next renewal'),
+    ),
+    '#access' => count($plan_options),
+    '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.') . ' ' . t('An downgrade is considered moving to any plan that costs less than the current plan (regardless of billing cycle).'),
+    '#enabled' => count($plan_options),
+    '#default_value' => variable_get('recurly_subscription_downgrade_timeframe', 'renewal'),
     '#states' => $type_selected,
   );
   $form['pages']['recurly_subscription_cancel_behavior'] = array(

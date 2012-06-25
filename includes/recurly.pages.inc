@@ -96,7 +96,7 @@ function recurly_subscription_list_page($entity_type, $entity) {
       break;
     }
 
-    $subscriptions['subscriptions'][$plan->plan_code] = array(
+    $subscriptions['subscriptions'][$subscription->uuid] = array(
       '#theme' => 'recurly_subscription_summary',
       '#plan_code' => $plan->plan_code,
       '#plan_name' => check_plain($plan->name),
@@ -204,6 +204,8 @@ function recurly_subscription_state_message($state, $context) {
       else {
         return t('This plan has expired.');
       }
+    case 'pending_subscription':
+      return t('This plan with be changed to @plan on @date.', array('@plan' => $context['subscription']->pending_subscription->plan->name, '@date' => recurly_format_date($context['subscription']->current_period_ends_at)));
     case 'future':
       return t('This plan has not started yet. Please contact support if you have any questions.');
     default:
@@ -247,9 +249,13 @@ function recurly_subscription_get_states($subscription, $account) {
       $past_due[$account->account_code][] = $past_due_subscription->uuid;
     }
   }
-
   if (in_array($subscription->uuid, $past_due[$account->account_code])) {
     $states[] = 'past_due';
+  }
+
+  // Subscriptions that have pending changes.
+  if (!empty($subscription->pending_subscription)) {
+    $states[] = 'pending_subscription';
   }
 
   $states[] = $subscription->state;
@@ -346,6 +352,7 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
   foreach ($subscriptions as $subscription) {
     if ($subscription->uuid === $subscription_id) {
       $current_subscription = $subscription;
+      break;
     }
   }
 
@@ -382,7 +389,22 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
       'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
       'signup_url' => recurly_url('subscribe', array('entity_type' => $entity_type, 'entity' => $entity, 'plan_code' => $plan_code, 'currency' => $currency)),
       'change_url' => $current_subscription ? recurly_url('change_plan', array('entity_type' => $entity_type, 'entity' => $entity, 'subscription' => $current_subscription, 'plan_code' => $plan_code)) : NULL,
+      'selected' => FALSE,
     );
+
+    // If we have a pending subscription, make that its shown as selected rather
+    // than the current active subscription. This should allow users to switch
+    // back to a previous plan after making a pending switch to another one.
+    foreach ($subscriptions as $subscription) {
+      if (!empty($subscription->pending_subscription)) {
+        if ($subscription->pending_subscription->plan->plan_code === $plan_code) {
+          $variables['filtered_plans'][$plan_code]['selected'] = TRUE;
+        }
+      }
+      elseif ($subscription->plan->plan_code === $plan_code) {
+        $variables['filtered_plans'][$plan_code]['selected'] = TRUE;
+      }
+    }
   }
 
   // Check if this is an account that is creating a new subscription.
@@ -434,8 +456,8 @@ function recurly_subscription_plan_change_confirm($form, $form_state, $entity_ty
   // subscription currency after it has started.
   // See http://docs.recurly.com/currencies
   $currency = $subscription->currency;
-  $previous_amount = $previous_plan->unit_amount_in_cents[$currency];
-  $new_amount = $new_plan->unit_amount_in_cents[$currency];
+  $previous_amount = $previous_plan->unit_amount_in_cents[$currency]->amount_in_cents;
+  $new_amount = $new_plan->unit_amount_in_cents[$currency]->amount_in_cents;
 
   drupal_set_title(t('Confirm switch to @plan?', array('@plan' => $new_plan->name)), FALSE);
 
@@ -445,7 +467,12 @@ function recurly_subscription_plan_change_confirm($form, $form_state, $entity_ty
   $form['#previous_plan'] = $previous_plan;
   $form['#new_plan'] = $new_plan;
 
-  $timeframe = variable_get('recurly_subscription_change_timeframe', 'now');
+  if ($new_amount >= $previous_amount) {
+    $timeframe = variable_get('recurly_subscription_upgrade_timeframe', 'now');
+  }
+  else {
+    $timeframe = variable_get('recurly_subscription_downgrade_timeframe', 'renewal');
+  }
   $form['timeframe'] = array(
     '#type' => 'radios',
     '#title' => t('Changes take effect'),
@@ -488,12 +515,13 @@ function recurly_subscription_plan_change_confirm_submit($form, &$form_state) {
   $entity_type = $form['#entity_type'];
   $subscription = $form['#subscription'];
   $new_plan = $form['#new_plan'];
+  $timeframe = $form_state['values']['timeframe'];
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
   // Update the plan.
   $subscription->plan_code = $new_plan->plan_code;
   try {
-    if ($form_state['values']['timeframe'] === 'now') {
+    if ($timeframe === 'now') {
       $subscription->updateImmediately();
     }
     else {
@@ -505,7 +533,11 @@ function recurly_subscription_plan_change_confirm_submit($form, &$form_state) {
     return;
   }
 
-  drupal_set_message(t('Plan changed to @plan!', array('@plan' => $new_plan->name)));
+  $message = t('Plan changed to @plan!', array('@plan' => $new_plan->name));
+  if ($timeframe !== 'now') {
+    $message .= ' ' . t('Changes will become active starting <strong>@date</strong>.', array('@date' => recurly_format_date($subscription->current_period_ends_at)));
+  }
+  drupal_set_message($message);
   $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
 }
 

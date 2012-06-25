@@ -1075,6 +1075,8 @@ function recurly_format_state($state) {
       return t('Expired');
     case 'future':
       return t('Future Activation');
+    case 'pending_subscription':
+      return t('Switching to new plan');
     case 'in_trial':
       return t('Trial');
     case 'live':

@@ -13,7 +13,7 @@ drupal_add_js(drupal_get_path('module', 'recurly') . '/js/recurly.js');
 
   <div class="recurly-plan-list clearfix">
     <?php foreach ($filtered_plans as $plan): ?>
-      <div class="plan plan-<?php print $plan['plan_code']; ?><?php print ($mode == 'change' && array_key_exists($plan['plan_code'], $subscriptions)) ? ' plan-selected' : '' ?>">
+      <div class="plan plan-<?php print $plan['plan_code']; ?><?php print ($mode == 'change' && $plan['selected']) ? ' plan-selected' : '' ?>">
         <h2><?php print $plan['name']; ?></h2>
         <div class="plan-interval"><?php print $plan['plan_interval']; ?></div>
         <?php if ($plan['trial_interval']): ?>
@@ -22,7 +22,7 @@ drupal_add_js(drupal_get_path('module', 'recurly') . '/js/recurly.js');
         <div class="plan-signup">
           <?php if ($mode == 'subscribe'): ?>
             <?php if ($plan['signup_url']): ?>
-              <?php if (array_key_exists($plan['plan_code'], $subscriptions)): ?>
+              <?php if ($plan['selected']): ?>
                 <strong><?php print t('Selected'); ?></strong>
               <?php else: ?>
                 <a class="plan-select" href="<?php print $plan['signup_url']; ?>"><?php print t('Sign up'); ?></a>
@@ -31,7 +31,7 @@ drupal_add_js(drupal_get_path('module', 'recurly') . '/js/recurly.js');
               <?php print t('Contact us to sign up'); ?>
             <?php endif; ?>
           <?php else: ?>
-            <?php if (array_key_exists($plan['plan_code'], $subscriptions)): ?>
+            <?php if ($plan['selected']): ?>
               <strong><?php print t('Selected'); ?></strong>
             <?php else: ?>
               <a class="plan-select" href="<?php print $plan['change_url']; ?>"><?php print t('Select'); ?></a>
