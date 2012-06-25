@@ -430,20 +430,27 @@ function recurly_subscription_plan_change_page($entity_type, $entity, $subscript
   // Load the subscription.
   try {
     $subscription = Recurly_Subscription::get($subscription_id);
-    // Fully load the plan.
-    $previous_plan = Recurly_Plan::get($subscription->plan->plan_code);
   }
   catch (Recurly_NotFoundError $e) {
-    drupal_set_message(t('Subscription not found'));
+    drupal_set_message(t('Subscription not found.'));
     return MENU_NOT_FOUND;
   }
 
-  // Load the plan.
+  // Load the old plan.
+  try {
+    $previous_plan = Recurly_Plan::get($subscription->plan->plan_code);
+  }
+  catch (Recurly_NotFoundError $e) {
+    drupal_set_message(t('Plan code "@plan" not found.', array('@plan' => $subscription->plan->plan_code)));
+    return MENU_NOT_FOUND;
+  }
+
+  // Load the new plan.
   try {
     $new_plan = Recurly_Plan::get($new_plan_code);
   }
   catch (Recurly_NotFoundError $e) {
-    drupal_set_message(t('Plan code not found'));
+    drupal_set_message(t('Plan code "@plan" not found.', array('@plan' => $new_plan_code)));
     return MENU_NOT_FOUND;
   }
 
