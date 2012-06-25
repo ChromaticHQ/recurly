@@ -225,7 +225,7 @@ function recurly_permission() {
 function recurly_help($path, $arg) {
   switch ($path) {
     case 'admin/config/services/recurly/subscription-plans':
-      return '<p>' . t('The subscription plans below are defined for the Recurly account configured in your default account settings. Plans should be defined and updated at Recurly and are cached here for informational purposes only. Edit links and purchase links that may appear in the table redirect to Recurly.') . '</p>';
+      return '<p>' . t('The subscription plans below are defined for the Recurly account configured in your default account settings. Plans should be defined and updated at Recurly.com itself. The order and enabled state of a plan will affect the built-in signup pages.') . '</p>';
   }
 }
 
@@ -233,6 +233,10 @@ function recurly_help($path, $arg) {
  * Implements hook_theme().
  */
 function recurly_theme() {
+  $items['recurly_subscription_plans_form'] = array(
+    'render element' => 'form',
+    'file' => 'includes/recurly.admin.inc',
+  );
   $items['recurly_subscription_summary'] = array(
     'variables' => array(
       'plan_code' => NULL,

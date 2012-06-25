@@ -27,6 +27,8 @@ Installation
   "https://example.com/recurly/listener/QVDtH2CR". Use an HTTPS URL if
   available. Take this full URL and paste it into the Recurly.com setttings for
   "Push Notifications".
+- After you have set up the desired plans in Recurly, on your Drupal site visit
+  admin/config/services/recurly/subscription-plans and enable the desired plans.
 
 By default, the Recurly module will provide built-in pages for managing
 subscriptions on a one-subscription-per-user basis. You may also enable the

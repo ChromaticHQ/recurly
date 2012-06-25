@@ -329,9 +329,11 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
   $all_plans = recurly_subscription_plans();
   $enabled_plan_keys = variable_get('recurly_subscription_plans', array());
   $enabled_plans = array();
-  foreach ($all_plans as $plan) {
-    if (in_array($plan->plan_code, $enabled_plan_keys)) {
-      $enabled_plans[$plan->plan_code] = $plan;
+  foreach ($enabled_plan_keys as $plan_code => $enabled) {
+    foreach ($all_plans as $plan) {
+      if ($enabled && $plan_code === $plan->plan_code) {
+        $enabled_plans[$plan_code] = $plan;
+      }
     }
   }
   return theme('recurly_subscription_plan_select', array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency, 'mode' => $mode, 'subscriptions' => $plan_subscriptions, 'subscription_id' => $subscription_id));

@@ -178,25 +178,7 @@ function recurly_settings_form($form, &$form_state) {
     '#default_value' => variable_get('recurly_subscription_display', 'live'),
     '#states' => $type_selected,
   );
-  try {
-    $plans = recurly_subscription_plans();
-  }
-  catch (Recurly_Error $e) {
-    $plans = array();
-  }
-  $plan_options = array();
-  foreach ($plans as $plan) {
-    $plan_options[$plan->plan_code] = $plan->name;
-  }
-  $form['pages']['recurly_subscription_plans'] = array(
-    '#title' => t('Enabled plans'),
-    '#type' => 'checkboxes',
-    '#options' => $plan_options,
-    '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subscription tab.'),
-    '#access' => count($plan_options),
-    '#default_value' => variable_get('recurly_subscription_plans', array_keys($plan_options)),
-    '#states' => $type_selected,
-  );
+  $plan_options = variable_get('recurly_subscription_plans', array());
   $form['pages']['recurly_subscription_max'] = array(
     '#title' => t('Multiple plans'),
     '#type' => 'radios',
@@ -217,9 +199,8 @@ function recurly_settings_form($form, &$form_state) {
       'now' => t('Upgrade immediately (pro-rating billing period usage)'),
       'renewal' => t('On next renewal'),
     ),
-    '#access' => count($plan_options),
+    '#access' => count($plan_options) > 1,
     '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.') . ' ' . t('An upgrade is considered moving to any plan that costs more than the current plan (regardless of billing cycle).'),
-    '#enabled' => count($plan_options),
     '#default_value' => variable_get('recurly_subscription_upgrade_timeframe', 'now'),
     '#states' => $type_selected,
   );
@@ -230,9 +211,8 @@ function recurly_settings_form($form, &$form_state) {
       'now' => t('Downgrade immediately (pro-rating billing period usage)'),
       'renewal' => t('On next renewal'),
     ),
-    '#access' => count($plan_options),
+    '#access' => count($plan_options) > 1,
     '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.') . ' ' . t('An downgrade is considered moving to any plan that costs less than the current plan (regardless of billing cycle).'),
-    '#enabled' => count($plan_options),
     '#default_value' => variable_get('recurly_subscription_downgrade_timeframe', 'renewal'),
     '#states' => $type_selected,
   );
@@ -245,7 +225,7 @@ function recurly_settings_form($form, &$form_state) {
       'terminate_full' => t('Terminate immediately (full refund)'),
     ),
     '#description' => t('Affects users canceling their own subscription plans. Overriddable when canceling plans as users with "Administer Recurly" permission. Note that this behavior is also used when content associated with a Recurly account is deleted, or when users associated with an account are canceled.'),
-    '#enabled' => count($plan_options),
+    '#enabled' => count($plan_options) > 1,
     '#default_value' => variable_get('recurly_subscription_cancel_behavior', 'cancel'),
     '#states' => $type_selected,
   );
@@ -310,20 +290,118 @@ function recurly_subscription_plans_overview() {
     return t('Could not initialize the Recurly client.');
   }
 
-  // Retrieve the plans for the current account.
-  $plans = recurly_subscription_plans();
+  try {
+    $plans = recurly_subscription_plans();
+  }
+  catch (Recurly_Error $e) {
+    return t('No plans could be retrieved from Recurly. Recurly reported the following error: "@error"', array('@error' => $e->getMessage()));
+  }
+
+  return drupal_get_form('recurly_subscription_plans_form', $plans);
+}
+
+/**
+ * Form handler; Provide a form for ordering and enabling subscription plans.
+ */
+function recurly_subscription_plans_form($form, &$form_state, $plans) {
+  $form['weights']['#tree'] = TRUE;
+
+  $plan_options = array();
+  $count = 0;
+  foreach ($plans as $plan) {
+    $plan_options[$plan->plan_code] = $plan->name;
+    $form['#plans'][$plan->plan_code] = array(
+      'plan' => $plan,
+      'unit_amounts' => array(),
+      'setup_amounts' => array(),
+    );
+
+    // TODO: Remove reset() calls once Recurly_CurrencyList implements Iterator.
+    // See https://github.com/recurly/recurly-client-php/issues/37
+    $unit_amounts = in_array('IteratorAggregate', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
+    $setup_fees = in_array('IteratorAggregate', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
+    $amount_strings = array();
+    foreach ($unit_amounts as $unit_amount) {
+      $form['#plans'][$plan->plan_code]['unit_amounts'][$unit_amount->currencyCode] = t('@unit_price every @interval_length @interval_unit', array('@unit_price' => recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode), '@interval_length' => $plan->plan_interval_length, '@interval_unit' => $plan->plan_interval_unit));
+    }
+    foreach ($setup_fees as $setup_fee) {
+      $form['#plans'][$plan->plan_code]['setup_amounts'][$unit_amount->currencyCode] = recurly_format_currency($setup_fee->amount_in_cents, $setup_fee->currencyCode);
+    }
+    $form['weights'][$plan->plan_code] = array(
+      '#type' => 'hidden',
+      '#default_value' => $count,
+      '#attributes' => array('class' => array('weight')),
+    );
+    $count++;
+  }
+
+  // Order our plans based on any existing value.
+  $existing_plans = variable_get('recurly_subscription_plans', array());
+  $plan_list = array();
+  foreach ($existing_plans as $plan_code => $enabled) {
+    if (isset($form['#plans'][$plan_code])) {
+      $plan_list[$plan_code] = $form['#plans'][$plan_code];
+    }
+  }
+  // Then add any new plans to the end.
+  $plan_list += $form['#plans'];
+  $form['#plans'] = $plan_list;
+
+  $form['recurly_subscription_plans'] = array(
+    '#type' => 'checkboxes',
+    '#options' => $plan_options,
+    '#default_value' => array_intersect_key($existing_plans, $plan_options),
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['actions']['submit'] = array(
+    '#type' => 'submit', 
+    '#value' => t('Update plans'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for recurly_subscription_plans_form().
+ */
+function recurly_subscription_plans_form_submit($form, &$form_state) {
+  // Order our variable based on the form order.
+  $recurly_subscription_plans = array();
+  foreach ($form_state['input']['weights'] as $plan_code => $weight) {
+    if (isset($form_state['values']['recurly_subscription_plans'][$plan_code])) {
+      $recurly_subscription_plans[$plan_code] = $form_state['values']['recurly_subscription_plans'][$plan_code];
+    }
+  }
+
+  // Note that we don't actually need to care able the "weight" field values,
+  // since the order of POST is actually changed based on the field position.
+  variable_set('recurly_subscription_plans', $recurly_subscription_plans);
+
+  drupal_set_message(t('Status and order of subscription plans updated!'));
+}
+
+/**
+ * Output the themed version of the recurly_subscription_plans_form().
+ */
+function theme_recurly_subscription_plans_form($variables) {
+  $form = $variables['form'];
 
   // Format the plan data into a table for display.
-  $header = array(t('Subscription plan'), t('Price'), t('Setup fee'), t('Trial'), t('Created'), t('Operations'));
+  $header = array(array('data' => t('Subscription plan'), 'colspan' => 2), t('Weight'), t('Price'), t('Setup fee'), t('Trial'), t('Operations'));
   $rows = array();
 
-  foreach ($plans as $plan) {
+  foreach ($form['#plans'] as $plan_code => $details) {
+    $plan = $details['plan'];
+
     $operations = array();
     $description = '';
 
     // Prepare the description string if one is given for the plan.
     if (!empty($plan->description)) {
-      $description = '<div class="description">' . check_plain($plan->description) . '</div>';
+      $description = '<div class="description">' . nl2br(check_plain($plan->description)) . '</div>';
     }
 
     // Add an edit link if available for the current user.
@@ -340,35 +418,34 @@ function recurly_subscription_plans_overview() {
       );
     }
 
-    // TODO: Remove reset() calls once Recurly_CurrencyList implements Iterator.
-    // See https://github.com/recurly/recurly-client-php/issues/37
-    $unit_amounts = in_array('IteratorAggregate', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
-    $setup_fees = in_array('IteratorAggregate', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
+    $form['recurly_subscription_plans'][$plan_code]['#title_display'] = 'none';
 
     $row = array();
-    $row[] = check_plain($plan->name) . ' <small>(' . t('Plan code: @code', array('@code' => $plan->plan_code)) . ')</small>' . $description;
-
-    $amount_strings = array();
-    foreach ($unit_amounts as $unit_amount) {
-      $amount_strings[] = t('@unit_price every @interval_length @interval_unit', array('@unit_price' => recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode), '@interval_length' => $plan->plan_interval_length, '@interval_unit' => $plan->plan_interval_unit));
-    }
-    $row[] = implode('<br />', $amount_strings);
-
-    $setup_strings = array();
-    foreach ($setup_fees as $setup_fee) {
-      $setup_strings[] = recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode);
-    }
-    $row[] = implode('<br />', $setup_strings);
-
-    $row[] = t('@trial_length @trial_unit', array('@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit));
-    $row[] = format_date($plan->created_at->format('U'));
+    $row[] = array('class' => array('checkbox'), 'data' => drupal_render($form['recurly_subscription_plans'][$plan_code]));
+    $row[] = check_plain($plan->name) . ' <small>(' . check_plain($plan_code) . ')</small>' . $description;
+    $row[] = drupal_render($form['weights'][$plan_code]);
+    $row[] = implode('<br />', $details['unit_amounts']);
+    $row[] = implode('<br />', $details['setup_amounts']);
+    $row[] = $plan->trial_interval_length ? t('@trial_length @trial_unit', array('@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit)) : t('No trial');
     $row[] = theme('links', array('links' => $operations, 'attributes' => array('class' => array('links', 'inline'))));
-    $rows[] = $row;
+    $rows[] = array(
+      'data' => $row,
+      'class' => array('draggable'),
+    );
   }
 
   if (empty($rows)) {
-    $rows[] = array(array('data' => t('No subscription plans found. You can start by creating one on !link.', array('!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'), recurly_hosted_url('plans')) : t('your Recurly account'))), 'colspan' => 6));
+    $rows[] = array(array('data' => t('No subscription plans found. You can start by creating one on !link.', array('!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'), recurly_hosted_url('plans')) : t('your Recurly account'))), 'colspan' => 7));
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows));
+  drupal_add_tabledrag('recurly-subscription-plans', 'order', 'sibling', 'weight');
+
+  // Add a few settings to hide tabledrag annoyances.
+  $js = "Drupal.theme.prototype.tableDragChangedMarker = function () { return ''; };
+Drupal.theme.prototype.tableDragChangedWarning = function () { return ''; };";
+  drupal_add_js($js, 'inline');
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'recurly-subscription-plans')));
+  $output .= drupal_render_children($form);
+  return $output;
 }
