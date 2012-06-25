@@ -249,9 +249,6 @@ function recurly_settings_form_validate($form, &$form_state) {
     $form_state['values'][$key] = trim($form_state['values'][$key]);
   }
 
-  // Clean up checkbox values.
-  $form_state['values']['recurly_subscription_plans'] = array_values(array_filter($form_state['values']['recurly_subscription_plans']));
-
   // Check that the API key is valid.
   if ($form_state['values']['recurly_api_key']) {
     try {
