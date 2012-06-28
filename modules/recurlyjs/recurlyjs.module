@@ -30,19 +30,15 @@ function recurlyjs_menu() {
       'file' => 'includes/recurlyjs.pages.inc',
     );
 
-    $plan_codes = variable_get('recurly_subscription_plans', array());
-    if ($plan_codes) {
-      $items[$entity_path . '/subscription/signup/%'] = array(
-        'title' => 'Signup',
-        'page callback' => 'recurlyjs_subscribe_page',
-        'page arguments' => array($entity_type, 1, 4),
-        'access callback' => 'recurly_subscription_page_access',
-        'access arguments' => array($entity_type, 1, 'signup'),
-        'type' => MENU_CALLBACK,
-        'file' => 'includes/recurlyjs.pages.inc',
-      );
-    }
-
+    $items[$entity_path . '/subscription/signup/%'] = array(
+      'title' => 'Signup',
+      'page callback' => 'recurlyjs_subscribe_page',
+      'page arguments' => array($entity_type, 1, 4),
+      'access callback' => 'recurly_subscription_page_access',
+      'access arguments' => array($entity_type, 1, 'signup'),
+      'type' => MENU_CALLBACK,
+      'file' => 'includes/recurlyjs.pages.inc',
+    );
   }
 
   return $items;
