@@ -146,6 +146,17 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
 
   drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+
+  // Save the account locally immediately so that subscriber information may
+  // be retrieved when the user is directed back to the /subscription tab.
+  try {
+    $account = $subscription->account->get();
+    recurly_account_save($account, $entity_type, $id);
+  }
+  catch (Recurly_Error $e) {
+    watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
+  }
+
   $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
 }
 
