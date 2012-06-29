@@ -20,7 +20,7 @@ drupal_add_js(drupal_get_path('module', 'recurly') . '/js/recurly.js');
           <div class="plan-trial"><?php print $plan['trial_interval']; ?></div>
         <?php endif; ?>
         <div class="plan-signup">
-          <?php if ($mode == 'subscribe'): ?>
+          <?php if ($mode == 'signup'): ?>
             <?php if ($plan['signup_url']): ?>
               <?php if ($plan['selected']): ?>
                 <strong><?php print t('Selected'); ?></strong>

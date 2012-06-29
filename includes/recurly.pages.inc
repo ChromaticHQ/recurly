@@ -312,7 +312,7 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
   else {
     $subscriptions = array();
     $currency = isset($currency) ? $currency : variable_get('recurly_default_currency', 'USD');
-    $mode = 'subscribe';
+    $mode = 'signup';
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
     if ($account) {
@@ -336,7 +336,7 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
       }
     }
   }
-  return theme('recurly_subscription_plan_select', array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency, 'mode' => $mode, 'subscriptions' => $plan_subscriptions, 'subscription_id' => $subscription_id));
+  return theme(array('recurly_subscription_plan_select__' . $mode, 'recurly_subscription_plan_select'), array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency, 'mode' => $mode, 'subscriptions' => $plan_subscriptions, 'subscription_id' => $subscription_id));
 }
 
 /**

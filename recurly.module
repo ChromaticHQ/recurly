@@ -278,9 +278,11 @@ function recurly_theme() {
     'file' => 'includes/recurly.pages.inc',
   );
   $items['recurly_subscription_plan_select'] = array(
-    'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'currency' => NULL, 'mode' => 'subscribe', 'subscriptions' => NULL, 'subscription_id' => NULL),
+    'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'currency' => NULL, 'mode' => 'signup', 'subscriptions' => NULL, 'subscription_id' => NULL),
     'template' => 'templates/recurly-subscription-plan-select',
     'file' => 'includes/recurly.pages.inc',
+    // The $mode of "change" or "signup" may be appended to the template name.
+    'pattern' => 'recurly_subscription_plan_select__',
   );
   $items['recurly_subscription_cancel_confirm'] = array(
     'render element' => 'form',
