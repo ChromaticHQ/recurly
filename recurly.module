@@ -1160,8 +1160,8 @@ function recurly_format_price_interval($amount, $count, $unit, $html = FALSE) {
   }
 
   $replacements = array(
-    '!count' => $html ? check_plain($count) : '<span class="plan-count">' . check_plain($count) . '<span>',
-    '!amount' => $html ? $amount : '<span class="plan-amount">' . $amount . '</span>',
+    '!count' => $html ? '<span class="plan-count">' . check_plain($count) . '<span>' : check_plain($count),
+    '!amount' => $html ? '<span class="plan-amount">' . $amount . '</span>' : $amount,
   );
   if ($count == 1) {
     switch ($unit) {
