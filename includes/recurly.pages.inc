@@ -361,6 +361,7 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
   // If currency is undefined, use the subscription currency.
   if ($current_subscription && empty($currency)) {
     $currency = $current_subscription->currency;
+    $variables['currency'] = $currency;
   }
 
   // Prepare an easy to loop-through list of subscriptions.
