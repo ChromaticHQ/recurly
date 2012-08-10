@@ -373,6 +373,7 @@ function recurly_entity_delete($entity, $entity_type) {
   if (variable_get('recurly_entity_type', 'user') === $entity_type) {
     // Check for a local account first, no need to attempt to close an account
     // if we don't have any information about it.
+    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
     if ($local_account) {
       $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
