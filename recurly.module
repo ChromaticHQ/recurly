@@ -402,6 +402,8 @@ function recurly_entity_delete($entity, $entity_type) {
  * already passed HTTP basic authentication, and the hook implementation will
  * received an already parsed notification object.
  *
+ * @param $key
+ *   Listener URL key used to ensure notification was sent to the proper URL.
  * @param $subdomain
  *   If specified, this is the subdomain of the Recurly account that sent the
  *   push notification; defaults to NULL indicating it is the default account as
