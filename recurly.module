@@ -785,8 +785,22 @@ function recurly_account_get_subscriptions($account_code, $state) {
  */
 function recurly_subscription_page_access($entity_type, $entity, $operation) {
   $entity_info = entity_get_info();
-  $access_callback = $entity_info[$entity_type]['access callback'];
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+
+  // Access callback is generally provided by Entity API, but for users and
+  // nodes, provide general defaults.
+  if (isset($entity_info[$entity_type]['access callback'])) {
+    $access_callback = $entity_info[$entity_type]['access callback'];
+  }
+  elseif ($entity_type === 'user') {
+    $access_callback = '_recurly_user_access';
+  }
+  elseif ($entity_type === 'node') {
+    $access_callback = 'node_access';
+  }
+  else {
+    $access_callback = FALSE;
+  }
 
   // Check to make sure the bundle type (if any) matches.
   $recurly_bundle = variable_get('recurly_bundle_' . $entity_type, 'user');
@@ -796,7 +810,7 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
 
   // If the user does not have access to update this entity, they do not have
   // the ability to update the subscription.
-  $update_access = $access_callback('update', $entity, NULL, $entity_type);
+  $update_access = ($access_callback && function_exists($access_callback)) ? $access_callback('update', $entity, NULL, $entity_type) : FALSE;
   if (!$update_access || !user_access('manage recurly subscription')) {
     return FALSE;
   }
@@ -852,6 +866,14 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
   }
 
   return !empty($local_account);
+}
+
+/**
+ * Fallback access callback for users if Entity API is not installed.
+ */
+function _recurly_user_access($op, $account) {
+  global $user;
+  return $user->uid && $user->uid == $account->uid;
 }
 
 /**
