@@ -9,6 +9,12 @@
  * Returns the site-wide Recurly settings form.
  */
 function recurly_settings_form($form, &$form_state) {
+  // Recommend setting some subscription plans if not enabled.
+  $plan_options = array_filter(variable_get('recurly_subscription_plans', array()));
+  if (empty($plan_options) && variable_get('recurly_api_key', '') && variable_get('recurly_pages', '1')) {
+    drupal_set_message(t('Recurly built-in pages are enabled, but no plans have yet been enabled. Enable plans on the <a href="!url">Subscription Plans page</a>.', array('!url' => url('admin/config/services/recurly/subscription-plans'))), 'warning', FALSE);
+  }
+
   // Add form elements to collect default account information.
   $form['account'] = array(
     '#type' => 'fieldset',
@@ -178,7 +184,6 @@ function recurly_settings_form($form, &$form_state) {
     '#default_value' => variable_get('recurly_subscription_display', 'live'),
     '#states' => $type_selected,
   );
-  $plan_options = variable_get('recurly_subscription_plans', array());
   $form['pages']['recurly_subscription_max'] = array(
     '#title' => t('Multiple plans'),
     '#type' => 'radios',
@@ -432,7 +437,7 @@ function theme_recurly_subscription_plans_form($variables) {
   }
 
   if (empty($rows)) {
-    $rows[] = array(array('data' => t('No subscription plans found. You can start by creating one on !link.', array('!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'), recurly_hosted_url('plans')) : t('your Recurly account'))), 'colspan' => 7));
+    $rows[] = array(array('data' => t('No subscription plans found. You can start by creating one in <a href="!url">your Recurly account</a>.', array('!url' => variable_get('recurly_subdomain', '') ? recurly_hosted_url('plans') : 'http://app.recurly.com')), 'colspan' => 7));
   }
 
   drupal_add_tabledrag('recurly-subscription-plans', 'order', 'sibling', 'weight');
