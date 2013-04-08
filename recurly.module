@@ -613,10 +613,10 @@ function recurly_account_load($conditions = array(), $local = FALSE) {
  *
  * @param $recurly_account
  *   The Recurly account object to save.
- * @param $uid
- *   The Drupal user ID the account is associated with.
- * @param $data
- *   An array of data to store with the local record.
+ * @param $entity_type
+ *   The entity type with which this account is associated.
+ * @param $entity_id
+ *   The ID of the entity with which this account is associated.
  * @param $export
  *   Boolean indicating whether or not the saved account information should also
  *   be exported to Recurly by either creating a new account or updating an
