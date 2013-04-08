@@ -102,6 +102,7 @@ function recurly_uninstall() {
   variable_del('recurly_subdomain');
   variable_del('recurly_api_key');
   variable_del('recurly_private_key');
+  variable_del('recurly_default_currency');
 
   // Remove the push notification settings.
   variable_del('recurly_listener_key');
