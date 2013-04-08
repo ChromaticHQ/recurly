@@ -478,8 +478,8 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
       }
       elseif (!empty($local_account)) {
         // Otherwise if a local record was found and we want to keep it
-        // synchronized, save it afresh now, preserving any existing data array.
-        recurly_account_save($recurly_account, $local_account->entity_type, $local_account->entity_id, $local_account->data);
+        // synchronized, save it again and let any modules respond.
+        recurly_account_save($recurly_account, $local_account->entity_type, $local_account->entity_id);
       }
     }
 
@@ -627,7 +627,7 @@ function recurly_account_load($conditions = array(), $local = FALSE) {
  *   STATUS_INSERT or STATUS_UPDATE indicating the type of query performed to
  *   save the account information locally.
  */
-function recurly_account_save($recurly_account, $entity_type, $entity_id, $data = array(), $export = FALSE) {
+function recurly_account_save($recurly_account, $entity_type, $entity_id, $export = FALSE) {
   // First attempt to save the data at Recurly if specified. Failing an export
   // will prevent local data from being saved so you don't end up with a local
   // record that does not match a record at Recurly.
