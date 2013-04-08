@@ -331,7 +331,7 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
   $enabled_plans = array();
   foreach ($enabled_plan_keys as $plan_code => $enabled) {
     foreach ($all_plans as $plan) {
-      if ($enabled && $plan_code === $plan->plan_code) {
+      if ($enabled && $plan_code == $plan->plan_code) {
         $enabled_plans[$plan_code] = $plan;
       }
     }
