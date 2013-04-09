@@ -633,10 +633,9 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $expor
   // record that does not match a record at Recurly.
   if ($export) {
     // Check to see if the record already exists.
-    $remote_account = Recurly_Account::getAccount($recurly_account->account_code);
-
-    // If it does, then update the account.
-    if (!empty($remote_account)) {
+    try {
+      $remote_account = Recurly_Account::get($recurly_account->account_code);
+      // If it does than update the account now.
       try {
         $recurly_account->update();
       }
@@ -645,8 +644,8 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $expor
         return FALSE;
       }
     }
-    else {
-      // Otherwise create it at Recurly now.
+    catch (Exception $e) {
+      // Try and create the new account at Recurly now.
       try {
         $recurly_account->create();
       }
