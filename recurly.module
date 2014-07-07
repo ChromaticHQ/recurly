@@ -1011,7 +1011,8 @@ function _recurly_url_entity_url_parts($context) {
   }
   elseif (isset($context['account'])) {
     if ($account = recurly_account_load(array('account_code' => $context['account']->account_code), TRUE)) {
-      $entity = reset(entity_load($account->entity_type, array($account->entity_id)));
+      $entity = entity_load($account->entity_type, array($account->entity_id));
+      $entity = reset($entity);
       $entity_type = $account->entity_type;
     }
   }
