@@ -424,7 +424,7 @@ function theme_recurly_subscription_plans_form($variables) {
     if (module_exists('recurly_hosted')) {
       $operations[] = array(
         'title' => t('purchase'),
-        'href' => recurly_hosted_subscription_plan_purchase_url($plan),
+        'href' => recurly_hosted_subscription_plan_purchase_url($plan->plan_code),
       );
     }
 
