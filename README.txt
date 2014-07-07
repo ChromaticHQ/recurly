@@ -16,17 +16,26 @@ Installation
   https://github.com/recurly/recurly-client-php and place it in
   sites/all/libraries so that "recurly.php" is located at
   sites/all/libraries/recurly/lib/recurly.php.
-- If using the Recurly.js module, also download the Recurly.js library from
-  https://github.com/recurly/recurly-js and place it in libraries so that
-  "recurly.js" is located at sites/all/libraries/recurly-js/build/recurly.js.
+
+- If you're wanting to use the Recurly.js library to have billing forms directly
+  on your site, you also need to download the Recurly.js library from
+  https://github.com/recurly/recurly-js/tree/v2 and place it in libraries so
+  that "recurly.js" is located at sites/all/libraries/recurly-js/build/recurly.js.
+
+  IMPORTANT: This version of the Recurly module is only compatible with the "v2"
+  Recurly.js API. Support for Recurly.js 3 will be in the next version of the
+  Drupal Recurly module.
+
 - Log into your Recurly.com account and visit the "API Credentials" page. Copy
   the values for API Key, Private Key (generate if needed), and Subdomain and
   paste them into the module configuration under admin/config/services/recurly.
+
 - While on the Recurly settings page, copy the full URL from the description of
   the "Listener URL key" field. It should be something like:
   "https://example.com/recurly/listener/QVDtH2CR". Use an HTTPS URL if
   available. Take this full URL and paste it into the Recurly.com setttings for
   "Push Notifications".
+
 - After you have set up the desired plans in Recurly, on your Drupal site visit
   admin/config/services/recurly/subscription-plans and enable the desired plans.
 
