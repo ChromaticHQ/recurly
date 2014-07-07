@@ -17,7 +17,7 @@
 
 <?php if ($form['terminate']['#access']): ?>
   <?php if ($form['terminate']['refund_amount']['#access']): ?>
-  <h2><?php print t('Terimate Immediately'); ?></h2>
+  <h2><?php print t('Terminate Immediately'); ?></h2>
   <?php endif; ?>
 
   <?php print drupal_render($form['terminate']); ?>
