@@ -330,7 +330,6 @@ function recurly_subscription_plans_form($form, &$form_state, $plans) {
     // See https://github.com/recurly/recurly-client-php/issues/37
     $unit_amounts = in_array('IteratorAggregate', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
     $setup_fees = in_array('IteratorAggregate', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
-    $amount_strings = array();
     foreach ($unit_amounts as $unit_amount) {
       $form['#plans'][$plan->plan_code]['unit_amounts'][$unit_amount->currencyCode] = t('@unit_price every @interval_length @interval_unit', array('@unit_price' => recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode), '@interval_length' => $plan->plan_interval_length, '@interval_unit' => $plan->plan_interval_unit));
     }
@@ -356,6 +355,32 @@ function recurly_subscription_plans_form($form, &$form_state, $plans) {
   // Then add any new plans to the end.
   $plan_list += $form['#plans'];
   $form['#plans'] = $plan_list;
+
+  foreach ($form['#plans'] as $plan_id => $details) {
+    $operations = array();
+
+    // Add an edit link if available for the current user.
+    $operations['edit'] = array(
+      'title' => t('edit'),
+      'href' => recurly_subscription_plan_edit_url($details['plan']),
+    );
+
+    // Add a purchase link if Hosted Payment Pages are enabled.
+    if (module_exists('recurly_hosted')) {
+      $operations['purchase'] = array(
+        'title' => t('purchase'),
+        'href' => recurly_hosted_subscription_plan_purchase_url($details['plan']->plan_code),
+      );
+    }
+
+    $form['#plans'][$plan_id]['operations'] = array(
+      '#theme' => 'links',
+      '#links' => $operations,
+      '#attributes' => array(
+        'class' => array('links', 'inline'),
+      ),
+    );
+  }
 
   $form['recurly_subscription_plans'] = array(
     '#type' => 'checkboxes',
@@ -406,26 +431,11 @@ function theme_recurly_subscription_plans_form($variables) {
   foreach ($form['#plans'] as $plan_code => $details) {
     $plan = $details['plan'];
 
-    $operations = array();
     $description = '';
 
     // Prepare the description string if one is given for the plan.
     if (!empty($plan->description)) {
       $description = '<div class="description">' . nl2br(check_plain($plan->description)) . '</div>';
-    }
-
-    // Add an edit link if available for the current user.
-    $operations[] = array(
-      'title' => t('edit'),
-      'href' => recurly_subscription_plan_edit_url($plan),
-    );
-
-    // Add a purchase link if Hosted Payment Pages are enabled.
-    if (module_exists('recurly_hosted')) {
-      $operations[] = array(
-        'title' => t('purchase'),
-        'href' => recurly_hosted_subscription_plan_purchase_url($plan->plan_code),
-      );
     }
 
     $form['recurly_subscription_plans'][$plan_code]['#title_display'] = 'none';
@@ -437,7 +447,7 @@ function theme_recurly_subscription_plans_form($variables) {
     $row[] = implode('<br />', $details['unit_amounts']);
     $row[] = implode('<br />', $details['setup_amounts']);
     $row[] = $plan->trial_interval_length ? t('@trial_length @trial_unit', array('@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit)) : t('No trial');
-    $row[] = theme('links', array('links' => $operations, 'attributes' => array('class' => array('links', 'inline'))));
+    $row[] = drupal_render($details['operations']);
     $rows[] = array(
       'data' => $row,
       'class' => array('draggable'),
