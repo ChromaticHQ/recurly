@@ -67,6 +67,14 @@ function recurly_subscription_list_page($entity_type, $entity) {
     // Determine the state of this subscription.
     $states = recurly_subscription_get_states($subscription, $account);
 
+    // Ensure that 'canceled' is listed before 'in_trial' in the list of
+    // possible states, as this can influence what the summary looks like and
+    // displaying the summary for a canceled account even when in trial is less
+    // confusing for users who have cancelled their in trial account.
+    if (in_array('canceled', $states)) {
+      sort($states);
+    }
+
     if (variable_get('recurly_subscription_max', '1') === '1') {
       $links = FALSE;
     }
