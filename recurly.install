@@ -103,6 +103,20 @@ function recurly_uninstall() {
   variable_del('recurly_api_key');
   variable_del('recurly_private_key');
   variable_del('recurly_default_currency');
+  variable_del('recurly_pages');
+  variable_del('recurly_token_mapping');
+
+  variable_del('recurly_subscription_cancel_behavior');
+  variable_del('recurly_subscription_display');
+  variable_del('recurly_subscription_downgrade_timeframe');
+  variable_del('recurly_subscription_max');
+  variable_del('recurly_subscription_plans');
+  variable_del('recurly_subscription_upgrade_timeframe');
+
+  variable_del('recurly_entity_type');
+  foreach (array_keys(entity_get_info()) as $entity_name) {
+    variable_del('recurly_bundle_' . $entity_name);
+  }
 
   // Remove the push notification settings.
   variable_del('recurly_listener_key');

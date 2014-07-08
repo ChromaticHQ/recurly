@@ -28,3 +28,12 @@ function recurlyjs_requirements($phase) {
   }
   return $requirements;
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function recurlyjs_uninstall() {
+  variable_del('recurlyjs_address_requirement');
+  variable_del('recurlyjs_enable_add_ons');
+  variable_del('recurlyjs_enable_coupons');
+}
