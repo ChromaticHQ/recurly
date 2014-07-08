@@ -32,6 +32,9 @@ Drupal.recurly.afterInject = function(form) {
   if ($form.find('.add_on, .coupon, .setup_fee').length === 0 && $form.find('.vat .cost').html() === '') {
     $form.find('.due_now').addClass('due_now_hidden');
   }
+
+  // Allow behaviors to attach to the newly embedded form.
+  Drupal.attachBehaviors(form, Drupal.settings);
 };
 
 Drupal.recurly.successHandler = function(responseToken) {
