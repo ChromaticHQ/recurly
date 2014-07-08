@@ -600,7 +600,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
 
   $cancel_behavior = variable_get('recurly_subscription_cancel_behavior', 'cancel');
   $past_due = isset($_GET['past_due']) && $_GET['past_due'] === '1';
-
+dsm($subscription);
   $form['cancel'] = array(
     '#access' => user_access('administer recurly') || $cancel_behavior === 'cancel',
   );
