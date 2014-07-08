@@ -598,11 +598,20 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   $form['#entity'] = $entity;
   $form['#subscription'] = $subscription;
 
-  $cancel_behavior = variable_get('recurly_subscription_cancel_behavior', 'cancel');
   $past_due = isset($_GET['past_due']) && $_GET['past_due'] === '1';
+  $admin_access = user_access('administer recurly');
+  $in_trial = recurly_subscription_in_trial($subscription);
+
+  // If in a trial, only cancel the account instead of terminating.
+  if ($in_trial && !$admin_access) {
+    $cancel_behavior = 'cancel';
+  }
+  else {
+    $cancel_behavior = variable_get('recurly_subscription_cancel_behavior', 'cancel');
+  }
 
   $form['cancel'] = array(
-    '#access' => user_access('administer recurly') || $cancel_behavior === 'cancel',
+    '#access' => $admin_access || $cancel_behavior === 'cancel',
   );
   $form['cancel']['description'] = array(
     '#type' => 'markup',
@@ -617,7 +626,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   );
 
   $form['terminate'] = array(
-    '#access' => user_access('administer recurly') || $cancel_behavior !== 'cancel',
+    '#access' => $admin_access || $cancel_behavior !== 'cancel',
   );
   $form['terminate']['refund_amount'] = array(
     '#type' => 'radios',
@@ -627,7 +636,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
     ),
     '#default_value' => $cancel_behavior === 'cancel' ? NULL : $cancel_behavior,
     '#weight' => 1,
-    '#access' => user_access('administer recurly'),
+    '#access' => $admin_access,
   );
 
   if (!$past_due && $prorated_amount = recurly_subscription_calculate_refund($subscription, 'prorated')) {
@@ -640,7 +649,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   $form['terminate']['admin_description'] = array(
     '#type' => 'markup',
     '#markup' => '<p>' . t('If you would like the subscription to end immediately, you may terminate the subscription now. Optionally, you may also issue a refund for the time remaining (prorated) or for the full amount. New subscriptions to this account will need to sign up for a new plan.') . '</p>',
-    '#access' => user_access('administer recurly'),
+    '#access' => $admin_access,
   );
 
   // Use a more friendly description of the process for non-administrators.
@@ -657,7 +666,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   $form['terminate']['user_description'] = array(
     '#type' => 'markup',
     '#markup' => '<p>' . $friendly_description . '</p>',
-    '#access' => !user_access('administer recurly'),
+    '#access' => !$admin_access,
   );
   $form['terminate']['actions'] = array(
     '#type' => 'actions',
@@ -665,7 +674,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   );
   $form['terminate']['actions']['terminate'] = array(
     '#type' => 'submit',
-    '#value' => user_access('administer recurly') ? t('Terminate Immediately') : t('Cancel Plan'),
+    '#value' => $admin_access ? t('Terminate Immediately') : t('Cancel Plan'),
   );
 
   return $form;
@@ -678,9 +687,10 @@ function recurly_subscription_cancel_confirm_submit($form, &$form_state) {
   $entity = $form['#entity'];
   $entity_type = $form['#entity_type'];
   $subscription = $form['#subscription'];
+  $clicked_button = $form_state['values']['op'];
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
-  if ($form['cancel']['actions']['cancel']['#value'] === $form_state['values']['op']) {
+  if ($form['cancel']['actions']['cancel']['#value'] === $clicked_button) {
     try {
       $subscription->cancel();
       drupal_set_message(t('Plan @plan canceled! It will expire on @date.', array('@plan' => $subscription->plan->name, '@date' => recurly_format_date($subscription->current_period_ends_at))));
@@ -691,7 +701,7 @@ function recurly_subscription_cancel_confirm_submit($form, &$form_state) {
       return;
     }
   }
-  elseif ($form['terminate']['actions']['terminate']['#value'] === $form_state['values']['op']) {
+  elseif ($form['terminate']['actions']['terminate']['#value'] === $clicked_button) {
     try {
       switch ($form_state['values']['refund_amount']) {
         case 'terminate_none':
