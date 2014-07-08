@@ -526,7 +526,7 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
   // If we can find a path in the libraries directory to the Recurly PHP client
   // library...
   $path = libraries_get_path('recurly');
-  if (($path = libraries_get_path('recurly')) && file_exists($path . '/lib/recurly.php')) {
+  if ($path && file_exists($path . '/lib/recurly.php')) {
     // Include the library files and configure authentication.
     require_once $path . '/lib/recurly.php';
 
