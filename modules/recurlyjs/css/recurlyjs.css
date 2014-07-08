@@ -518,22 +518,43 @@
   margin-left: 0;
   clear: left;
 }
-.recurly .accepted_cards {
-  position: absolute;
-  top: 0px;
+
+.recurly .payment_method {
+  position: relative;
   left: 140px;
-  width: 160px;
+  margin-top: -40px; /* 20px margin-bottom from .billing_info .title + 20px is height of text. */
 }
-.recurly .card {
+
+.recurly .payment_option {
+  clear: both;
+}
+.recurly .payment_option input {
+  float: left;
+}
+
+.recurly .accepted_cards .card,
+.recurly .payment_option.paypal_option .logo {
   background-position: right top;
   background-repeat: no-repeat;
   text-indent: -3000px;
-  width: 40px;
-  height: 30px;
-  margin: 0;
+  height: 32px;
+  margin: 0 0 0 5px;
   padding: 0;
   float: left;
 }
+
+.recurly .accepted_cards .card {
+  width: 32px;
+}
+.recurly .payment_option.paypal_option .logo {
+  background-image: url("../images/paypal.png");
+  width: 114px;
+}
+
+.recurly .paypal .paypal_message {
+  clear: both;
+}
+
 .recurly .card.mastercard {
   background-image: url("../images/mastercard.png");
 }

@@ -37,6 +37,12 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
     '#default_value' => variable_get('recurlyjs_enable_coupons', 0),
     '#description' => t('Display the <em>Coupon Code</em> field on Recurly.js subscription forms.'),
   );
+  $form['recurlyjs']['recurlyjs_accept_paypal'] = array(
+    '#title' => t('Enable PayPal'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('recurlyjs_accept_paypal', FALSE),
+    '#description' => t('Show an option to pay with PayPal. This requires a PayPal Business account with Referential Transactions enabled.'),
+  );
 }
 
 /**
@@ -112,6 +118,7 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     '#account_code' => isset($account->account_code) ? $account->account_code : $entity_type . '-' . $id,
     '#username' => entity_label($entity_type, $entity),
     '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
+    '#accept_paypal' => variable_get('recurlyjs_accept_paypal', FALSE),
     '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
     '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),
   );
@@ -196,6 +203,7 @@ function recurlyjs_update_billing($form, $form_state, $entity_type, $entity) {
     '#type' => 'recurlyjs_billing',
     '#account_code' => $account->account_code,
     '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
+    '#accept_paypal' => variable_get('recurlyjs_accept_paypal', FALSE),
   );
 
   $form['actions'] = array(
