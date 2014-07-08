@@ -24,13 +24,13 @@ function recurly_settings_form($form, &$form_state) {
   );
   $form['account']['recurly_api_key'] = array(
     '#type' => 'textfield',
-    '#title' => t('API Key'),
+    '#title' => t('Private API Key'),
     '#default_value' => variable_get('recurly_api_key', ''),
   );
   $form['account']['recurly_private_key'] = array(
     '#type' => 'textfield',
-    '#title' => t('Recurly Private Key'),
-    '#description' => t('Optional: Recurly Private Key - enter this if needed for transparent post/recurly.js verifications.'),
+    '#title' => t('Transparent Post Private Key'),
+    '#description' => t('Enter this if needed for transparent post and Recurly.js verifications. Note that Recurly module only supports Recurly.js v2, which uses transparent post keys and not the "public key" used by Recurly.js v3.'),
     '#default_value' => variable_get('recurly_private_key', ''),
   );
   $form['account']['recurly_subdomain'] = array(
