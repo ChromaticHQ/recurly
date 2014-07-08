@@ -252,6 +252,8 @@ function recurly_theme() {
       'total' => NULL,
       'subscription_links' => array(),
       'message' => NULL,
+      'subscription' => NULL,
+      'account' => NULL,
     ),
     'template' => 'templates/recurly-subscription-summary',
   );

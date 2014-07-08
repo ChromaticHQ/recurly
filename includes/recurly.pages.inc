@@ -119,6 +119,8 @@ function recurly_subscription_list_page($entity_type, $entity) {
       '#total' => recurly_format_currency($total, $subscription->currency),
       '#subscription_links' => $links ? theme('links', array('links' => $links, 'attributes' => array('class' => array('inline', 'links')))) : NULL,
       '#message' => $message,
+      '#subscription' => $subscription,
+      '#account' => $account,
     );
   }
 
