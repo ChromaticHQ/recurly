@@ -215,7 +215,7 @@ function recurlyjs_element_billing_expand($element) {
  * FormAPI #process callback for the recurlyjs_transaction element type.
  */
 function recurlyjs_element_transaction_expand($element) {
-  $options['transaction']['amount'] = $element['#amount'];
+  $options['transaction']['amount_in_cents'] = $element['#amount'];
   $options['transaction']['currency'] = $element['#currency'];
   $element['#signing_options'] = $options;
   return $element;
