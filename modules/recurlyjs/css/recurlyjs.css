@@ -329,6 +329,7 @@
 .recurly .accept_tos .title {
   font-size: 16px;
   font-weight: bold;
+  line-height: 24px;
   margin-bottom: 20px;
   color: #404041;
   text-shadow: 0 1px 0 #fff;
@@ -518,22 +519,56 @@
   margin-left: 0;
   clear: left;
 }
-.recurly .accepted_cards {
-  position: absolute;
-  top: 0px;
+
+.recurly .accepted_cards, /* Legacy Recurly.js, before .payment_method class */
+.recurly .payment_method {
+  position: relative;
   left: 140px;
-  width: 160px;
+  margin-top: -44px; /* 20px margin-bottom from .billing_info .title + 24px is height of text. */
 }
-.recurly .card {
+
+.recurly .payment_method .accepted_cards {
+  left: 0;
+}
+
+.recurly .payment_option {
+  clear: both;
+}
+.recurly .payment_option input {
+  float: left;
+}
+
+/* If there's only one payment method, hide the radio button. */
+.recurly .payment_method .payment_option input {
+  display: none;
+}
+.recurly .payment_method.multiple .payment_option input {
+  display: inline-block;
+}
+
+.recurly .accepted_cards .card,
+.recurly .payment_option.paypal_option .logo {
   background-position: right top;
   background-repeat: no-repeat;
   text-indent: -3000px;
-  width: 40px;
-  height: 30px;
-  margin: 0;
+  height: 32px;
+  margin: 0 0 0 5px;
   padding: 0;
   float: left;
 }
+
+.recurly .accepted_cards .card {
+  width: 32px;
+}
+.recurly .payment_option.paypal_option .logo {
+  background-image: url("../images/paypal.png");
+  width: 114px;
+}
+
+.recurly .paypal .paypal_message {
+  clear: both;
+}
+
 .recurly .card.mastercard {
   background-image: url("../images/mastercard.png");
 }

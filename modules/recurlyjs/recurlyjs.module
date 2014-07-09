@@ -119,6 +119,7 @@ function recurlyjs_element_info() {
     '#coupon_code' => NULL,
     '#enable_add_ons' => TRUE,
     '#enable_coupons' => TRUE,
+    '#accept_paypal' => FALSE,
     '#collect_phone' => FALSE,
     '#collect_company' => FALSE,
   ) + $common;
@@ -144,6 +145,7 @@ function recurlyjs_element_info() {
     '#coupon_code' => NULL,
     '#enable_add_ons' => TRUE,
     '#enable_coupons' => TRUE,
+    '#accept_paypal' => FALSE,
     '#collect_contact_info' => TRUE,
     '#collect_phone' => FALSE,
     '#collect_company' => FALSE,
@@ -266,6 +268,7 @@ function recurlyjs_element_expand($element) {
     'plan_code' => 'planCode',
     'account_code' => 'accountCode',
     'accepted_cards' => 'acceptedCards',
+    'accept_paypal' => 'acceptPaypal',
     'collect_phone' => 'collectPhone',
     'collect_company' => 'collectCompany',
     'enable_add_ons' => 'enableAddOns',
