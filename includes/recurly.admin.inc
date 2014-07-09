@@ -90,6 +90,7 @@ function recurly_settings_form($form, &$form_state) {
     'recurly_entity_type' => $recurly_entity_type,
     'recurly_bundle_' . $recurly_entity_type => variable_get('recurly_bundle_' . $recurly_entity_type),
     'recurly_pages' => variable_get('recurly_pages', '1'),
+    'recurly_coupon_page' => variable_get('recurly_coupon_page', '1'),
     'recurly_subscription_plans' => variable_get('recurly_subscription_plans', array()),
     'recurly_subscription_max' => variable_get('recurly_subscription_max', '1'),
   );
@@ -175,11 +176,18 @@ function recurly_settings_form($form, &$form_state) {
     '#description' => t('Hosted pages will be enabled on the same object type as the "Account Syncing" option above.'),
   );
 
-  // All the settings below are dependent upon the type being selected.
-  $type_selected = array(
+  // All the settings below are dependent upon the pages option being enabled.
+  $pages_enabled = array(
     'visible' => array(
       'input[name=recurly_pages]' => array('checked' => TRUE),
     ),
+  );
+  $form['pages']['recurly_coupon_page'] = array(
+    '#title' => t('Enable coupon redemption page'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('recurly_coupon_page', '1'),
+    '#description' => t('Show the "Redeem coupon" tab underneath the subscription page.'),
+    '#states' => $pages_enabled,
   );
   $form['pages']['recurly_subscription_display'] = array(
     '#title' => t('List subscriptions'),
@@ -190,7 +198,7 @@ function recurly_settings_form($form, &$form_state) {
     ),
     '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subscription tab.'),
     '#default_value' => variable_get('recurly_subscription_display', 'live'),
-    '#states' => $type_selected,
+    '#states' => $pages_enabled,
   );
   $form['pages']['recurly_subscription_max'] = array(
     '#title' => t('Multiple plans'),
@@ -203,7 +211,7 @@ function recurly_settings_form($form, &$form_state) {
     '#description' => t('Single-plan mode allows users are only one subscription at a time, preventing them from having multiple plans active at the same time. If users are allowed to sign up for more than one subscription, use Multiple-plan mode.'),
     '#access' => count($plan_options),
     '#default_value' => variable_get('recurly_subscription_max', '1'),
-    '#states' => $type_selected,
+    '#states' => $pages_enabled,
   );
   $form['pages']['recurly_subscription_upgrade_timeframe'] = array(
     '#title' => t('Upgrade plan behavior'),
@@ -215,7 +223,7 @@ function recurly_settings_form($form, &$form_state) {
     '#access' => count($plan_options) > 1,
     '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.') . ' ' . t('An upgrade is considered moving to any plan that costs more than the current plan (regardless of billing cycle).'),
     '#default_value' => variable_get('recurly_subscription_upgrade_timeframe', 'now'),
-    '#states' => $type_selected,
+    '#states' => $pages_enabled,
   );
   $form['pages']['recurly_subscription_downgrade_timeframe'] = array(
     '#title' => t('Downgrade plan behavior'),
@@ -227,7 +235,7 @@ function recurly_settings_form($form, &$form_state) {
     '#access' => count($plan_options) > 1,
     '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission.') . ' ' . t('An downgrade is considered moving to any plan that costs less than the current plan (regardless of billing cycle).'),
     '#default_value' => variable_get('recurly_subscription_downgrade_timeframe', 'renewal'),
-    '#states' => $type_selected,
+    '#states' => $pages_enabled,
   );
   $form['pages']['recurly_subscription_cancel_behavior'] = array(
     '#title' => t('Cancel plan behavior'),
@@ -240,7 +248,7 @@ function recurly_settings_form($form, &$form_state) {
     '#description' => t('Affects users canceling their own subscription plans. Overriddable when canceling plans as users with "Administer Recurly" permission. Note that this behavior is also used when content associated with a Recurly account is deleted, or when users associated with an account are canceled.'),
     '#enabled' => count($plan_options) > 1,
     '#default_value' => variable_get('recurly_subscription_cancel_behavior', 'cancel'),
-    '#states' => $type_selected,
+    '#states' => $pages_enabled,
   );
 
   $form = system_settings_form($form);
