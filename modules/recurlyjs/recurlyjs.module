@@ -287,6 +287,11 @@ function recurlyjs_element_expand($element) {
     }
   }
 
+  // Coupon code is in its own category.
+  if ($element['#coupon_code']) {
+    $options['subscription']['couponCode'] = $element['#coupon_code'];
+  }
+
   // Convert options which have #account_ or #billing_ prefixes.
   $convert_keys = array(
     'first_name' => 'firstName',
