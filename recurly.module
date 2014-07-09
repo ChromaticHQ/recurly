@@ -322,7 +322,7 @@ function recurly_entity_update($entity, $entity_type) {
   }
 
   // Check if any of the mapping tokens have changed.
-  $mapping = variable_get('recurly_token_mapping', array('email' => '[user:mail]', 'first_name' => '', 'last_name' => '', 'company' => ''));
+  $mapping = recurly_token_mapping();
   $original_entity = $entity->original;
   $original_values = array();
   $updated_values = array();
@@ -337,9 +337,33 @@ function recurly_entity_update($entity, $entity_type) {
   if ($original_values !== $updated_values) {
     try {
       $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+      $address_fields = array(
+        'address1',
+        'address2',
+        'city',
+        'state',
+        'zip',
+        'country',
+        'phone',
+      );
       foreach ($updated_values as $field => $value) {
         if (strlen($value)) {
-          $recurly_account->{$field} = $value;
+          if (in_array($field, $address_fields)) {
+            // The Recurly PHP client doesn't check for nested objects when
+            // determining what properties have changed when updating an object.
+            // This works around it by re-assigning the address property instead
+            // of directly modifying the address's fields. This can be removed
+            // when https://github.com/recurly/recurly-client-php/pull/80 is
+            // merged in.
+            //
+            // $recurly_account->address->{$field} = $value;
+            $adr = $recurly_account->address;
+            $adr->{$field} = $value;
+            $recurly_account->address = $adr;
+          }
+          else {
+            $recurly_account->{$field} = $value;
+          }
         }
       }
       $recurly_account->update();
@@ -1093,6 +1117,28 @@ function recurly_subscription_calculate_refund($subscription, $type = 'prorated'
   elseif ($type === 'prorated') {
     return $subscription->unit_amount_in_cents * $remaining_time / $total_period_time;
   }
+}
+
+/**
+ * Get the token mapping for Recurly variables with defaults populated.
+ */
+function recurly_token_mapping() {
+  $mapping = variable_get('recurly_token_mapping', array());
+  $mapping += array(
+    'email' => '[user:mail]',
+    'username' => '[user:name]',
+    'first_name' => '',
+    'last_name' => '',
+    'company_name' => '',
+    'address1' => '',
+    'address2' => '',
+    'city' => '',
+    'state' => '',
+    'zip' => '',
+    'country' => '',
+    'phone' => '',
+  );
+  return $mapping;
 }
 
 /**

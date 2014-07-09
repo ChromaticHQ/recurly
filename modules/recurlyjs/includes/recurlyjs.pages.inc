@@ -117,11 +117,18 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   );
 
   // Prepopulate fields based on the entity's tokens.
-  $mapping = variable_get('recurly_token_mapping', array('email' => '[user:mail]', 'first_name' => '', 'last_name' => '', 'company' => ''));
+  $mapping = recurly_token_mapping();
   foreach ($mapping as $recurly_field => $token) {
     $value = token_replace($token, array($entity_type => $entity), array('clear' => TRUE, 'sanitize' => FALSE));
+    $properties = element_info('recurlyjs_subscribe');
     if ($value) {
-      $form['update']['#account_' . $recurly_field] = $value;
+      // Some properties are keyed #account_ and some #billing_.
+      if (array_key_exists('#account_' . $recurly_field, $properties)) {
+        $form['update']['#account_' . $recurly_field] = $value;
+      }
+      elseif (array_key_exists('#billing_' . $recurly_field, $properties)) {
+        $form['update']['#billing_' . $recurly_field] = $value;
+      }
     }
   }
 

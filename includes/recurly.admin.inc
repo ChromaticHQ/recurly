@@ -121,7 +121,7 @@ function recurly_settings_form($form, &$form_state) {
       ),
     );
   }
-  $mapping = variable_get('recurly_token_mapping', array('email' => '[user:mail]', 'first_name' => '', 'last_name' => '', 'company' => ''));
+  $mapping = recurly_token_mapping();
   $form['sync']['recurly_token_mapping'] = array(
     '#title' => t('Token mappings'),
     '#type' => 'fieldset',
@@ -137,6 +137,12 @@ function recurly_settings_form($form, &$form_state) {
     '#default_value' => $mapping['email'],
     '#description' => t('i.e. [user:mail] or [node:author:mail]'),
   );
+  $form['sync']['recurly_token_mapping']['username'] = array(
+    '#title' => t('Username'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['username'],
+    '#description' => t('i.e. [user:name] or [node:title]'),
+  );
   $form['sync']['recurly_token_mapping']['first_name'] = array(
     '#title' => t('First name'),
     '#type' => 'textfield',
@@ -147,10 +153,47 @@ function recurly_settings_form($form, &$form_state) {
     '#type' => 'textfield',
     '#default_value' => $mapping['last_name'],
   );
-  $form['sync']['recurly_token_mapping']['company'] = array(
+  $form['sync']['recurly_token_mapping']['company_name'] = array(
     '#title' => t('Company'),
     '#type' => 'textfield',
-    '#default_value' => $mapping['company'],
+    '#default_value' => $mapping['company_name'],
+  );
+  $form['sync']['recurly_token_mapping']['address1'] = array(
+    '#title' => t('Address line 1'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['address1'],
+  );
+  $form['sync']['recurly_token_mapping']['address2'] = array(
+    '#title' => t('Address line 2'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['address2'],
+  );
+  $form['sync']['recurly_token_mapping']['city'] = array(
+    '#title' => t('City'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['city'],
+  );
+  $form['sync']['recurly_token_mapping']['state'] = array(
+    '#title' => t('State'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['state'],
+    '#description' => t('Values sent to Recurly must be two-letter abbreviations.'),
+  );
+  $form['sync']['recurly_token_mapping']['zip'] = array(
+    '#title' => t('Zip code'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['zip'],
+  );
+  $form['sync']['recurly_token_mapping']['country'] = array(
+    '#title' => t('Country'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['country'],
+    '#description' => t('Values sent to Recurly must be two-letter abbreviations.'),
+  );
+  $form['sync']['recurly_token_mapping']['phone'] = array(
+    '#title' => t('Phone number'),
+    '#type' => 'textfield',
+    '#default_value' => $mapping['phone'],
   );
   $form['sync']['recurly_token_mapping']['help'] = array(
     '#theme' => 'token_tree',
