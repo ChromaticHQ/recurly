@@ -215,7 +215,7 @@ function recurly_subscription_state_message($state, $context) {
         return t('This plan has expired.');
       }
     case 'pending_subscription':
-      return t('This plan with be changed to @plan on @date.', array('@plan' => $context['subscription']->pending_subscription->plan->name, '@date' => recurly_format_date($context['subscription']->current_period_ends_at)));
+      return t('This plan will be changed to @plan on @date.', array('@plan' => $context['subscription']->pending_subscription->plan->name, '@date' => recurly_format_date($context['subscription']->current_period_ends_at)));
     case 'future':
       return t('This plan has not started yet. Please contact support if you have any questions.');
     default:
