@@ -36,7 +36,7 @@ function recurly_settings_form($form, &$form_state) {
   $form['account']['recurly_subdomain'] = array(
     '#type' => 'textfield',
     '#title' => t('Subdomain'),
-    '#description' => t("The subdomain of your account including the -test suffix if using the Sandbox."),
+    '#description' => t("The subdomain of your account."),
     '#default_value' => variable_get('recurly_subdomain', ''),
   );
   $form['account']['recurly_default_currency'] = array(
