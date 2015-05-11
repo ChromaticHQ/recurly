@@ -304,6 +304,16 @@ function recurly_theme() {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function recurly_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'recurly') . '/views',
+  );
+}
+
+/**
  * Implements hook_entity_update().
  *
  * Update the Recurly remote account when the local Drupal entity is updated.
