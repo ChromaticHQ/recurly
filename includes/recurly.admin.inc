@@ -404,7 +404,7 @@ function recurly_subscription_plans_form($form, &$form_state, $plans) {
     }
   }
   // Then add any new plans to the end.
-  $plan_list += $form['#plans'];
+  $plan_list += is_array($form['#plans']) ? $form['#plans'] : array();
   $form['#plans'] = $plan_list;
 
   foreach ($form['#plans'] as $plan_id => $details) {
