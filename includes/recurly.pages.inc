@@ -524,6 +524,14 @@ function recurly_subscription_plan_change_confirm($form, $form_state, $entity_ty
     '#type' => 'submit',
     '#value' => t('Change plan'),
   );
+
+  // Add a cancel option to the confirmation form.
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => t('Cancel'),
+    '#href' => $entity_type . '/' . $id . '/subscription/change',
+  );
   return $form;
 }
 
@@ -677,6 +685,14 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   $form['terminate']['actions']['terminate'] = array(
     '#type' => 'submit',
     '#value' => $admin_access ? t('Terminate Immediately') : t('Cancel Plan'),
+  );
+
+  // Add a cancel option to the confirmation form.
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => t('Cancel'),
+    '#href' => $entity_type . '/' . $id . '/subscription',
   );
 
   return $form;
