@@ -288,7 +288,7 @@ function recurlyjs_element_expand($element) {
   }
 
   // Coupon code is in its own category.
-  if ($element['#coupon_code']) {
+  if (isset($element['#coupon_code']) || array_key_exists('#coupon_code', $element)) {
     $options['subscription']['couponCode'] = $element['#coupon_code'];
   }
 
