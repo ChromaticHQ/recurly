@@ -17,29 +17,24 @@ Installation
   sites/all/libraries so that "recurly.php" is located at
   sites/all/libraries/recurly/lib/recurly.php.
 
-- If you're wanting to use the Recurly.js library to have billing forms directly
+- If you want to use the Recurly.js library to have billing forms directly
   on your site, you also need to download the Recurly.js library from
-  https://github.com/recurly/recurly-js/tree/v2 and place it in libraries so
-  that "recurly.js" is located at sites/all/libraries/recurly-js/build/recurly.js.
+  https://github.com/recurly/recurly-js and place it in libraries so
+  that "recurly.js" is located at sites/all/libraries/recurly-js/lib/recurly.js.
 
-  IMPORTANT: This version of the Recurly module is only compatible with the "v2"
-  Recurly.js API. Support for Recurly.js 3 will be in the next version of the
-  Drupal Recurly module.
+  IMPORTANT: This version of the Recurly module is only compatible with
+  Recurly.js API v3 and the Recurly v2 API.
 
-- Log into your Recurly.com account and visit the "API Credentials" page.
-  (developer/api_access) Copy the values for Private API Key (generate if needed)
-  and Subdomain and paste them into the module configuration under
-  admin/config/services/recurly.
+- Log into your Recurly.com account and visit the API Credentials page.
+  (developer/api_access) Copy the value for the Public Key and subdomain (found
+  in the address bar (or configuration/edit) and paste them into the module
+  configuration in Drupal under admin/config/services/recurly.
 
-- From  the "Manage Transparent Post Keys" page on Recurly.com,
-  (developer/transparent_post), paste that key into the
-  "Transparent Post Private Key" field in the module configuration.
-
-- While on the Recurly settings page, copy the full URL from the description of
-  the "Listener URL key" field. It should be something like:
+- While on the Recurly settings page in Drupal, copy the full URL from the
+  description of  the "Listener URL key" field. It should be something like:
   "https://example.com/recurly/listener/QVDtH2CR". Use an HTTPS URL if
-  available. Take this full URL and paste it into the Recurly.com setttings for
-  "Push Notifications".
+  available. Take this full URL and paste it into the Recurly.com settings for
+  "Webhook URL" at Developers > Webhooks (configuration/notifications/configure).
 
 - After you have set up the desired plans in Recurly, on your Drupal site visit
   admin/config/services/recurly/subscription-plans and enable the desired plans.
