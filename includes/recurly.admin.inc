@@ -11,7 +11,7 @@
 function recurly_settings_form($form, &$form_state) {
   // Recommend setting some subscription plans if not enabled.
   $plan_options = array_filter(variable_get('recurly_subscription_plans', array()));
-  if (empty($plan_options) && variable_get('recurly_api_key', '') && variable_get('recurly_pages', '1')) {
+  if (empty($plan_options) && variable_get('recurly_private_api_key', '') && variable_get('recurly_pages', '1')) {
     drupal_set_message(t('Recurly built-in pages are enabled, but no plans have yet been enabled. Enable plans on the <a href="!url">Subscription Plans page</a>.', array('!url' => url('admin/config/services/recurly/subscription-plans'))), 'warning', FALSE);
   }
 
@@ -22,10 +22,10 @@ function recurly_settings_form($form, &$form_state) {
     '#description' => t('Configure this information based on the "API Credentials" section within the Recurly administration interface.'),
     '#collapsible' => TRUE,
   );
-  $form['account']['recurly_api_key'] = array(
+  $form['account']['recurly_private_api_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Private API Key'),
-    '#default_value' => variable_get('recurly_api_key', ''),
+    '#default_value' => variable_get('recurly_private_api_key', ''),
   );
   $form['account']['recurly_private_key'] = array(
     '#type' => 'textfield',
@@ -304,7 +304,7 @@ function recurly_settings_form($form, &$form_state) {
  */
 function recurly_settings_form_validate($form, &$form_state) {
   $keys = array(
-    'recurly_api_key',
+    'recurly_private_api_key',
     'recurly_private_key',
     'recurly_subdomain',
     'recurly_listener_key',
@@ -314,10 +314,10 @@ function recurly_settings_form_validate($form, &$form_state) {
   }
 
   // Check that the API key is valid.
-  if ($form_state['values']['recurly_api_key']) {
+  if ($form_state['values']['recurly_private_api_key']) {
     try {
       $settings = array(
-        'api_key' => $form_state['values']['recurly_api_key'],
+        'api_key' => $form_state['values']['recurly_private_api_key'],
         'private_key' => $form_state['values']['recurly_private_key'],
         'subdomain' => $form_state['values']['recurly_subdomain'],
       );
@@ -325,7 +325,7 @@ function recurly_settings_form_validate($form, &$form_state) {
       $plans = recurly_subscription_plans();
     }
     catch (Recurly_UnauthorizedError $e) {
-      form_set_error('recurly_api_key', t('Your API Key is not authorized to connect to Recurly.'));
+      form_set_error('recurly_private_api_key', t('Your API Key is not authorized to connect to Recurly.'));
     }
   }
 }

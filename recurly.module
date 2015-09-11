@@ -561,7 +561,7 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
   // If no settings array was given, use the default account settings.
   if (empty($settings)) {
     $settings = array(
-      'api_key' => variable_get('recurly_api_key', ''),
+      'api_key' => variable_get('recurly_private_api_key', ''),
       'subdomain' => variable_get('recurly_subdomain', ''),
       'private_key' => variable_get('recurly_private_key', ''),
     );
