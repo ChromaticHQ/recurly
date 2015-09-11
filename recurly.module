@@ -561,9 +561,9 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
   // If no settings array was given, use the default account settings.
   if (empty($settings)) {
     $settings = array(
-      'api_key' => variable_get('recurly_private_api_key', ''),
+      'private_key' => variable_get('recurly_private_api_key', ''),
       'subdomain' => variable_get('recurly_subdomain', ''),
-      'private_key' => variable_get('recurly_private_key', ''),
+      'public_key' => variable_get('recurly_public_key', ''),
     );
   }
 
@@ -575,9 +575,9 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
     require_once $path . '/lib/recurly.php';
 
     // Required for the API
-    Recurly_Client::$apiKey = $settings['api_key'];
+    Recurly_Client::$apiKey = $settings['private_key'];
     // Optional for Recurly.js:
-    Recurly_js::$privateKey = $settings['private_key'];
+    Recurly_js::$privateKey = $settings['public_key'];
   }
   else {
     watchdog('recurly', 'Could not find the Recurly PHP client library in sites/all/libraries/recurly.', array(), WATCHDOG_ERROR);
