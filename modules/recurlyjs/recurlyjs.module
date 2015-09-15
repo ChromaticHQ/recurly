@@ -330,13 +330,15 @@ function recurlyjs_element_expand($element) {
   $global_config = str_replace('"Drupal.recurly.beforeInject"', 'Drupal.recurly.beforeInject', $global_config);
   $global_config = str_replace('"Drupal.recurly.afterInject"', 'Drupal.recurly.afterInject', $global_config);
   $global_config = str_replace('"Drupal.recurly.successHandler"', 'Drupal.recurly.successHandler', $global_config);
+  $recurly_public_key = variable_get('recurly_public_key', '');
 
   // Add Recurly.js and the inline code to the page.
-  $element['#attached']['js'][] = recurlyjs_path() . '/build/recurly.js';
+  $element['#attached']['js'][] = drupal_get_path('module', 'recurly') . '/js/require.js';
+  $element['#attached']['js'][] = recurlyjs_path() . '/lib/recurly.js';
   $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
   $element['#attached']['js'][] = array(
     'type' => 'inline',
-    'data' => "Recurly.config($global_config); Recurly.$recurly_operation($field_config);",
+    'data' => "recurly.configure('$recurly_public_key'); recurly.$recurly_operation($field_config);",
   );
   // Convenience CSS file location option.
   if (isset($element['#recurly_css'])) {
@@ -373,7 +375,7 @@ function recurly_element_token_validate($element, &$form_state) {
 function recurlyjs_path() {
   // If we can find a path in the libraries directory to the Recurly PHP client
   // library...
-  if (($path = libraries_get_path('recurly-js')) && file_exists($path . '/build/recurly.js')) {
+  if (($path = libraries_get_path('recurly-js')) && file_exists($path . '/lib/recurly.js')) {
     // Include the library files and configure authentication.
     return $path;
   }
