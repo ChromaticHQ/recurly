@@ -43,6 +43,7 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
     '#default_value' => variable_get('recurlyjs_accept_paypal', FALSE),
     '#description' => t('Show an option to pay with PayPal. This requires a PayPal Business account with Referential Transactions enabled. <a href="https://docs.recurly.com/payment-gateways/paypal-payments">See the Recurly Paypal documentation</a>.'),
   );
+
   $jquery_requirement = FALSE;
   if (module_exists('jquery_update')) {
     $jquery_version = variable_get('jquery_update_jquery_version', '1.10');
@@ -50,6 +51,7 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
       $jquery_requirement = TRUE;
     }
   }
+
   if (!$jquery_requirement) {
     $form['recurlyjs']['recurlyjs_accept_paypal']['#disabled'] = TRUE;
     $form['recurlyjs']['recurlyjs_accept_paypal']['#value'] = FALSE;
@@ -214,7 +216,8 @@ function recurlyjs_update_billing($form, $form_state, $entity_type, $entity) {
       '#mask_length' => strcasecmp($billing_info->card_type, 'American Express') === 0 ? 11 : 12,
       '#last_four' => check_plain($billing_info->last_four),
     );
-  } catch (Recurly_NotFoundError $e) {
+  }
+  catch (Recurly_NotFoundError $e) {
 
   }
 
