@@ -80,7 +80,7 @@
 }
 .recurly .setup_fee {
   clear: both;
-  border-top: 1px #CCC dashed;
+  border-top: 1px #ccc dashed;
   overflow: hidden;
   padding-top: 20px;
 }
@@ -98,7 +98,7 @@
   height: 24px;
   padding: 20px 20px;
   display: none;
-  border-top: 1px #CCC dashed;
+  border-top: 1px #ccc dashed;
 }
 .recurly .vat.applicable {
   display: block;
@@ -230,7 +230,7 @@
   height: 34px;
   color: #333;
   position: relative;
-  border-top: 1px #CCC dashed;
+  border-top: 1px #ccc dashed;
   padding-top: 12px;
 }
 .recurly .coupon .check {
@@ -243,16 +243,16 @@
   margin: 3px 0 1px 10px;
   box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.35), 0 1px 1px 0 rgba(0,0,0,0.10);
   background: #43bef9 url("../images/coupon_check.png") no-repeat center center;
-  background: url("../images/coupon_check.png") no-repeat center center, -webkit-linear-gradient(top, #71CDFA 0%, #43BEF9 50%, #00B1F6 50%, #71CEFB 100%);
-  background: url("../images/coupon_check.png") no-repeat center center, -moz-linear-gradient(top, #71CDFA 0%, #43BEF9 50%, #00B1F6 50%, #71CEFB 100%);
-  background: url("../images/coupon_check.png") no-repeat center center, -o-linear-gradient(top, #71CDFA 0%, #43BEF9 50%, #00B1F6 50%, #71CEFB 100%);
-  background: url("../images/coupon_check.png") no-repeat center center linear-gradient(top, #71CDFA 0%, #43BEF9 50%, #00B1F6 50%, #71CEFB 100%);
+  background: url("../images/coupon_check.png") no-repeat center center, -webkit-linear-gradient(top, #71cdfa 0%, #43bef9 50%, #00b1f6 50%, #71cefb 100%);
+  background: url("../images/coupon_check.png") no-repeat center center, -moz-linear-gradient(top, #71cdfa 0%, #43bef9 50%, #00b1f6 50%, #71cefb 100%);
+  background: url("../images/coupon_check.png") no-repeat center center, -o-linear-gradient(top, #71cdfa 0%, #43bef9 50%, #00b1f6 50%, #71cefb 100%);
+  background: url("../images/coupon_check.png") no-repeat center center linear-gradient(top, #71cdfa 0%, #43bef9 50%, #00b1f6 50%, #71cefb 100%);
 }
 .recurly .coupon .check:hover {
-  background: url("../images/coupon_check.png") no-repeat center center, -webkit-linear-gradient(top, #71CDFA 0%, #43BEF9 50%, #00B1F6 50%, #71CEFB 100%);
-  background: url("../images/coupon_check.png") no-repeat center center, -moz-linear-gradient(top, #71CDFA 0%, #43BEF9 50%, #00B1F6 50%, #71CEFB 100%);
-  background: url("../images/coupon_check.png") no-repeat center center, -o-linear-gradient(top, #71CDFA 0%, #43BEF9 50%, #00B1F6 50%, #71CEFB 100%);
-  background: url("../images/coupon_check.png") no-repeat center center linear-gradient(top, #71CDFA 0%, #43BEF9 50%, #00B1F6 50%, #71CEFB 100%);
+  background: url("../images/coupon_check.png") no-repeat center center, -webkit-linear-gradient(top, #71cdfa 0%, #43bef9 50%, #00b1f6 50%, #71cefb 100%);
+  background: url("../images/coupon_check.png") no-repeat center center, -moz-linear-gradient(top, #71cdfa 0%, #43bef9 50%, #00b1f6 50%, #71cefb 100%);
+  background: url("../images/coupon_check.png") no-repeat center center, -o-linear-gradient(top, #71cdfa 0%, #43bef9 50%, #00b1f6 50%, #71cefb 100%);
+  background: url("../images/coupon_check.png") no-repeat center center linear-gradient(top, #71cdfa 0%, #43bef9 50%, #00b1f6 50%, #71cefb 100%);
   box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.75), 0 1px 1px 0 rgba(0,0,0,0.10);
 }
 .recurly .coupon .check:active {
@@ -310,7 +310,7 @@
 }
 .recurly .server_errors .error {
   padding-left: 26px;
-  background: #FFC url("../images/error.png") no-repeat 5px 9px;
+  background: #ffc url("../images/error.png") no-repeat 5px 9px;
 }
 .recurly .server_errors.any {
   opacity: 1;
@@ -340,11 +340,11 @@
   clear: both;
 }
 .recurly .contact_info {
-  border-bottom: 1px #CCC dashed;
+  border-bottom: 1px #ccc dashed;
   margin-bottom: 20px;
 }
 .recurly .accept_tos {
-  border-top: 1px #CCC dashed;
+  border-top: 1px #ccc dashed;
   overflow: visible;
 }
 .recurly .accept_tos input[type=checkbox] {
