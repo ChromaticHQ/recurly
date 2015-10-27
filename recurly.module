@@ -576,8 +576,6 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
 
     // Required for the API
     Recurly_Client::$apiKey = $settings['api_key'];
-    // Optional for Recurly.js:
-    Recurly_js::$privateKey = $settings['public_key'];
   }
   else {
     watchdog('recurly', 'Could not find the Recurly PHP client library in sites/all/libraries/recurly.', array(), WATCHDOG_ERROR);
