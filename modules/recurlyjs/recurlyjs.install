@@ -32,3 +32,11 @@ function recurlyjs_uninstall() {
   variable_del('recurlyjs_enable_add_ons');
   variable_del('recurlyjs_enable_coupons');
 }
+
+
+/**
+ * Remove recurly_api_key.
+ */
+function recurlyjs_update_7100() {
+  variable_del('recurly_api_key');
+}
