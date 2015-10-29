@@ -229,116 +229,16 @@ function recurlyjs_element_transaction_expand($element) {
 function recurlyjs_element_expand($element) {
   recurly_client_initialize();
 
-  // Some keys are part of the global configuration of Recurly, while others are
-  // form-specific configuration options. Build together the global options for
-  // Recurly first here.
-  $global_keys = array(
-    'subdomain' => NULL,
-    'country' => NULL,
-    'vatpercent' => 'VATPercent',
-    'locale' => NULL,
-    'terms_url' => 'termsOfServiceURL',
-    'privacy_url' => 'privacyPolicyURL',
-  );
-  $global_config = array();
-  foreach ($global_keys as $form_key => $jsonKey) {
-    if (isset($element['#' . $form_key])) {
-      if (isset($jsonKey)) {
-        $global_config[$jsonKey] = $element['#' . $form_key];
-      }
-      else {
-        $global_config[$form_key] = $element['#' . $form_key];
-      }
-    }
-  }
-
-  // Force currency to be set to a supported currency.
-  if (isset($element['#currency']) && in_array($element['#currency'], array_keys(recurly_currency_list()))) {
-    $global_config['currency'] = $element['#currency'];
-  }
-  else {
-    $global_config['currency'] = variable_get('recurly_default_currency', 'USD');
-  }
-
-  // Merge together individual field options with common options shared between
-  // multiple field types. Note that not all options listed below apply to all
-  // field types, but they have no negative effect if added.
-  $options = array();
-  $option_keys = array(
-    'plan_code' => 'planCode',
-    'account_code' => 'accountCode',
-    'accepted_cards' => 'acceptedCards',
-    'accept_paypal' => 'acceptPaypal',
-    'collect_phone' => 'collectPhone',
-    'collect_company' => 'collectCompany',
-    'enable_add_ons' => 'enableAddOns',
-    'enable_coupons' => 'enableCoupons',
-    'address_requirement' => 'addressRequirement',
-    'separate_contact' => 'distinguishContactFromBillingInfo',
-    'terms_url' => 'termsOfServiceURL',
-    'privacy_url' => 'privacyPolicyURL',
-    'collect_contact_info' => 'collectContactInfo',
-    'collect_phone' => 'collectPhone',
-    'collect_company' => 'collectCompany',
-  );
-  foreach ($option_keys as $form_key => $jsonKey) {
-    if (isset($element['#' . $form_key])) {
-      $options[$jsonKey] = $element['#' . $form_key];
-    }
-  }
-
-  // Coupon code is in its own category.
-  if (isset($element['#coupon_code']) || array_key_exists('#coupon_code', $element)) {
-    $options['subscription']['couponCode'] = $element['#coupon_code'];
-  }
-
-  // Convert options which have #account_ or #billing_ prefixes.
-  $convert_keys = array(
-    'first_name' => 'firstName',
-    'last_name' => 'lastName',
-    'email' => 'email',
-    'company_name' => 'companyName',
-    'vat_number' => 'vatNumber',
-    'coupon_code' => 'couponCode',
-  );
-  foreach (element_properties($element) as $property) {
-    if (strpos($property, '#account_') === 0 && $property !== '#account_code') {
-      $property_name = substr($property, 9);
-      $json_name = isset($convert_keys[$property_name]) ? $convert_keys[$property_name] : $property_name;
-      $options['account'][$json_name] = $element[$property];
-    }
-    elseif (strpos($property, '#billing_') === 0) {
-      $property_name = substr($property, 9);
-      $json_name = isset($convert_keys[$property_name]) ? $convert_keys[$property_name] : $property_name;
-      $options['billingInfo'][$json_name] = $element[$property];
-    }
-  }
-
-  // Settings that must exist and cannot be changed.
-  $options['target'] = '#' . $element['#id'];
-  $global_config['beforeInject'] = 'Drupal.recurly.beforeInject';
-  $global_config['afterInject'] = 'Drupal.recurly.afterInject';
-  $global_config['successHandler'] = 'Drupal.recurly.successHandler';
-
-  // Shorten up and prepare variables for inline JavaScript code.
-  $global_config = json_encode($global_config);
-  $field_config = json_encode($options);
-  $recurly_operation = $element['#recurly_operation'];
-
-  // Change the beforeInject option to be an actual function rather than string.
-  $global_config = str_replace('"Drupal.recurly.beforeInject"', 'Drupal.recurly.beforeInject', $global_config);
-  $global_config = str_replace('"Drupal.recurly.afterInject"', 'Drupal.recurly.afterInject', $global_config);
-  $global_config = str_replace('"Drupal.recurly.successHandler"', 'Drupal.recurly.successHandler', $global_config);
   $recurly_public_key = variable_get('recurly_public_key', '');
 
   // Add Recurly.js and the inline code to the page.
-  $element['#attached']['js'][] = drupal_get_path('module', 'recurly') . '/js/require.js';
-  $element['#attached']['js'][] = recurlyjs_path() . '/lib/recurly.js';
+  $element['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
   $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
   $element['#attached']['js'][] = array(
     'type' => 'inline',
-    'data' => "recurly.configure('$recurly_public_key'); recurly.$recurly_operation($field_config);",
+    'data' => "recurly.configure('$recurly_public_key');",
   );
+
   // Convenience CSS file location option.
   if (isset($element['#recurly_css'])) {
     $element['#attached']['css'][] = $element['#recurly_css'];
