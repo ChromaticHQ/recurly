@@ -316,7 +316,6 @@ function recurlyjs_element_expand($element) {
 
   // Settings that must exist and cannot be changed.
   $options['target'] = '#' . $element['#id'];
-  $options['signature'] = Recurly_js::sign($element['#signing_options']);
   $global_config['beforeInject'] = 'Drupal.recurly.beforeInject';
   $global_config['afterInject'] = 'Drupal.recurly.afterInject';
   $global_config['successHandler'] = 'Drupal.recurly.successHandler';
@@ -345,28 +344,7 @@ function recurlyjs_element_expand($element) {
     $element['#attached']['css'][] = $element['#recurly_css'];
   }
 
-  // The token field is populated via JavaScript then confirmed on submission.
-  $element['recurly_token'] = array(
-    '#type' => 'hidden',
-    '#default_value' => '',
-    '#element_validate' => array('recurly_element_token_validate'),
-    '#attributes' => array('class' => array('recurly-token'))
-  );
-
   return $element;
-}
-
-/**
- * FormAPI #element_validate handler for Recurly elements.
- */
-function recurly_element_token_validate($element, &$form_state) {
-  recurly_client_initialize();
-  try {
-    $form_state['recurly_result'] = Recurly_js::fetch($element['#value']);
-  }
-  catch (Recurly_NotFoundError $e) {
-    form_error($element, t('The information could not be processed because the payment gateway returned the following error: @error', array('@error' => $e->getMessage())));
-  }
 }
 
 /**
