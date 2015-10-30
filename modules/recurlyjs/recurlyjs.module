@@ -247,18 +247,3 @@ function recurlyjs_element_expand($element) {
   return $element;
 }
 
-/**
- * Retrieve the path to the Recurly.js library file.
- */
-function recurlyjs_path() {
-  // If we can find a path in the libraries directory to the Recurly PHP client
-  // library...
-  if (($path = libraries_get_path('recurly-js')) && file_exists($path . '/lib/recurly.js')) {
-    // Include the library files and configure authentication.
-    return $path;
-  }
-  else {
-    watchdog('recurly', 'Could not find the Recurly JS client library in sites/all/libraries/recurly-js.', array(), WATCHDOG_ERROR);
-    return FALSE;
-  }
-}
