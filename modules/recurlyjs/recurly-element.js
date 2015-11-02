@@ -3,51 +3,43 @@
  * FormAPI integration with the Recurly forms.
  */
 (function ($) {
-  // On form submit, we stop submission to go get the token
-  $('form').on('submit', function (event) {
-    // Prevent the form from submitting while we retrieve the token from Recurly
-    event.preventDefault();
 
-    // Reset the errors display
-    $('#errors').text('');
-    $('input').removeClass('error');
+Drupal.recurly = Drupal.recurly || {};
+Drupal.recurly.beforeInject = function(form) {
+  // Imitate typical Drupal element styling.
+  $(form).find('input[type=text]').addClass('form-text').parent().addClass('form-item');
+  $(form).find('select').addClass('form-select').parent().addClass('form-item');
 
-    // Disable the submit button
-    $('button').prop('disabled', true);
+  // Remove the submit button. This will be triggered by the form submit.
+  $(form).find('.footer').remove();
+};
 
-    var form = this;
-    recurly.token(this, function (err, token) {
-      if (err) {
-        error(err);
-      }
-      else {
-        form.submit();
-      }
-    });
+Drupal.recurly.afterInject = function(form) {
+  // Nested form tags cause issues in IE, except if there are two of them.
+  // See http://anderwald.info/internet/nesting-form-tags-in-xhtml/
+  var $form = $(form);
+  $form.before('<form class="dummy-form" action="#" style="display: none"></form>');
+
+  // Make the parent form submit the Recurly form on submit.
+  $form.parents('form:first').submit(function(e) {
+    if ($(this).find('input.recurly-token').val().length === 0) {
+      e.preventDefault();
+      $form.triggerHandler('submit');
+    }
   });
 
-  (function () {
-    var country = $('#country');
-    var vatNumber = $('#vat-number');
-    var euCountries = [
-      'AT', 'BE', 'BG', 'CY', 'CZ', 'DK', 'EE', 'ES', 'FI', 'FR',
-      'DE', 'GB', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT',
-      'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'HR'
-    ];
-
-    country.on('change init', function (event) {
-      if (~euCountries.indexOf(this.value)) {
-        vatNumber.show();
-      } else {
-        vatNumber.hide();
-      }
-    }).triggerHandler('init');
-  })();
-
-  function error (err) {
-    console && console.error(err);
-    $('#errors').text(err.message);
-    $('button').prop('disabled', false);
+  // Hide the total field if there isn't any reason to show it.
+  if ($form.find('.add_on, .coupon, .setup_fee').length === 0 && $form.find('.vat .cost').html() === '') {
+    $form.find('.due_now').addClass('due_now_hidden');
   }
+
+  // Allow behaviors to attach to the newly embedded form.
+  Drupal.attachBehaviors(form, Drupal.settings);
+};
+
+Drupal.recurly.successHandler = function(responseToken) {
+  $('.recurly-form-wrapper').find('input.recurly-token').val(responseToken);
+  $('.recurly-form-wrapper').parents('form:first').submit();
+};
 
 })(jQuery);

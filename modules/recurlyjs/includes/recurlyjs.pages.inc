@@ -8,8 +8,6 @@
  * Form callback; Modifies the Recurly form at admin/config/services/recurly.
  */
 function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
-  watchdog('recurly', '_recurlyjs_form_recurly_settings_form_alter');
-
   $form['recurlyjs'] = array(
     '#title' => t('Recurly.js settings'),
     '#type' => 'fieldset',
@@ -25,10 +23,7 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
       'none' => t('None'),
     ),
     '#default_value' => variable_get('recurlyjs_address_requirement', 'full'),
-    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".',
-      array(
-        '!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'),
-        recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
+    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".', array('!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'), recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
   );
   $form['recurlyjs']['recurlyjs_enable_add_ons'] = array(
     '#title' => t('Enable Add-ons'),
@@ -68,8 +63,6 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
  * Menu callback; Display the page for starting a subscription.
  */
 function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency = NULL) {
-  watchdog('recurly', 'recurlyjs_subscribe_page');
-
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
     return t('Could not initialize the Recurly client.');
@@ -114,105 +107,12 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
  * Form callback; Display the form for starting a subscription.
  */
 function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $plan_code, $currency = NULL) {
-  watchdog('recurly', 'recurlyjs_subscribe_form');
-  $form['#prefix'] = '<div class="recurly-form-wrapper">';
-  $form['#suffix'] = '</div>';
-
-  $form['first_name'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('First Name'),
-    '#data-recurly' => 'first_name',
-  );
-  $form['last_name'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('Last Name'),
-    '#data-recurly' => 'last_name',
-  );
-  $form['address1'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('Address Line 1'),
-    '#data-recurly' => 'address1',
-  );
-  $form['address2'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('Address Line 2'),
-    '#data-recurly' => 'address2',
-  );
-  $form['city'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('City'),
-    '#data-recurly' => 'city',
-  );
-  $form['state'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('State'),
-    '#data-recurly' => 'state',
-  );
-  $form['postal_code'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('Postal Code'),
-    '#data-recurly' => 'postal_code',
-  );
-  $form['country'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('Country'),
-    '#data-recurly' => 'country',
-  );
-  $form['vat_number'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('VAT Number'),
-    '#data-recurly' => 'vat_number',
-  );
-  $form['number'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('Card Number'),
-    '#data-recurly' => 'number',
-  );
-  $form['month'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('MM'),
-    '#data-recurly' => 'month',
-  );
-  $form['year'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('YYYY'),
-    '#data-recurly' => 'year',
-  );
-  $form['year'] = array(
-    '#type' => 'recurly_field',
-    '#value' => t('YYYY'),
-    '#data-recurly' => 'year',
-  );
-  $form['tax_code'] = array(
-    '#type' => 'hidden',
-    '#value' => t('digital'),
-    '#data-recurly' => 'tax_code',
-  );
-  $form['recurly-token'] = array(
-    '#type' => 'hidden',
-    '#data-recurly' => 'token',
-  );
-
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
     $form['error'] = array(
       '#markup' => t('Could not initialize the Recurly client.'),
     );
     return $form;
-  }
-  //recurly_client_initialize();
-  $recurly_public_key = variable_get('recurly_public_key', '');
-
-  // Add Recurly.js and the inline code to the page.
-  $element['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
-  $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
-  $element['#attached']['js'][] = array(
-    'type' => 'inline',
-    'data' => "/* Configure recurly.js. */  recurly.configure('$recurly_public_key');",
-  );
-  // Convenience CSS file location option.
-  if (isset($element['#recurly_css'])) {
-    $element['#attached']['css'][] = $element['#recurly_css'];
   }
 
   $form['#entity_type'] = $entity_type;
@@ -260,7 +160,7 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     '#type' => 'submit',
     '#value' => t('Purchase'),
   );
-  dpm($form);
+
   return $form;
 }
 
