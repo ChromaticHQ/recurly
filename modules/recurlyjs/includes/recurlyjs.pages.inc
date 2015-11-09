@@ -113,6 +113,11 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   $form['#prefix'] = '<div class="recurly-form-wrapper">';
   $form['#suffix'] = '</div>';
 
+  // recurly-element.js adds errors here upon failed validation.
+  $form['errors'] = array(
+    '#markup' => '<div id="recurly-form-errors"></div>',
+  );
+
   $form['first_name'] = array(
     '#type' => 'textfield',
     '#title' => t('First Name'),
@@ -236,6 +241,7 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   $recurly_public_key = variable_get('recurly_public_key', '');
 
   // Add Recurly.js and the inline code to the page.
+  // @todo Do we no longer need the recurly-js library within Drupal's codebase?
   $form['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
   $form['#attached']['js'][] = array(

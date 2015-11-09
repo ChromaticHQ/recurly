@@ -3,51 +3,79 @@
  * FormAPI integration with the Recurly forms.
  */
 (function ($) {
-  // On form submit, we stop submission to go get the token
-  $('form').on('submit', function (event) {
-    // Prevent the form from submitting while we retrieve the token from Recurly
-    event.preventDefault();
 
-    // Reset the errors display
-    $('#errors').text('');
-    $('input').removeClass('error');
+Drupal.recurly = Drupal.recurly || {};
 
-    // Disable the submit button
-    $('button').prop('disabled', true);
-
-    var form = this;
-    recurly.token(this, function (err, token) {
-      if (err) {
-        error(err);
-      }
-      else {
-        form.submit();
-      }
+Drupal.behaviors.recurlyJSSubscribeForm = {
+  attach: function (context, settings) {
+    // Attaches submission handling to the subscribe form.
+    $('#recurlyjs-subscribe-form').once('recurlyjs-subscribe-form', function () {
+      $(this).on('submit', Drupal.recurly.subscribeFormSubmit);
     });
-  });
-
-  (function () {
-    var country = $('#country');
-    var vatNumber = $('#vat-number');
-    var euCountries = [
-      'AT', 'BE', 'BG', 'CY', 'CZ', 'DK', 'EE', 'ES', 'FI', 'FR',
-      'DE', 'GB', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT',
-      'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'HR'
-    ];
-
-    country.on('change init', function (event) {
-      if (~euCountries.indexOf(this.value)) {
-        vatNumber.show();
-      } else {
-        vatNumber.hide();
-      }
-    }).triggerHandler('init');
-  })();
-
-  function error (err) {
-    console && console.error(err);
-    $('#errors').text(err.message);
-    $('button').prop('disabled', false);
   }
+};
+
+/**
+ * Handles submission of the subscribe form.
+ */
+Drupal.recurly.subscribeFormSubmit = function(event) {
+  event.preventDefault();
+
+  // Reset the errors display
+  $('#recurly-form-errors').html('');
+  $('input').removeClass('error');
+
+  // Disable the submit button
+  $('button').prop('disabled', true);
+
+  var form = this;
+  recurly.token(form, function (err, token) {
+    if (err) {
+      Drupal.recurly.subscribeFormError(err);
+    }
+    else {
+      form.submit();
+    }
+  });
+};
+
+/**
+ * Handles form errors.
+ */
+Drupal.recurly.subscribeFormError = function(err) {
+  console && console.error(err);
+  $('button').prop('disabled', false);
+
+  // Add the error class to all form elements that returned an error.
+  if (typeof err.fields !== 'undefined') {
+    $.each(err.fields, function (index, value) {
+      $('input[data-recurly="' + value + '"').addClass('error');
+    });
+  }
+
+  // Add the error message to the form within standard Drupal message markup.
+  if (typeof err.message !== 'undefined') {
+    var messageMarkup = '<div class="messages error">' + err.message + '</div>';
+    $('#recurly-form-errors').html(messageMarkup);
+  }
+};
+
+(function () {
+  var country = $('#country');
+  var vatNumber = $('#vat-number');
+  var euCountries = [
+    'AT', 'BE', 'BG', 'CY', 'CZ', 'DK', 'EE', 'ES', 'FI', 'FR',
+    'DE', 'GB', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT',
+    'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'HR'
+  ];
+
+  country.on('change init', function (event) {
+    if (~euCountries.indexOf(this.value)) {
+      vatNumber.show();
+    } else {
+      vatNumber.hide();
+    }
+  }).triggerHandler('init');
+})();
 
 })(jQuery);
