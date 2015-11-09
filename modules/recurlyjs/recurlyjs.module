@@ -52,105 +52,14 @@ function recurlyjs_recurly_url_info($operation, $context) {
     case 'update_billing':
       $entity_info = recurly_account_load(array('account_code' => $context['account']->account_code), TRUE);
       return url($entity_info->entity_type . '/' . $entity_info->entity_id . '/subscription/billing');
+
     case 'subscribe':
       list($id, $vid, $bundle) = entity_extract_ids($context['entity_type'], $context['entity']);
       $currency_string = !isset($context['currency']) || $context['currency'] == variable_get('recurly_default_currency', 'USD') ? '' : '/' . $context['currency'];
+      watchdog('recurly', 'subscribe');
+
       return url($context['entity_type'] . '/' . $id . '/subscription/signup/' . $context['plan_code'] . $currency_string);
   }
-}
-
-/**
- * Implements hook_element_info().
- */
-function recurlyjs_element_info() {
-  $common = array(
-    '#input' => TRUE,
-    '#recurly_css' => drupal_get_path('module', 'recurlyjs') . '/css/recurlyjs.css',
-
-    // Global options:
-    // See http://docs.recurly.com/api/recurlyjs/reference#js-config
-    '#country' => 'US',
-    '#currency' => 'USD',
-    '#subdomain' => variable_get('recurly_subdomain', ''),
-    '#vatpercent' => NULL,
-    '#locale' => NULL,
-    '#terms_url' => NULL,
-    '#privacy_url' => NULL,
-
-    // Account options (not displayed to user):
-    // See http://docs.recurly.com/api/recurlyjs/reference#account-object
-    '#account_code' => NULL,
-    '#account_username' => NULL,
-    '#account_email' => NULL,
-    '#account_first_name' => NULL,
-    '#account_last_name' => NULL,
-    '#account_company_name' => NULL,
-
-    // Billing information; prepopulates options:
-    // See http://docs.recurly.com/api/recurlyjs/reference#billing-info-object
-    '#billing_first_name' => NULL,
-    '#billing_last_name' => NULL,
-    '#billing_address1' => NULL,
-    '#billing_address2' => NULL,
-    '#billing_city' => NULL,
-    '#billing_state' => NULL,
-    '#billing_country' => NULL,
-    '#billing_zip' => NULL,
-    '#billing_phone' => NULL,
-    '#billing_vat_number' => NULL,
-
-    // Common options between all forms.
-    '#address_requirement' => 'full',
-    '#distinguish_contact_from_billing_info' => NULL,
-  );
-
-  // Element to start a subscription.
-  $types['recurlyjs_subscribe'] = array(
-    '#process' => array('recurlyjs_element_subscription_expand', 'recurlyjs_element_expand'),
-    '#recurly_operation' => 'buildSubscriptionForm',
-    '#theme' => array('recurlyjs__subscribe', 'recurlyjs'),
-
-    // See http://docs.recurly.com/api/recurlyjs/reference#subscription-object.
-    '#plan_code' => NULL,
-    '#trial_ends_at' => NULL, // ISO 8601 formatted.
-    '#starts_at' => NULL, // ISO 8601 formatted.
-    '#total_billing_cycles' => NULL, // Defaults to infinite.
-    '#first_renewal_date' => NULL, // Defaults one cycle from today.
-    '#coupon_code' => NULL,
-    '#enable_add_ons' => TRUE,
-    '#enable_coupons' => TRUE,
-    '#accept_paypal' => FALSE,
-    '#collect_phone' => FALSE,
-    '#collect_company' => FALSE,
-  ) + $common;
-
-  // Element to update billing information for an existing subscription.
-  $types['recurlyjs_billing'] = array(
-    '#process' => array('recurlyjs_element_billing_expand', 'recurlyjs_element_expand'),
-    '#account_code' => NULL,
-    '#recurly_operation' => 'buildBillingInfoUpdateForm',
-    '#theme' => array('recurlyjs__billing', 'recurlyjs'),
-  ) + $common;
-
-  // Element to do a one-time payment.
-  $types['recurlyjs_transaction'] = array(
-    '#process' => array('recurlyjs_element_transaction_expand', 'recurlyjs_element_expand'),
-    '#recurly_operation' => 'buildTransactionForm',
-    '#theme' => array('recurlyjs__transaction', 'recurlyjs'),
-
-    // See http://docs.recurly.com/api/recurlyjs/reference#transaction-object
-    '#amount' => NULL, // Specified in cents, i.e. 1023 = $10.23.
-    '#description' => NULL,
-    '#accounting_code' => NULL,
-    '#coupon_code' => NULL,
-    '#enable_add_ons' => TRUE,
-    '#enable_coupons' => TRUE,
-    '#accept_paypal' => FALSE,
-    '#collect_contact_info' => TRUE,
-    '#collect_phone' => FALSE,
-    '#collect_company' => FALSE,
-  ) + $common;
-  return $types;
 }
 
 /**
@@ -226,24 +135,22 @@ function recurlyjs_element_transaction_expand($element) {
 /**
  * FormAPI #process callback for the recurlyjs element type.
  */
-function recurlyjs_element_expand($element) {
-  recurly_client_initialize();
+// function recurlyjs_element_expand($element) {
+//   recurly_client_initialize();
 
-  $recurly_public_key = variable_get('recurly_public_key', '');
+//   $recurly_public_key = variable_get('recurly_public_key', '');
 
-  // Add Recurly.js and the inline code to the page.
-  $element['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
-  $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
-  $element['#attached']['js'][] = array(
-    'type' => 'inline',
-    'data' => "recurly.configure('$recurly_public_key');",
-  );
+//   // Add Recurly.js and the inline code to the page.
+//   $element['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
+//   $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
+//   $element['#attached']['js'][] = array(
+//     'type' => 'inline',
+//     'data' => "recurly.configure('$recurly_public_key');",
+//   );
 
-  // Convenience CSS file location option.
-  if (isset($element['#recurly_css'])) {
-    $element['#attached']['css'][] = $element['#recurly_css'];
-  }
-
-  return $element;
-}
-
+//   // Convenience CSS file location option.
+//   if (isset($element['#recurly_css'])) {
+//     $element['#attached']['css'][] = $element['#recurly_css'];
+//   }
+//   return $element;
+// }
