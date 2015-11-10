@@ -23,7 +23,10 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
       'none' => t('None'),
     ),
     '#default_value' => variable_get('recurlyjs_address_requirement', 'full'),
-    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".', array('!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'), recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
+    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".',
+      array(
+        '!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'),
+        recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
   );
   $form['recurlyjs']['recurlyjs_enable_add_ons'] = array(
     '#title' => t('Enable Add-ons'),
@@ -107,6 +110,126 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
  * Form callback; Display the form for starting a subscription.
  */
 function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $plan_code, $currency = NULL) {
+  $form['#prefix'] = '<div class="recurly-form-wrapper">';
+  $form['#suffix'] = '</div>';
+
+  // recurly-element.js adds errors here upon failed validation.
+  $form['errors'] = array(
+    '#markup' => '<div id="recurly-form-errors"></div>',
+  );
+
+  $form['first_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First Name'),
+    '#attributes' => array(
+      'data-recurly' => 'first_name',
+      '#name' => NULL,
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['last_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Last Name'),
+    '#attributes' => array(
+      'data-recurly' => 'last_name',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['address1'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address Line 1'),
+    '#attributes' => array(
+      'data-recurly' => 'address1',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['address2'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address Line 2'),
+    '#attributes' => array(
+      'data-recurly' => 'address2',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['city'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#attributes' => array(
+      'data-recurly' => 'city',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['state'] = array(
+    '#type' => 'textfield',
+    '#title' => t('State'),
+    '#attributes' => array(
+      'data-recurly' => 'state',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['postal_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Postal Code'),
+    '#attributes' => array(
+      'data-recurly' => 'postal_code',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['country'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Country'),
+    '#attributes' => array(
+      'data-recurly' => 'country',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['vat_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('VAT Number'),
+    '#attributes' => array(
+      'data-recurly' => 'vat_number',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Card Number'),
+    '#attributes' => array(
+      'data-recurly' => 'number',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['month'] = array(
+    '#type' => 'textfield',
+    '#title' => t('MM'),
+    '#attributes' => array(
+      'data-recurly' => 'month',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['year'] = array(
+    '#type' => 'textfield',
+    '#title' => t('YYYY'),
+    '#attributes' => array(
+      'data-recurly' => 'year',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['tax_code'] = array(
+    '#type' => 'hidden',
+    '#title' => t('digital'),
+    '#attributes' => array(
+      'data-recurly' => 'tax_code',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+  );
+  $form['recurly-token'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array(
+      'data-recurly' => 'token',
+    ),
+  );
+
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
     $form['error'] = array(
@@ -114,6 +237,21 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     );
     return $form;
   }
+  //recurly_client_initialize();
+  $recurly_public_key = variable_get('recurly_public_key', '');
+
+  // Add Recurly.js and the inline code to the page.
+  // @todo Do we no longer need the recurly-js library within Drupal's codebase?
+  $form['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
+  $form['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
+  $form['#attached']['js'][] = array(
+    'type' => 'inline',
+    'data' => "/* Configure recurly.js. */  recurly.configure('$recurly_public_key');",
+  );
+  // Convenience CSS file location option.
+  // if (isset($element['#recurly_css'])) {
+  //   $element['#attached']['css'][] = $element['#recurly_css'];
+  // }
 
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
@@ -160,32 +298,44 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     '#type' => 'submit',
     '#value' => t('Purchase'),
   );
-
   return $form;
+}
+
+/**
+ * Element after_build callback to remove the input #name attribute.
+ *
+ * https://docs.recurly.com/js/#build-a-card-form
+ */
+function _recurlyjs_form_remove_element_name($form_element) {
+  unset($form_element['#name']);
+  return $form_element;
 }
 
 /**
  * Submit handler for recurlyjs_subscribe_form().
  */
 function recurlyjs_subscribe_form_submit($form, &$form_state) {
-  $subscription = $form_state['recurly_result'];
   $entity_type = $form['#entity_type'];
   $entity = $form['#entity'];
+  $recurly_token = isset($form_state['values']['recurly-token']) ? $form_state['values']['recurly-token'] : NULL;
 
-  drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
-  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  // @TODO: Use the token!
+  // https://docs.recurly.com/js/#using-a-token
 
-  // Save the account locally immediately so that subscriber information may
-  // be retrieved when the user is directed back to the /subscription tab.
-  try {
-    $account = $subscription->account->get();
-    recurly_account_save($account, $entity_type, $id);
-  }
-  catch (Recurly_Error $e) {
-    watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
-  }
+  // drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
+  // list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
-  $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
+  // // Save the account locally immediately so that subscriber information may
+  // // be retrieved when the user is directed back to the /subscription tab.
+  // try {
+  //   $account = $subscription->account->get();
+  //   recurly_account_save($account, $entity_type, $id);
+  // }
+  // catch (Recurly_Error $e) {
+  //   watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
+  // }
+
+  // $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
 }
 
 /**
