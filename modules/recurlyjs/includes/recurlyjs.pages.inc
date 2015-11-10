@@ -307,36 +307,39 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
   $currency = $form['#currency'] ?: variable_get('recurly_default_currency', 'USD');
   $recurly_token = isset($form_state['values']['recurly-token']) ? $form_state['values']['recurly-token'] : NULL;
 
-  // @TODO: What if an account exists?
+  list($entity_id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity_id));
+
+  if (!$recurly_account) {
+    $recurly_account = new Recurly_Account();
+    // Account code is the only property required for Recurly account creation.
+    // https://dev.recurly.com/docs/create-an-account
+    $recurly_account->account_code = $entity_type . '-' . $entity_id;
+
+    $recurly_account->billing_info = new Recurly_BillingInfo();
+    $recurly_account->billing_info->token_id = $recurly_token;
+    $recurly_account->create();
+  }
+
   $subscription = new Recurly_Subscription();
+  $subscription->account = $recurly_account;
   $subscription->plan_code = $plan_code;
   $subscription->currency = $currency;
-  $subscription->account = new Recurly_Account();
-  // @TODO: What if this is not a user?
-  $subscription->account->account_code = 'user-' . $entity->uid;
-  // $subscription->account->first_name = 'John';
-  // $subscription->account->last_name = 'Rambo';
-  $subscription->account->email = $entity->mail;
-
-  $subscription->account->billing_info = new Recurly_BillingInfo();
-  $subscription->account->billing_info->token_id = $recurly_token;
-  $subscription->account->create();
   $subscription->create();
 
   drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
-  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
   // Save the account locally immediately so that subscriber information may
   // be retrieved when the user is directed back to the /subscription tab.
   try {
     $account = $subscription->account->get();
-    recurly_account_save($account, $entity_type, $id);
+    recurly_account_save($account, $entity_type, $entity_id);
   }
   catch (Recurly_Error $e) {
     watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
   }
 
-  $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
+  $form_state['redirect'] = $entity_type . '/' . $entity_id . '/subscription';
 }
 
 /**
