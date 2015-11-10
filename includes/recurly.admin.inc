@@ -108,19 +108,22 @@ function recurly_settings_form($form, &$form_state) {
     '#options' => array('' => 'Nothing (disabled)') + $entity_options,
     '#default_value' => $recurly_entity_type,
   );
-  foreach ($entity_type_options as $entity_name => $bundles) {
-    $form['sync']['recurly_bundles']['recurly_bundle_' . $entity_name] = array(
-      '#title' => t('Specifically the following @entity type', array('@entity' => $entity_types[$entity_name]['label'])),
-      '#type' => 'select',
-      '#options' => $bundles,
-      '#default_value' => variable_get('recurly_bundle_' . $entity_name),
-      '#states' => array(
-        'visible' => array(
-          'select[name="recurly_entity_type"]' => array('value' => $entity_name),
+  if (!empty($entity_type_options)) {
+    foreach ($entity_type_options as $entity_name => $bundles) {
+      $form['sync']['recurly_bundles']['recurly_bundle_' . $entity_name] = array(
+        '#title' => t('Specifically the following @entity type', array('@entity' => $entity_types[$entity_name]['label'])),
+        '#type' => 'select',
+        '#options' => $bundles,
+        '#default_value' => variable_get('recurly_bundle_' . $entity_name),
+        '#states' => array(
+          'visible' => array(
+            'select[name="recurly_entity_type"]' => array('value' => $entity_name),
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
+
   $mapping = recurly_token_mapping();
   $form['sync']['recurly_token_mapping'] = array(
     '#title' => t('Token mappings'),
@@ -443,7 +446,7 @@ function recurly_subscription_plans_form($form, &$form_state, $plans) {
     '#type' => 'actions',
   );
   $form['actions']['submit'] = array(
-    '#type' => 'submit', 
+    '#type' => 'submit',
     '#value' => t('Update plans'),
   );
 
