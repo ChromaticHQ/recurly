@@ -43,13 +43,12 @@ Drupal.recurly.subscribeFormSubmit = function(event) {
  * Handles form errors.
  */
 Drupal.recurly.subscribeFormError = function(err) {
-  console && console.error(err);
   $('button').prop('disabled', false);
 
   // Add the error class to all form elements that returned an error.
   if (typeof err.fields !== 'undefined') {
     $.each(err.fields, function (index, value) {
-      $('input[data-recurly="' + value + '"').addClass('error');
+      $('input[data-recurly="' + value + '"]').addClass('error');
     });
   }
 
