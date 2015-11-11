@@ -110,6 +110,11 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
  * Form callback; Display the form for starting a subscription.
  */
 function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $plan_code, $currency = NULL) {
+  $form['#entity_type'] = $entity_type;
+  $form['#entity'] = $entity;
+  $form['#plan_code'] = $plan_code;
+  $form['#currency'] = $currency;
+
   $form['#prefix'] = '<div class="recurly-form-wrapper">';
   $form['#suffix'] = '</div>';
 
@@ -253,9 +258,6 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   //   $element['#attached']['css'][] = $element['#recurly_css'];
   // }
 
-  $form['#entity_type'] = $entity_type;
-  $form['#entity'] = $entity;
-
   $currency_list = array();
   $plan = Recurly_Plan::get($plan_code);
   foreach ($plan->unit_amount_in_cents as $unit_currency) {
@@ -274,22 +276,6 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
     '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),
   );
-
-  // Prepopulate fields based on the entity's tokens.
-  $mapping = recurly_token_mapping();
-  foreach ($mapping as $recurly_field => $token) {
-    $value = token_replace($token, array($entity_type => $entity), array('clear' => TRUE, 'sanitize' => FALSE));
-    $properties = element_info('recurlyjs_subscribe');
-    if ($value) {
-      // Some properties are keyed #account_ and some #billing_.
-      if (array_key_exists('#account_' . $recurly_field, $properties)) {
-        $form['update']['#account_' . $recurly_field] = $value;
-      }
-      elseif (array_key_exists('#billing_' . $recurly_field, $properties)) {
-        $form['update']['#billing_' . $recurly_field] = $value;
-      }
-    }
-  }
 
   $form['actions'] = array(
     '#type' => 'actions',
@@ -317,25 +303,43 @@ function _recurlyjs_form_remove_element_name($form_element) {
 function recurlyjs_subscribe_form_submit($form, &$form_state) {
   $entity_type = $form['#entity_type'];
   $entity = $form['#entity'];
+  $plan_code = $form['#plan_code'];
+  $currency = $form['#currency'] ?: variable_get('recurly_default_currency', 'USD');
   $recurly_token = isset($form_state['values']['recurly-token']) ? $form_state['values']['recurly-token'] : NULL;
 
-  // @TODO: Use the token!
-  // https://docs.recurly.com/js/#using-a-token
+  list($entity_id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity_id));
 
-  // drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
-  // list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  if (!$recurly_account) {
+    $recurly_account = new Recurly_Account();
+    // Account code is the only property required for Recurly account creation.
+    // https://dev.recurly.com/docs/create-an-account
+    $recurly_account->account_code = $entity_type . '-' . $entity_id;
 
-  // // Save the account locally immediately so that subscriber information may
-  // // be retrieved when the user is directed back to the /subscription tab.
-  // try {
-  //   $account = $subscription->account->get();
-  //   recurly_account_save($account, $entity_type, $id);
-  // }
-  // catch (Recurly_Error $e) {
-  //   watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
-  // }
+    $recurly_account->billing_info = new Recurly_BillingInfo();
+    $recurly_account->billing_info->token_id = $recurly_token;
+    $recurly_account->create();
+  }
 
-  // $form_state['redirect'] = $entity_type . '/' . $id . '/subscription';
+  $subscription = new Recurly_Subscription();
+  $subscription->account = $recurly_account;
+  $subscription->plan_code = $plan_code;
+  $subscription->currency = $currency;
+  $subscription->create();
+
+  drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
+
+  // Save the account locally immediately so that subscriber information may
+  // be retrieved when the user is directed back to the /subscription tab.
+  try {
+    $account = $subscription->account->get();
+    recurly_account_save($account, $entity_type, $entity_id);
+  }
+  catch (Recurly_Error $e) {
+    watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
+  }
+
+  $form_state['redirect'] = $entity_type . '/' . $entity_id . '/subscription';
 }
 
 /**
