@@ -129,29 +129,30 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   _recurlyjs_append_billing_fields($form);
   _recurlyjs_form_attach_js($form);
 
+  // @TODO: Can all of the above be removed in 7.x-2.x?
   // Convenience CSS file location option.
   // if (isset($element['#recurly_css'])) {
   //   $element['#attached']['css'][] = $element['#recurly_css'];
   // }
 
-  $currency_list = array();
-  $plan = Recurly_Plan::get($plan_code);
-  foreach ($plan->unit_amount_in_cents as $unit_currency) {
-    $currency_list[] = $unit_currency->currencyCode;
-  }
-  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
-  $form['update'] = array(
-    '#type' => 'recurlyjs_subscribe',
-    '#plan_code' => $plan_code,
-    '#currency' => in_array($currency, $currency_list) ? $currency : variable_get('recurly_default_currency', 'USD'),
-    '#account_code' => isset($account->account_code) ? $account->account_code : $entity_type . '-' . $id,
-    '#username' => entity_label($entity_type, $entity),
-    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
-    '#accept_paypal' => variable_get('recurlyjs_accept_paypal', FALSE),
-    '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
-    '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),
-  );
+  // $currency_list = array();
+  // $plan = Recurly_Plan::get($plan_code);
+  // foreach ($plan->unit_amount_in_cents as $unit_currency) {
+  //   $currency_list[] = $unit_currency->currencyCode;
+  // }
+  // list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  // $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
+  // $form['update'] = array(
+  //   '#type' => 'recurlyjs_subscribe',
+  //   '#plan_code' => $plan_code,
+  //   '#currency' => in_array($currency, $currency_list) ? $currency : variable_get('recurly_default_currency', 'USD'),
+  //   '#account_code' => isset($account->account_code) ? $account->account_code : $entity_type . '-' . $id,
+  //   '#username' => entity_label($entity_type, $entity),
+  //   '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
+  //   '#accept_paypal' => variable_get('recurlyjs_accept_paypal', FALSE),
+  //   '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
+  //   '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),
+  // );
 
   $form['actions'] = array(
     '#type' => 'actions',
