@@ -110,11 +110,194 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
  * Form callback; Display the form for starting a subscription.
  */
 function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $plan_code, $currency = NULL) {
+  // Initialize the Recurly client with the site-wide settings.
+  if (!recurly_client_initialize()) {
+    $form['error'] = array(
+      '#markup' => t('Could not initialize the Recurly client.'),
+    );
+    return $form;
+  }
+
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
   $form['#plan_code'] = $plan_code;
   $form['#currency'] = $currency;
 
+  $form['#prefix'] = '<div class="recurly-form-wrapper">';
+  $form['#suffix'] = '</div>';
+
+  _recurlyjs_append_billing_fields($form);
+  _recurlyjs_form_attach_js($form);
+
+  // Convenience CSS file location option.
+  // if (isset($element['#recurly_css'])) {
+  //   $element['#attached']['css'][] = $element['#recurly_css'];
+  // }
+
+  $currency_list = array();
+  $plan = Recurly_Plan::get($plan_code);
+  foreach ($plan->unit_amount_in_cents as $unit_currency) {
+    $currency_list[] = $unit_currency->currencyCode;
+  }
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
+  $form['update'] = array(
+    '#type' => 'recurlyjs_subscribe',
+    '#plan_code' => $plan_code,
+    '#currency' => in_array($currency, $currency_list) ? $currency : variable_get('recurly_default_currency', 'USD'),
+    '#account_code' => isset($account->account_code) ? $account->account_code : $entity_type . '-' . $id,
+    '#username' => entity_label($entity_type, $entity),
+    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
+    '#accept_paypal' => variable_get('recurlyjs_accept_paypal', FALSE),
+    '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
+    '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Purchase'),
+  );
+  return $form;
+}
+
+/**
+ * Submit handler for recurlyjs_subscribe_form().
+ */
+function recurlyjs_subscribe_form_submit($form, &$form_state) {
+  $entity_type = $form['#entity_type'];
+  $entity = $form['#entity'];
+  $plan_code = $form['#plan_code'];
+  $currency = $form['#currency'] ?: variable_get('recurly_default_currency', 'USD');
+  $recurly_token = isset($form_state['values']['recurly-token']) ? $form_state['values']['recurly-token'] : NULL;
+
+  list($entity_id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity_id));
+
+  if (!$recurly_account) {
+    $recurly_account = new Recurly_Account();
+    // Account code is the only property required for Recurly account creation.
+    // https://dev.recurly.com/docs/create-an-account
+    $recurly_account->account_code = $entity_type . '-' . $entity_id;
+
+    $recurly_account->billing_info = new Recurly_BillingInfo();
+    $recurly_account->billing_info->token_id = $recurly_token;
+    $recurly_account->create();
+  }
+
+  $subscription = new Recurly_Subscription();
+  $subscription->account = $recurly_account;
+  $subscription->plan_code = $plan_code;
+  $subscription->currency = $currency;
+  $subscription->create();
+
+  drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
+
+  // Save the account locally immediately so that subscriber information may
+  // be retrieved when the user is directed back to the /subscription tab.
+  try {
+    $account = $subscription->account->get();
+    recurly_account_save($account, $entity_type, $entity_id);
+  }
+  catch (Recurly_Error $e) {
+    watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
+  }
+
+  $form_state['redirect'] = $entity_type . '/' . $entity_id . '/subscription';
+}
+
+/**
+ * Form callback; Display the form for updating billing information.
+ */
+function recurlyjs_update_billing($form, $form_state, $entity_type, $entity) {
+  // Initialize the Recurly client with the site-wide settings.
+  if (!recurly_client_initialize()) {
+    $form['error'] = array(
+      '#markup' => t('Could not initialize the Recurly client.'),
+    );
+    return $form;
+  }
+
+  // See if we have a local mapping of entity ID to Recurly account code.
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+
+  try {
+    $billing_info = Recurly_BillingInfo::get($account->account_code);
+    $form['existing'] = array(
+      '#theme' => 'recurly_credit_card_information',
+      '#card_type' => check_plain($billing_info->card_type),
+      '#first_name' => check_plain($billing_info->first_name),
+      '#last_name' => check_plain($billing_info->last_name),
+      '#year' => check_plain($billing_info->year),
+      '#month' => check_plain($billing_info->month),
+      '#mask_length' => strcasecmp($billing_info->card_type, 'American Express') === 0 ? 11 : 12,
+      '#last_four' => check_plain($billing_info->last_four),
+    );
+  }
+  catch (Recurly_NotFoundError $e) {
+
+  }
+
+  $form['#entity_type'] = $entity_type;
+  $form['#entity'] = $entity;
+
+  _recurlyjs_append_billing_fields($form);
+  _recurlyjs_form_attach_js($form);
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+  );
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update'),
+    '#submit' => array('recurlyjs_update_billing_submit'),
+  );
+  return $form;
+}
+
+/**
+ * Submit handler for recurlyjs_update_billing().
+ */
+function recurlyjs_update_billing_submit($form, $form_state) {
+  $entity = $form['#entity'];
+  $recurly_token = isset($form_state['values']['recurly-token']) ? $form_state['values']['recurly-token'] : NULL;
+
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+
+  if ($recurly_token && $recurly_account) {
+    try {
+      $billing_info = new Recurly_BillingInfo();
+      $billing_info->account_code = $recurly_account->account_code;
+      $billing_info->token_id = $recurly_token;
+      $billing_info->update();
+    }
+    catch (Recurly_NotFoundError $e) {
+      drupal_set_message(t('Could not find account or token is invalid or expired.'), 'error');
+    }
+  }
+}
+
+/**
+ * Element after_build callback to remove the input #name attribute.
+ *
+ * https://docs.recurly.com/js/#build-a-card-form
+ */
+function _recurlyjs_form_remove_element_name($form_element) {
+  unset($form_element['#name']);
+  return $form_element;
+}
+
+/**
+ * Configure Form API elements for Recurly billing forms.
+ *
+ * @param array &$form
+ *   A Drupal form array.
+ */
+function _recurlyjs_append_billing_fields(&$form) {
   $form['#prefix'] = '<div class="recurly-form-wrapper">';
   $form['#suffix'] = '</div>';
 
@@ -234,161 +417,23 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
       'data-recurly' => 'token',
     ),
   );
+}
 
-  // Initialize the Recurly client with the site-wide settings.
-  if (!recurly_client_initialize()) {
-    $form['error'] = array(
-      '#markup' => t('Could not initialize the Recurly client.'),
-    );
-    return $form;
-  }
-  //recurly_client_initialize();
+/**
+ * Attach Recurly JS library to Drupal form.
+ *
+ * @param array &$form
+ *   A Drupal form array.
+ */
+function _recurlyjs_form_attach_js(&$form) {
   $recurly_public_key = variable_get('recurly_public_key', '');
-
   // Add Recurly.js and the inline code to the page.
-  // @todo Do we no longer need the recurly-js library within Drupal's codebase?
+  // @TODO: Do we no longer need the recurly-js library within Drupal's
+  // codebase?
   $form['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
   $form['#attached']['js'][] = array(
     'type' => 'inline',
     'data' => "/* Configure recurly.js. */  recurly.configure('$recurly_public_key');",
   );
-  // Convenience CSS file location option.
-  // if (isset($element['#recurly_css'])) {
-  //   $element['#attached']['css'][] = $element['#recurly_css'];
-  // }
-
-  $currency_list = array();
-  $plan = Recurly_Plan::get($plan_code);
-  foreach ($plan->unit_amount_in_cents as $unit_currency) {
-    $currency_list[] = $unit_currency->currencyCode;
-  }
-  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
-  $form['update'] = array(
-    '#type' => 'recurlyjs_subscribe',
-    '#plan_code' => $plan_code,
-    '#currency' => in_array($currency, $currency_list) ? $currency : variable_get('recurly_default_currency', 'USD'),
-    '#account_code' => isset($account->account_code) ? $account->account_code : $entity_type . '-' . $id,
-    '#username' => entity_label($entity_type, $entity),
-    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
-    '#accept_paypal' => variable_get('recurlyjs_accept_paypal', FALSE),
-    '#enable_coupons' => variable_get('recurlyjs_enable_coupons', 0),
-    '#enable_add_ons' => variable_get('recurlyjs_enable_add_ons', 1),
-  );
-
-  $form['actions'] = array(
-    '#type' => 'actions',
-  );
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Purchase'),
-  );
-  return $form;
-}
-
-/**
- * Element after_build callback to remove the input #name attribute.
- *
- * https://docs.recurly.com/js/#build-a-card-form
- */
-function _recurlyjs_form_remove_element_name($form_element) {
-  unset($form_element['#name']);
-  return $form_element;
-}
-
-/**
- * Submit handler for recurlyjs_subscribe_form().
- */
-function recurlyjs_subscribe_form_submit($form, &$form_state) {
-  $entity_type = $form['#entity_type'];
-  $entity = $form['#entity'];
-  $plan_code = $form['#plan_code'];
-  $currency = $form['#currency'] ?: variable_get('recurly_default_currency', 'USD');
-  $recurly_token = isset($form_state['values']['recurly-token']) ? $form_state['values']['recurly-token'] : NULL;
-
-  list($entity_id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity_id));
-
-  if (!$recurly_account) {
-    $recurly_account = new Recurly_Account();
-    // Account code is the only property required for Recurly account creation.
-    // https://dev.recurly.com/docs/create-an-account
-    $recurly_account->account_code = $entity_type . '-' . $entity_id;
-
-    $recurly_account->billing_info = new Recurly_BillingInfo();
-    $recurly_account->billing_info->token_id = $recurly_token;
-    $recurly_account->create();
-  }
-
-  $subscription = new Recurly_Subscription();
-  $subscription->account = $recurly_account;
-  $subscription->plan_code = $plan_code;
-  $subscription->currency = $currency;
-  $subscription->create();
-
-  drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
-
-  // Save the account locally immediately so that subscriber information may
-  // be retrieved when the user is directed back to the /subscription tab.
-  try {
-    $account = $subscription->account->get();
-    recurly_account_save($account, $entity_type, $entity_id);
-  }
-  catch (Recurly_Error $e) {
-    watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
-  }
-
-  $form_state['redirect'] = $entity_type . '/' . $entity_id . '/subscription';
-}
-
-/**
- * Form callback; Display the form for updating billing information.
- */
-function recurlyjs_update_billing($form, $form_state, $entity_type, $entity) {
-  // Initialize the Recurly client with the site-wide settings.
-  if (!recurly_client_initialize()) {
-    $form['error'] = array(
-      '#markup' => t('Could not initialize the Recurly client.'),
-    );
-    return $form;
-  }
-
-  // See if we have a local mapping of entity ID to Recurly account code.
-  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
-
-  try {
-    $billing_info = Recurly_BillingInfo::get($account->account_code);
-    $form['existing'] = array(
-      '#theme' => 'recurly_credit_card_information',
-      '#card_type' => check_plain($billing_info->card_type),
-      '#first_name' => check_plain($billing_info->first_name),
-      '#last_name' => check_plain($billing_info->last_name),
-      '#year' => check_plain($billing_info->year),
-      '#month' => check_plain($billing_info->month),
-      '#mask_length' => strcasecmp($billing_info->card_type, 'American Express') === 0 ? 11 : 12,
-      '#last_four' => check_plain($billing_info->last_four),
-    );
-  }
-  catch (Recurly_NotFoundError $e) {
-
-  }
-
-  $form['update'] = array(
-    '#type' => 'recurlyjs_billing',
-    '#account_code' => $account->account_code,
-    '#address_requirement' => variable_get('recurlyjs_address_requirement', 'full'),
-    '#accept_paypal' => variable_get('recurlyjs_accept_paypal', FALSE),
-  );
-
-  $form['actions'] = array(
-    '#type' => 'actions',
-  );
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Update'),
-  );
-
-  return $form;
 }
