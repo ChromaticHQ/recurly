@@ -212,7 +212,7 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
 /**
  * Form callback; Display the form for updating billing information.
  */
-function recurlyjs_update_billing($form, $form_state, $entity_type, $entity) {
+function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity) {
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
     $form['error'] = array(
@@ -260,7 +260,7 @@ function recurlyjs_update_billing($form, $form_state, $entity_type, $entity) {
 }
 
 /**
- * Submit handler for recurlyjs_update_billing().
+ * Submit handler for recurlyjs_update_billing_form().
  */
 function recurlyjs_update_billing_submit($form, $form_state) {
   $entity = $form['#entity'];
