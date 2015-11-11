@@ -283,16 +283,6 @@ function recurlyjs_update_billing_submit($form, $form_state) {
 }
 
 /**
- * Element after_build callback to remove the input #name attribute.
- *
- * https://docs.recurly.com/js/#build-a-card-form
- */
-function _recurlyjs_form_remove_element_name($form_element) {
-  unset($form_element['#name']);
-  return $form_element;
-}
-
-/**
  * Configure Form API elements for Recurly billing forms.
  *
  * @param array &$form
@@ -418,6 +408,16 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'token',
     ),
   );
+}
+
+/**
+ * Element after_build callback to remove the input #name attribute.
+ *
+ * https://docs.recurly.com/js/#build-a-card-form
+ */
+function _recurlyjs_form_remove_element_name($form_element) {
+  unset($form_element['#name']);
+  return $form_element;
 }
 
 /**
