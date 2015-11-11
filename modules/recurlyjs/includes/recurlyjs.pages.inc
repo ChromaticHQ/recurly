@@ -223,10 +223,10 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
 
   // See if we have a local mapping of entity ID to Recurly account code.
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+  $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
 
   try {
-    $billing_info = Recurly_BillingInfo::get($account->account_code);
+    $billing_info = Recurly_BillingInfo::get($recurly_account->account_code);
     $form['existing'] = array(
       '#theme' => 'recurly_credit_card_information',
       '#card_type' => check_plain($billing_info->card_type),
@@ -239,13 +239,23 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
     );
   }
   catch (Recurly_NotFoundError $e) {
-
+    drupal_set_message(t('Unable to retrieve billing information.'), 'error');
+    return $form;
   }
 
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
 
   _recurlyjs_append_billing_fields($form);
+
+  // Populate #default_value with existing billing info.
+  $excluded_fields = array('month', 'year');
+  foreach (element_children($form) as $form_element_name) {
+    if (!in_array($form_element_name, $excluded_fields)) {
+      $form[$form_element_name]['#default_value'] = $form_element_name != 'postal_code' ? $billing_info->$form_element_name : $billing_info->zip;
+    }
+  }
+
   _recurlyjs_form_attach_js($form);
 
   $form['actions'] = array(
