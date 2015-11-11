@@ -10,7 +10,15 @@ Drupal.behaviors.recurlyJSSubscribeForm = {
   attach: function (context, settings) {
     // Attaches submission handling to the subscribe form.
     $('#recurlyjs-subscribe-form').once('recurlyjs-subscribe-form', function () {
-      $(this).on('submit', Drupal.recurly.subscribeFormSubmit);
+      $(this).on('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
+    });
+  }
+};
+
+Drupal.behaviors.recurlyJSUpdateBillingForm = {
+  attach: function (context, settings) {
+    $('#recurlyjs-update-billing').once('recurlyjs-update-billing', function () {
+      $(this).on('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
     });
   }
 };
@@ -18,7 +26,7 @@ Drupal.behaviors.recurlyJSSubscribeForm = {
 /**
  * Handles submission of the subscribe form.
  */
-Drupal.recurly.subscribeFormSubmit = function(event) {
+Drupal.recurly.recurlyJSTokenFormSubmit = function(event) {
   event.preventDefault();
 
   // Reset the errors display
@@ -31,7 +39,7 @@ Drupal.recurly.subscribeFormSubmit = function(event) {
   var form = this;
   recurly.token(form, function (err, token) {
     if (err) {
-      Drupal.recurly.subscribeFormError(err);
+      Drupal.recurly.recurlyJSFormError(err);
     }
     else {
       form.submit();
@@ -42,7 +50,7 @@ Drupal.recurly.subscribeFormSubmit = function(event) {
 /**
  * Handles form errors.
  */
-Drupal.recurly.subscribeFormError = function(err) {
+Drupal.recurly.recurlyJSFormError = function(err) {
   $('button').prop('disabled', false);
 
   // Add the error class to all form elements that returned an error.
