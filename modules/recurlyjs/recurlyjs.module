@@ -22,7 +22,11 @@ function recurlyjs_menu() {
     $items[$entity_path . '/subscription/billing'] = array(
       'title' => 'Update billing information',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('recurlyjs_update_billing_form', $entity_type, 1),
+      'page arguments' => array(
+        'recurlyjs_update_billing_form',
+        $entity_type,
+        1,
+      ),
       'access callback' => 'recurly_subscription_page_access',
       'access arguments' => array($entity_type, 1, 'update_billing'),
       'type' => MENU_LOCAL_TASK,
