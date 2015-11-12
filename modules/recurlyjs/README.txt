@@ -3,10 +3,9 @@ Description
 This module provides FormAPI elements for subscriptions, updating billing
 information, and one-time payments through Recurly.com.
 
-EXTREMELY IMPORTANT CAVEAT: Recurlyjs elements operate entirely through
-JavaScript and sensitive information never touches your server (thus
-circumventing PCI compliance requirements). This comes with the following
-caveats:
+EXTREMELY IMPORTANT CAVEAT: Recurlyjs does not use Drupal to process sensitive
+information, so it never touches your server (thus circumventing PCI compliance
+requirements). This comes with the following caveats:
 
 - The recurlyjs elements cannot be on the same page as other elements that need
   validation, because the credit card will be charged client-side. Validation
