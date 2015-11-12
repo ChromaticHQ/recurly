@@ -20,17 +20,19 @@ Installation
   IMPORTANT: This version of the Recurly module is only compatible with
   Recurly.js API v3 and the Recurly v2 API.
 
+- If you want to enable billing forms on your site, enable the recurlyjs module.
+
 - Log into your Recurly.com account and visit the API Credentials page.
   (developer/api_access) Copy the value for the Private API Key and subdomain
   (found in the address bar or configuration/edit) & paste them into the module
   configuration in Drupal under admin/config/services/recurly. If you are using
-  recurly.js, you will also need the Public Key.
+  recurlyjs, you will also need the Public Key.
 
 - While on the Recurly settings page in Drupal, copy the full URL from the
   description of  the "Listener URL key" field. It should be something like:
   "https://example.com/recurly/listener/QVDtH2CR". Use an HTTPS URL if
   available. Take this full URL and paste it into the Recurly.com settings for
-  "Webhook URL" at Developers > Webhooks (configuration/notifications/configure).
+  "Webhook URL" - Developers > Webhooks (configuration/notifications/configure).
 
 - After you have set up the desired plans in Recurly, on your Drupal site visit
   admin/config/services/recurly/subscription-plans and enable the desired plans.
