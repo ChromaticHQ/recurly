@@ -17,11 +17,6 @@ Installation
   sites/all/libraries so that "recurly.php" is located at
   sites/all/libraries/recurly/lib/recurly.php.
 
-- If you want to use the Recurly.js library to have billing forms directly
-  on your site, you also need to download the Recurly.js library from
-  https://github.com/recurly/recurly-js and place it in libraries so
-  that "recurly.js" is located at sites/all/libraries/recurly-js/lib/recurly.js.
-
   IMPORTANT: This version of the Recurly module is only compatible with
   Recurly.js API v3 and the Recurly v2 API.
 
@@ -29,7 +24,7 @@ Installation
   (developer/api_access) Copy the value for the Private Key and subdomain (found
   in the address bar (or configuration/edit) and paste them into the module
   configuration in Drupal under admin/config/services/recurly. If you are using
-  recurly.js, you will also need the Private Key.
+  recurly.js, you will also need the Public API Key.
 
 - While on the Recurly settings page in Drupal, copy the full URL from the
   description of  the "Listener URL key" field. It should be something like:
