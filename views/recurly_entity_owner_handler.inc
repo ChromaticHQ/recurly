@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @class
+ * @file
  * Views Relationship handler to allow joins to an arbitrary entity.
  *
  * The Recurly module allows accounts to be associated with any entity type,
@@ -12,6 +12,7 @@
  * To use this handler, the Views table definition must contain an
  * 'entity type' key specifying the entity type for the specific handler.
  */
+
 class recurly_entity_owner_handler extends views_handler_relationship {
 
   /**
@@ -52,7 +53,7 @@ class recurly_entity_owner_handler extends views_handler_relationship {
     $join->construct();
     $join->adjusted = TRUE;
 
-    // use a short alias for this:
+    // Use a short alias for this:
     $alias = $def['table'] . '_' . $this->table;
 
     $this->alias = $this->query->add_relationship($alias, $join, $this->definition['base'], $this->relationship);

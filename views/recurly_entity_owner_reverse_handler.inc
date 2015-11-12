@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @class
+ * @file
  * Views Relationship handler to allow joins from an arbitrary entity.
  *
  * This is similar to recurly_entity_owner_handler, but works for joining from
@@ -10,6 +10,7 @@
  * To use this handler, the Views table definition must contain an
  * 'base type' key specifying the base table for the specific handler.
  */
+
 class recurly_entity_owner_reverse_handler extends views_handler_relationship {
 
   /**
@@ -36,13 +37,13 @@ class recurly_entity_owner_reverse_handler extends views_handler_relationship {
       $def['type'] = 'INNER';
     }
 
-    // use a short alias for this:
+    // Use a short alias for this:
     $alias = $def['table'] . '_' . $this->table;
 
     $def['extra'] = sprintf("%s.entity_type = '%s'", $alias, $def['base type']);
 
     if (!empty($def['join_handler']) && class_exists($def['join_handler'])) {
-      $join = new $def['join_handler'];
+      $join = new $def['join_handler']();
     }
     else {
       $join = new views_join();

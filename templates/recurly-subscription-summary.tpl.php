@@ -8,7 +8,7 @@
   <div class="subscription-summary clearfix <?php print implode(' ', $state_array); ?>">
     <h2><?php print $plan_name; ?></h2>
     <?php if (!empty($message)) : ?>
-      <div class="messages warning"><h2 class="element-invisible"><?php print('Warning message'); ?></h2><?php print $message; ?></div>
+      <div class="messages warning"><h2 class="element-invisible"><?php print ('Warning message'); ?></h2><?php print $message; ?></div>
     <?php endif; ?>
     <table class="properties">
       <tr class="status">
@@ -21,7 +21,12 @@
       </tr>
       <tr>
         <th>
-          <?php if (count(array_intersect(array('canceled', 'non_renewing', 'expired'), $state_array)) && !in_array('in_trial', $state_array)): ?>
+          <?php if (count(array_intersect(
+            array(
+              'canceled',
+              'non_renewing',
+              'expired',
+            ), $state_array)) && !in_array('in_trial', $state_array)): ?>
             <?php print t('Expiration Date'); ?>
           <?php else: ?>
             <?php print t('Next Invoice'); ?>
