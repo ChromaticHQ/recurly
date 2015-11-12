@@ -37,6 +37,6 @@ function recurlyjs_uninstall() {
 /**
  * Remove recurly_api_key.
  */
-function recurlyjs_update_7100() {
+function recurlyjs_update_7200() {
   variable_del('recurly_api_key');
 }
