@@ -21,10 +21,10 @@ Installation
   Recurly.js API v3 and the Recurly v2 API.
 
 - Log into your Recurly.com account and visit the API Credentials page.
-  (developer/api_access) Copy the value for the Private Key and subdomain (found
-  in the address bar (or configuration/edit) and paste them into the module
+  (developer/api_access) Copy the value for the Private API Key and subdomain
+  (found in the address bar or configuration/edit) & paste them into the module
   configuration in Drupal under admin/config/services/recurly. If you are using
-  recurly.js, you will also need the Public API Key.
+  recurly.js, you will also need the Public Key.
 
 - While on the Recurly settings page in Drupal, copy the full URL from the
   description of  the "Listener URL key" field. It should be something like:
