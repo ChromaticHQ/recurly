@@ -131,26 +131,3 @@ function recurlyjs_element_transaction_expand($element) {
   $element['#signing_options'] = $options;
   return $element;
 }
-
-/**
- * FormAPI #process callback for the recurlyjs element type.
- */
-// function recurlyjs_element_expand($element) {
-//   recurly_client_initialize();
-
-//   $recurly_public_key = variable_get('recurly_public_key', '');
-
-//   // Add Recurly.js and the inline code to the page.
-//   $element['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
-//   $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
-//   $element['#attached']['js'][] = array(
-//     'type' => 'inline',
-//     'data' => "recurly.configure('$recurly_public_key');",
-//   );
-
-//   // Convenience CSS file location option.
-//   if (isset($element['#recurly_css'])) {
-//     $element['#attached']['css'][] = $element['#recurly_css'];
-//   }
-//   return $element;
-// }
