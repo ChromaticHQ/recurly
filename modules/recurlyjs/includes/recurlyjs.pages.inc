@@ -239,6 +239,7 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
     );
   }
   catch (Recurly_NotFoundError $e) {
+    watchdog('recurlyjs', 'Unable to retrieve billing information:<br>!e', array('!e' => print_r($e, TRUE)), WATCHDOG_ERROR);
     drupal_set_message(t('Unable to retrieve billing information.'), 'error');
     return $form;
   }
