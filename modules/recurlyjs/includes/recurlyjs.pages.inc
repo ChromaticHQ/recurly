@@ -414,8 +414,8 @@ function _recurlyjs_form_remove_element_name($form_element) {
  */
 function _recurlyjs_form_attach_js(&$form) {
   $recurly_public_key = variable_get('recurly_public_key', '');
-  // Add Recurly.js and the inline code to the page.
 
+  // Add Recurly.js and the inline code to the page.
   $form['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
   $form['#attached']['js'][] = array(
