@@ -36,7 +36,7 @@ class recurly_entity_owner_reverse_handler extends views_handler_relationship {
       $def['type'] = 'INNER';
     }
 
-    // use a short alias for this:
+    // Use a short alias for this:
     $alias = $def['table'] . '_' . $this->table;
 
     $def['extra'] = sprintf("%s.entity_type = '%s'", $alias, $def['base type']);
