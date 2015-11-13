@@ -123,6 +123,7 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   $form['#plan_code'] = $plan_code;
   $form['#currency'] = $currency ?: variable_get('recurly_default_currency', 'USD');
 
+  _recurlyjs_form_attach_js($form);
   _recurlyjs_append_billing_fields($form);
   if (variable_get('recurlyjs_enable_coupons')) {
     $form['coupon_code'] = array(
@@ -133,7 +134,6 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
       '#weight' => -250,
     );
   }
-  _recurlyjs_form_attach_js($form);
 
   $form['actions'] = array(
     '#type' => 'actions',
