@@ -16,9 +16,9 @@
  *  - A subscription has its plan changed.
  *  - A subscription has been invoiced.
  *
- * @param $subdomain
+ * @param string $subdomain
  *   The Recurly subdomain for which this notification was received.
- * @param $notification
+ * @param object $notification
  *   The XML Recurly notification. This is a raw SimpleXMl parsing of the
  *   notification. See https://docs.recurly.com/api/push-notifications.
  */
@@ -60,7 +60,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
  * or Recurly.js, other modules may want to provide custom URLs for managing
  * subscriptions.
  *
- * @param $operation
+ * @param string $operation
  *   A string that indicates the URL should go to a page providing the following
  *   functionality:
  *   - select_plan: A listing of plans available for purchase where the user can
@@ -75,7 +75,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
  *      information.
  *   - subscribe: A page where a user can sign up for a given plan code by
  *      entering their credit card information.
- * @param $context
+ * @param array $context
  *   An array of information that is provided to help assemable the $operation
  *   link. Properties may include:
  *   - entity: The associated entity for a subscription.
@@ -89,7 +89,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
  *      subscription plan or signing up for a new subscription.
  *   Not all properties will be available in all $operations.
  *
- * @return
+ * @return string
  *   A string containing the full URL to that particular action. If the module
  *   does not provide a page to an action, NULL should be returned.
  */
@@ -104,10 +104,13 @@ function hook_recurly_url_info($operation, $context) {
   switch ($operation) {
     case 'select_plan':
       return url($parts[0] . '/' . $parts[1] . '/subscription/signup');
+
     case 'change_plan':
       return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
+
     case 'cancel':
       return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/cancel');
+
     case 'reactivate':
       return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
   }
