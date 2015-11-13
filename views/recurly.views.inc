@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Views hooks for Recurly module.
+ */
+
+/**
  * Implements hook_views_data().
  */
 function recurly_views_data() {
