@@ -67,6 +67,7 @@ Drupal.recurly.recurlyJSFormError = function(err) {
   }
 };
 
+// VAT is only needed for EU countries.
 (function () {
   var country = $('#country');
   var vatNumber = $('#vat-number');
