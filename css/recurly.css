@@ -5,7 +5,7 @@
 
 /* Subscription list (user/x/subscription) */
 .subscription {
-  border: 1px solid #CCC;
+  border: 1px solid #cccccc;
   border-radius: 10px;
   padding: 10px;
   margin: 20px 0;
@@ -38,7 +38,7 @@
 }
 .subscription .line-items.change {
   background: #fffbcc;
-  border: 1px solid #E6DB55;
+  border: 1px solid #e6db55;
   clear: right;
 }
 .subscription .line-items.change .label {
@@ -46,7 +46,7 @@
   padding: 10px;
 }
 .subscription .line-items.change .total {
-  border-color: #E6DB55;
+  border-color: #e6db55;
 }
 .subscription .line-items ul {
   margin: 0;
@@ -105,7 +105,7 @@
   margin: 0 -10px;
 }
 .recurly-plan-list .plan {
-  border: 1px solid #CCC;
+  border: 1px solid #cccccc;
   border-radius: 10px;
   padding: 10px;
   margin: 10px;
@@ -114,12 +114,12 @@
   background-color: white;
 }
 .recurly-plan-list .plan-hover {
-  background-color: #FFFDF2;
-  border-color: #ED5;
+  background-color: #fffdf2;
+  border-color: #ed5;
   cursor: pointer;
 }
 .recurly-plan-list .plan-selected {
-  background-color: #FFFCE5;
+  background-color: #fffce5;
 }
 .recurly-plan-list .plan h2 {
   margin: 0;
@@ -144,5 +144,5 @@
 /* Invoice list (user/x/subscription/invoices) */
 table.invoice-list tr.past_due,
 table.invoice-list tr.failed {
-  background-color: #EEB9B9;
+  background-color: #eeb9b9;
 }
