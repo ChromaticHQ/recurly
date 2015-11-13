@@ -413,9 +413,9 @@ function _recurlyjs_append_billing_fields(&$form) {
  *
  * https://docs.recurly.com/js/#build-a-card-form
  */
-function _recurlyjs_form_remove_element_name($form_element) {
-  unset($form_element['#name']);
-  return $form_element;
+function _recurlyjs_form_remove_element_name($element, $form_state) {
+  unset($element['#name']);
+  return $element;
 }
 
 /**
