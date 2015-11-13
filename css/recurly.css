@@ -1,6 +1,9 @@
 /**
  * @file
  * CSS for subscription information.
+ *
+ * @todo Update the selectors to match the new form markup or remove the file 
+ * (and corresponding images) altogether.
  */
 
 /* Subscription list (user/x/subscription) */
