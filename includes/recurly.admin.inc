@@ -60,9 +60,8 @@ function recurly_settings_form($form, &$form_state) {
     '#title' => t('Listener URL key'),
     '#description' => t('Customizing the listener URL gives you protection against fraudulent push notifications.') . '<br />' . t('Based on your current key, you should set @url as your Push Notification URL at Recurly.',
       array(
-        '@url' => url('recurly/listener/' . variable_get('recurly_listener_key', ''),
-        array('absolute' => TRUE),
-        ))),
+        '@url' => url('recurly/listener/' . variable_get('recurly_listener_key', ''), array('absolute' => TRUE)),
+      )),
     '#default_value' => variable_get('recurly_listener_key', ''),
     '#required' => TRUE,
     '#size' => 32,
@@ -389,13 +388,12 @@ function recurly_subscription_plans_form($form, &$form_state, $plans) {
     $unit_amounts = in_array('IteratorAggregate', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
     $setup_fees = in_array('IteratorAggregate', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
     foreach ($unit_amounts as $unit_amount) {
-      $form['#plans'][$plan->plan_code]['unit_amounts'][$unit_amount->currencyCode] = t(
-        '@unit_price every @interval_length @interval_unit',
+      $form['#plans'][$plan->plan_code]['unit_amounts'][$unit_amount->currencyCode] = t('@unit_price every @interval_length @interval_unit',
         array(
           '@unit_price' => recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode),
           '@interval_length' => $plan->plan_interval_length,
-          '@interval_unit' => $plan->plan_interval_unit),
-        );
+          '@interval_unit' => $plan->plan_interval_unit,
+        ));
     }
     foreach ($setup_fees as $setup_fee) {
       $form['#plans'][$plan->plan_code]['setup_amounts'][$unit_amount->currencyCode] = recurly_format_currency($setup_fee->amount_in_cents, $setup_fee->currencyCode);
@@ -490,13 +488,13 @@ function theme_recurly_subscription_plans_form($variables) {
 
   // Format the plan data into a table for display.
   $header = array(
-    array(
-      'data' => t('Subscription plan'), 'colspan' => 2),
+    array('data' => t('Subscription plan'), 'colspan' => 2),
     t('Weight'),
     t('Price'),
     t('Setup fee'),
     t('Trial'),
-    t('Operations'));
+    t('Operations'),
+  );
   $rows = array();
 
   foreach ($form['#plans'] as $plan_code => $details) {
@@ -528,8 +526,9 @@ function theme_recurly_subscription_plans_form($variables) {
   if (empty($rows)) {
     $rows[] = array(
       array(
-        'data' => t('No subscription plans found. You can start by creating one in <a href="!url">your Recurly account</a>.',
-          array('!url' => variable_get('recurly_subdomain', '') ? recurly_hosted_url('plans') : 'http://app.recurly.com')), 'colspan' => 7));
+        'data' => t('No subscription plans found. You can start by creating one in <a href="!url">your Recurly account</a>.', array('!url' => variable_get('recurly_subdomain', '') ? recurly_hosted_url('plans') : 'http://app.recurly.com')),
+        'colspan' => 7),
+    );
   }
 
   drupal_add_tabledrag('recurly-subscription-plans', 'order', 'sibling', 'weight');
@@ -542,7 +541,8 @@ Drupal.theme.prototype.tableDragChangedWarning = function () { return ''; };";
   $output = theme('table', array(
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array('id' => 'recurly-subscription-plans')));
+    'attributes' => array('id' => 'recurly-subscription-plans'),
+    ));
   $output .= drupal_render_children($form);
   return $output;
 }
