@@ -7,8 +7,7 @@
 class recurly_account_code_handler extends views_handler_field {
 
   /**
-   * Override init function to provide generic option to link to the Recurly
-   * account.
+   * Override init function to provide generic option to link to Recurly acct.
    */
   function init(&$view, &$data) {
     parent::init($view, $data);
@@ -50,9 +49,9 @@ class recurly_account_code_handler extends views_handler_field {
   /**
    * Render a link for a Recurly account.
    *
-   * @param $data
+   * @param string $data
    *   Sanitized data to render.
-   * @param $values
+   * @param array $values
    *   An array of values associated with this row.
    *
    * @return mixed
