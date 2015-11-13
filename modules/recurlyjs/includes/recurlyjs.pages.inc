@@ -121,13 +121,19 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
   $form['#plan_code'] = $plan_code;
-  $form['#currency'] = $currency;
+  $form['#currency'] = $currency ?: variable_get('recurly_default_currency', 'USD');
 
-  $form['#prefix'] = '<div class="recurly-form-wrapper">';
-  $form['#suffix'] = '</div>';
-
-  _recurlyjs_append_billing_fields($form);
   _recurlyjs_form_attach_js($form);
+  _recurlyjs_append_billing_fields($form);
+  if (variable_get('recurlyjs_enable_coupons')) {
+    $form['coupon_code'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Coupon Code'),
+      '#description' => t('Recurly coupon code to be applied to subscription.'),
+      '#element_validate' => array('_recurlyjs_element_validate_coupon_code'),
+      '#weight' => -250,
+    );
+  }
 
   $form['actions'] = array(
     '#type' => 'actions',
@@ -146,8 +152,9 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
   $entity_type = $form['#entity_type'];
   $entity = $form['#entity'];
   $plan_code = $form['#plan_code'];
-  $currency = $form['#currency'] ?: variable_get('recurly_default_currency', 'USD');
+  $currency = $form['#currency'];
   $recurly_token = isset($form_state['values']['recurly-token']) ? $form_state['values']['recurly-token'] : NULL;
+  $coupon_code = isset($form_state['values']['coupon_code']) ? $form_state['values']['coupon_code'] : NULL;
 
   list($entity_id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity_id));
@@ -163,11 +170,20 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
     $recurly_account->create();
   }
 
-  $subscription = new Recurly_Subscription();
-  $subscription->account = $recurly_account;
-  $subscription->plan_code = $plan_code;
-  $subscription->currency = $currency;
-  $subscription->create();
+  try {
+    $subscription = new Recurly_Subscription();
+    $subscription->account = $recurly_account;
+    $subscription->plan_code = $plan_code;
+    $subscription->currency = $currency;
+    $subscription->coupon_code = $coupon_code;
+    $subscription->create();
+  }
+  catch (Recurly_Error $e) {
+    watchdog('recurlyjs', 'Unable to create subscription. Received the following error: @error', array('@error' => $e->getMessage()));
+    drupal_set_message(t('Unable to create subscription.'), 'error');
+    $form_state['rebuild'] = TRUE;
+    return;
+  }
 
   drupal_set_message(t('Account upgraded to @plan!', array('@plan' => $subscription->plan->name)));
 
@@ -214,7 +230,7 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
     );
   }
   catch (Recurly_NotFoundError $e) {
-    watchdog('recurlyjs', 'Unable to retrieve billing information:<br>!e', array('!e' => print_r($e, TRUE)), WATCHDOG_ERROR);
+    watchdog('recurlyjs', 'Unable to retrieve billing information. Received the following error: @error', array('@error' => $e->getMessage()));
     drupal_set_message(t('Unable to retrieve billing information.'), 'error');
     return $form;
   }
@@ -281,6 +297,7 @@ function _recurlyjs_append_billing_fields(&$form) {
   // recurly-element.js adds errors here upon failed validation.
   $form['errors'] = array(
     '#markup' => '<div id="recurly-form-errors"></div>',
+    '#weight' => -300,
   );
 
   $form['first_name'] = array(
@@ -288,9 +305,9 @@ function _recurlyjs_append_billing_fields(&$form) {
     '#title' => t('First Name'),
     '#attributes' => array(
       'data-recurly' => 'first_name',
-      '#name' => NULL,
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -150,
   );
   $form['last_name'] = array(
     '#type' => 'textfield',
@@ -299,6 +316,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'last_name',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -140,
   );
   $form['address1'] = array(
     '#type' => 'textfield',
@@ -307,6 +325,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'address1',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -130,
   );
   $form['address2'] = array(
     '#type' => 'textfield',
@@ -315,6 +334,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'address2',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -120,
   );
   $form['city'] = array(
     '#type' => 'textfield',
@@ -323,6 +343,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'city',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -110,
   );
   $form['state'] = array(
     '#type' => 'textfield',
@@ -331,6 +352,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'state',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -100,
   );
   $form['postal_code'] = array(
     '#type' => 'textfield',
@@ -339,6 +361,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'postal_code',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -90,
   );
   $form['country'] = array(
     '#type' => 'textfield',
@@ -347,6 +370,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'country',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -80,
   );
   $form['vat_number'] = array(
     '#type' => 'textfield',
@@ -355,6 +379,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'vat_number',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -70,
   );
   $form['number'] = array(
     '#type' => 'textfield',
@@ -363,6 +388,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'number',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -60,
   );
   $form['month'] = array(
     '#type' => 'textfield',
@@ -371,6 +397,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'month',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -50,
   );
   $form['year'] = array(
     '#type' => 'textfield',
@@ -379,6 +406,7 @@ function _recurlyjs_append_billing_fields(&$form) {
       'data-recurly' => 'year',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -40,
   );
   $form['tax_code'] = array(
     '#type' => 'hidden',
@@ -404,6 +432,56 @@ function _recurlyjs_append_billing_fields(&$form) {
 function _recurlyjs_form_remove_element_name($form_element) {
   unset($form_element['#name']);
   return $form_element;
+}
+
+/**
+ * Element validate callback.
+ */
+function _recurlyjs_element_validate_coupon_code($element, &$form_state, $form) {
+  $coupon_code = isset($form_state['values']['coupon_code']) ? $form_state['values']['coupon_code'] : NULL;
+  if (!$coupon_code) {
+    return;
+  }
+  $currency = $form['#currency'];
+  $plan_code = $form['#plan_code'];
+
+  // Query Recurly to make sure this is a valid coupon code.
+  try {
+    $coupon = Recurly_Coupon::get($coupon_code);
+  }
+  catch (Recurly_NotFoundError $e) {
+    form_error($element, t('The coupon code you have entered is not valid.'));
+    return;
+  }
+  // Check that the coupon is available in the specified currency.
+  if ($coupon && $coupon->discount_type !== 'percent') {
+    if (!$coupon->discount_in_cents->offsetExists($currency)) {
+      form_error($element, t('The coupon code you have entered is not valid in @currency.', array('@currency' => $currency)));
+      return;
+    }
+  }
+  // Check the the coupon is valid for the specified plan.
+  if ($coupon && !_recurlyjs_coupon_valid_for_plan($coupon, $plan_code)) {
+    form_error($element, t('The coupon code you have entered is not valid for the specified plan.'));
+    return;
+  }
+}
+
+/**
+ * Validate Recurly coupon against a specified plan.
+ *
+ * @todo Move to recurly.module?
+ *
+ * @param Recurly_Coupon $recurly_coupon
+ *   A Recurly coupon object.
+ * @param string $plan_code
+ *   A Recurly plan code.
+ *
+ * @return BOOL
+ *   TRUE if the coupon is valid for the specified plan, else FALSE.
+ */
+function _recurlyjs_coupon_valid_for_plan(Recurly_Coupon $recurly_coupon, $plan_code) {
+  return ($recurly_coupon->applies_to_all_plans || in_array($plan_code, $recurly_coupon->plan_codes));
 }
 
 /**
