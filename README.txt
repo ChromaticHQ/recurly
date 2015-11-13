@@ -78,4 +78,4 @@ Please use the issue queue for filing bugs with this module at
 http://drupal.org/project/issues/recurly?categories=All
 
 WE DO NOT PROVIDE SUPPORT ON CUSTOM CODING. Please use the issue queue for
-issues that are believed to be bugs or for requesting features.
+issues that are believed to be bugs or for requesting features!

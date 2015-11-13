@@ -52,105 +52,14 @@ function recurlyjs_recurly_url_info($operation, $context) {
     case 'update_billing':
       $entity_info = recurly_account_load(array('account_code' => $context['account']->account_code), TRUE);
       return url($entity_info->entity_type . '/' . $entity_info->entity_id . '/subscription/billing');
+
     case 'subscribe':
       list($id, $vid, $bundle) = entity_extract_ids($context['entity_type'], $context['entity']);
       $currency_string = !isset($context['currency']) || $context['currency'] == variable_get('recurly_default_currency', 'USD') ? '' : '/' . $context['currency'];
+      watchdog('recurly', 'subscribe');
+
       return url($context['entity_type'] . '/' . $id . '/subscription/signup/' . $context['plan_code'] . $currency_string);
   }
-}
-
-/**
- * Implements hook_element_info().
- */
-function recurlyjs_element_info() {
-  $common = array(
-    '#input' => TRUE,
-    '#recurly_css' => drupal_get_path('module', 'recurlyjs') . '/css/recurlyjs.css',
-
-    // Global options:
-    // See http://docs.recurly.com/api/recurlyjs/reference#js-config
-    '#country' => 'US',
-    '#currency' => 'USD',
-    '#subdomain' => variable_get('recurly_subdomain', ''),
-    '#vatpercent' => NULL,
-    '#locale' => NULL,
-    '#terms_url' => NULL,
-    '#privacy_url' => NULL,
-
-    // Account options (not displayed to user):
-    // See http://docs.recurly.com/api/recurlyjs/reference#account-object
-    '#account_code' => NULL,
-    '#account_username' => NULL,
-    '#account_email' => NULL,
-    '#account_first_name' => NULL,
-    '#account_last_name' => NULL,
-    '#account_company_name' => NULL,
-
-    // Billing information; prepopulates options:
-    // See http://docs.recurly.com/api/recurlyjs/reference#billing-info-object
-    '#billing_first_name' => NULL,
-    '#billing_last_name' => NULL,
-    '#billing_address1' => NULL,
-    '#billing_address2' => NULL,
-    '#billing_city' => NULL,
-    '#billing_state' => NULL,
-    '#billing_country' => NULL,
-    '#billing_zip' => NULL,
-    '#billing_phone' => NULL,
-    '#billing_vat_number' => NULL,
-
-    // Common options between all forms.
-    '#address_requirement' => 'full',
-    '#distinguish_contact_from_billing_info' => NULL,
-  );
-
-  // Element to start a subscription.
-  $types['recurlyjs_subscribe'] = array(
-    '#process' => array('recurlyjs_element_subscription_expand', 'recurlyjs_element_expand'),
-    '#recurly_operation' => 'buildSubscriptionForm',
-    '#theme' => array('recurlyjs__subscribe', 'recurlyjs'),
-
-    // See http://docs.recurly.com/api/recurlyjs/reference#subscription-object.
-    '#plan_code' => NULL,
-    '#trial_ends_at' => NULL, // ISO 8601 formatted.
-    '#starts_at' => NULL, // ISO 8601 formatted.
-    '#total_billing_cycles' => NULL, // Defaults to infinite.
-    '#first_renewal_date' => NULL, // Defaults one cycle from today.
-    '#coupon_code' => NULL,
-    '#enable_add_ons' => TRUE,
-    '#enable_coupons' => TRUE,
-    '#accept_paypal' => FALSE,
-    '#collect_phone' => FALSE,
-    '#collect_company' => FALSE,
-  ) + $common;
-
-  // Element to update billing information for an existing subscription.
-  $types['recurlyjs_billing'] = array(
-    '#process' => array('recurlyjs_element_billing_expand', 'recurlyjs_element_expand'),
-    '#account_code' => NULL,
-    '#recurly_operation' => 'buildBillingInfoUpdateForm',
-    '#theme' => array('recurlyjs__billing', 'recurlyjs'),
-  ) + $common;
-
-  // Element to do a one-time payment.
-  $types['recurlyjs_transaction'] = array(
-    '#process' => array('recurlyjs_element_transaction_expand', 'recurlyjs_element_expand'),
-    '#recurly_operation' => 'buildTransactionForm',
-    '#theme' => array('recurlyjs__transaction', 'recurlyjs'),
-
-    // See http://docs.recurly.com/api/recurlyjs/reference#transaction-object
-    '#amount' => NULL, // Specified in cents, i.e. 1023 = $10.23.
-    '#description' => NULL,
-    '#accounting_code' => NULL,
-    '#coupon_code' => NULL,
-    '#enable_add_ons' => TRUE,
-    '#enable_coupons' => TRUE,
-    '#accept_paypal' => FALSE,
-    '#collect_contact_info' => TRUE,
-    '#collect_phone' => FALSE,
-    '#collect_company' => FALSE,
-  ) + $common;
-  return $types;
 }
 
 /**
@@ -226,161 +135,22 @@ function recurlyjs_element_transaction_expand($element) {
 /**
  * FormAPI #process callback for the recurlyjs element type.
  */
-function recurlyjs_element_expand($element) {
-  recurly_client_initialize();
+// function recurlyjs_element_expand($element) {
+//   recurly_client_initialize();
 
-  // Some keys are part of the global configuration of Recurly, while others are
-  // form-specific configuration options. Build together the global options for
-  // Recurly first here.
-  $global_keys = array(
-    'subdomain' => NULL,
-    'country' => NULL,
-    'vatpercent' => 'VATPercent',
-    'locale' => NULL,
-    'terms_url' => 'termsOfServiceURL',
-    'privacy_url' => 'privacyPolicyURL',
-  );
-  $global_config = array();
-  foreach ($global_keys as $form_key => $jsonKey) {
-    if (isset($element['#' . $form_key])) {
-      if (isset($jsonKey)) {
-        $global_config[$jsonKey] = $element['#' . $form_key];
-      }
-      else {
-        $global_config[$form_key] = $element['#' . $form_key];
-      }
-    }
-  }
+//   $recurly_public_key = variable_get('recurly_public_key', '');
 
-  // Force currency to be set to a supported currency.
-  if (isset($element['#currency']) && in_array($element['#currency'], array_keys(recurly_currency_list()))) {
-    $global_config['currency'] = $element['#currency'];
-  }
-  else {
-    $global_config['currency'] = variable_get('recurly_default_currency', 'USD');
-  }
+//   // Add Recurly.js and the inline code to the page.
+//   $element['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
+//   $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
+//   $element['#attached']['js'][] = array(
+//     'type' => 'inline',
+//     'data' => "recurly.configure('$recurly_public_key');",
+//   );
 
-  // Merge together individual field options with common options shared between
-  // multiple field types. Note that not all options listed below apply to all
-  // field types, but they have no negative effect if added.
-  $options = array();
-  $option_keys = array(
-    'plan_code' => 'planCode',
-    'account_code' => 'accountCode',
-    'accepted_cards' => 'acceptedCards',
-    'accept_paypal' => 'acceptPaypal',
-    'collect_phone' => 'collectPhone',
-    'collect_company' => 'collectCompany',
-    'enable_add_ons' => 'enableAddOns',
-    'enable_coupons' => 'enableCoupons',
-    'address_requirement' => 'addressRequirement',
-    'separate_contact' => 'distinguishContactFromBillingInfo',
-    'terms_url' => 'termsOfServiceURL',
-    'privacy_url' => 'privacyPolicyURL',
-    'collect_contact_info' => 'collectContactInfo',
-    'collect_phone' => 'collectPhone',
-    'collect_company' => 'collectCompany',
-  );
-  foreach ($option_keys as $form_key => $jsonKey) {
-    if (isset($element['#' . $form_key])) {
-      $options[$jsonKey] = $element['#' . $form_key];
-    }
-  }
-
-  // Coupon code is in its own category.
-  if (isset($element['#coupon_code']) || array_key_exists('#coupon_code', $element)) {
-    $options['subscription']['couponCode'] = $element['#coupon_code'];
-  }
-
-  // Convert options which have #account_ or #billing_ prefixes.
-  $convert_keys = array(
-    'first_name' => 'firstName',
-    'last_name' => 'lastName',
-    'email' => 'email',
-    'company_name' => 'companyName',
-    'vat_number' => 'vatNumber',
-    'coupon_code' => 'couponCode',
-  );
-  foreach (element_properties($element) as $property) {
-    if (strpos($property, '#account_') === 0 && $property !== '#account_code') {
-      $property_name = substr($property, 9);
-      $json_name = isset($convert_keys[$property_name]) ? $convert_keys[$property_name] : $property_name;
-      $options['account'][$json_name] = $element[$property];
-    }
-    elseif (strpos($property, '#billing_') === 0) {
-      $property_name = substr($property, 9);
-      $json_name = isset($convert_keys[$property_name]) ? $convert_keys[$property_name] : $property_name;
-      $options['billingInfo'][$json_name] = $element[$property];
-    }
-  }
-
-  // Settings that must exist and cannot be changed.
-  $options['target'] = '#' . $element['#id'];
-  $options['signature'] = Recurly_js::sign($element['#signing_options']);
-  $global_config['beforeInject'] = 'Drupal.recurly.beforeInject';
-  $global_config['afterInject'] = 'Drupal.recurly.afterInject';
-  $global_config['successHandler'] = 'Drupal.recurly.successHandler';
-
-  // Shorten up and prepare variables for inline JavaScript code.
-  $global_config = json_encode($global_config);
-  $field_config = json_encode($options);
-  $recurly_operation = $element['#recurly_operation'];
-
-  // Change the beforeInject option to be an actual function rather than string.
-  $global_config = str_replace('"Drupal.recurly.beforeInject"', 'Drupal.recurly.beforeInject', $global_config);
-  $global_config = str_replace('"Drupal.recurly.afterInject"', 'Drupal.recurly.afterInject', $global_config);
-  $global_config = str_replace('"Drupal.recurly.successHandler"', 'Drupal.recurly.successHandler', $global_config);
-  $recurly_public_key = variable_get('recurly_public_key', '');
-
-  // Add Recurly.js and the inline code to the page.
-  $element['#attached']['js'][] = drupal_get_path('module', 'recurly') . '/js/require.js';
-  $element['#attached']['js'][] = recurlyjs_path() . '/lib/recurly.js';
-  $element['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
-  $element['#attached']['js'][] = array(
-    'type' => 'inline',
-    'data' => "recurly.configure('$recurly_public_key'); recurly.$recurly_operation($field_config);",
-  );
-  // Convenience CSS file location option.
-  if (isset($element['#recurly_css'])) {
-    $element['#attached']['css'][] = $element['#recurly_css'];
-  }
-
-  // The token field is populated via JavaScript then confirmed on submission.
-  $element['recurly_token'] = array(
-    '#type' => 'hidden',
-    '#default_value' => '',
-    '#element_validate' => array('recurly_element_token_validate'),
-    '#attributes' => array('class' => array('recurly-token'))
-  );
-
-  return $element;
-}
-
-/**
- * FormAPI #element_validate handler for Recurly elements.
- */
-function recurly_element_token_validate($element, &$form_state) {
-  recurly_client_initialize();
-  try {
-    $form_state['recurly_result'] = Recurly_js::fetch($element['#value']);
-  }
-  catch (Recurly_NotFoundError $e) {
-    form_error($element, t('The information could not be processed because the payment gateway returned the following error: @error', array('@error' => $e->getMessage())));
-  }
-}
-
-/**
- * Retrieve the path to the Recurly.js library file.
- */
-function recurlyjs_path() {
-  // If we can find a path in the libraries directory to the Recurly PHP client
-  // library...
-  if (($path = libraries_get_path('recurly-js')) && file_exists($path . '/lib/recurly.js')) {
-    // Include the library files and configure authentication.
-    return $path;
-  }
-  else {
-    watchdog('recurly', 'Could not find the Recurly JS client library in sites/all/libraries/recurly-js.', array(), WATCHDOG_ERROR);
-    return FALSE;
-  }
-}
+//   // Convenience CSS file location option.
+//   if (isset($element['#recurly_css'])) {
+//     $element['#attached']['css'][] = $element['#recurly_css'];
+//   }
+//   return $element;
+// }
