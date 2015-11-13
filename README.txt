@@ -17,10 +17,10 @@ Installation
   sites/all/libraries so that "recurly.php" is located at
   sites/all/libraries/recurly/lib/recurly.php.
 
+- If you want to enable billing forms on your site, enable the recurlyjs module.
+
   IMPORTANT: This version of the Recurly module is only compatible with
   Recurly.js API v3 and the Recurly v2 API.
-
-- If you want to enable billing forms on your site, enable the recurlyjs module.
 
 - Log into your Recurly.com account and visit the API Credentials page.
   (developer/api_access) Copy the value for the Private API Key and subdomain
