@@ -108,6 +108,13 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
 
 /**
  * Form callback; Display the form for starting a subscription.
+ *
+ * @param string $entity_type
+ *   The type of the entity who is subscribing.
+ * @param object $entity
+ *   The entity who is subscribing.
+ * @param string $plan_code
+ *   The code of the plan to which the entity is subscribing.
  */
 function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $plan_code, $currency = NULL) {
   // Initialize the Recurly client with the site-wide settings.
