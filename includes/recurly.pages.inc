@@ -359,15 +359,15 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
       'recurly_subscription_plan_select__' . $mode,
       'recurly_subscription_plan_select',
     ),
-  array(
-    'plans' => $enabled_plans,
-    'entity_type' => $entity_type,
-    'entity' => $entity,
-    'currency' => $currency,
-    'mode' => $mode,
-    'subscriptions' => $plan_subscriptions,
-    'subscription_id' => $subscription_id,
-  ));
+    array(
+      'plans' => $enabled_plans,
+      'entity_type' => $entity_type,
+      'entity' => $entity,
+      'currency' => $currency,
+      'mode' => $mode,
+      'subscriptions' => $plan_subscriptions,
+      'subscription_id' => $subscription_id,
+    ));
 }
 
 /**
