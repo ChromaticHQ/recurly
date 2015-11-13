@@ -195,7 +195,11 @@ function recurly_menu() {
       $items[$entity_path . '/subscription/redeem-coupon'] = array(
         'title' => 'Redeem coupon',
         'page callback' => 'drupal_get_form',
-        'page arguments' => array('recurly_subscription_redeem_coupon', $entity_type, 1),
+        'page arguments' => array(
+          'recurly_subscription_redeem_coupon',
+          $entity_type,
+          1,
+        ),
         'access callback' => 'recurly_subscription_page_access',
         'access arguments' => array($entity_type, 1, 'update'),
         'type' => MENU_LOCAL_TASK,
@@ -256,7 +260,7 @@ function recurly_theme() {
       'start_date' => NULL,
       'end_date' => NULL,
       'current_period_start' => NULL,
-      'current_period_ends_at'=> NULL,
+      'current_period_ends_at' => NULL,
       'total' => NULL,
       'subscription_links' => array(),
       'message' => NULL,
@@ -278,17 +282,36 @@ function recurly_theme() {
     'template' => 'templates/recurly-credit-card-information',
   );
   $items['recurly_invoice'] = array(
-    'variables' => array('invoice' => NULL, 'invoice_account' => NULL, 'entity_type' => NULL, 'entity' => NULL),
+    'variables' => array(
+      'invoice' => NULL,
+      'invoice_account' => NULL,
+      'entity_type' => NULL,
+      'entity' => NULL,
+    ),
     'template' => 'templates/recurly-invoice',
     'file' => 'includes/recurly.pages.inc',
   );
   $items['recurly_invoice_list'] = array(
-    'variables' => array('invoices' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'per_page' => NULL, 'total' => NULL),
+    'variables' => array(
+      'invoices' => NULL,
+      'entity_type' => NULL,
+      'entity' => NULL,
+      'per_page' => NULL,
+      'total' => NULL,
+    ),
     'template' => 'templates/recurly-invoice-list',
     'file' => 'includes/recurly.pages.inc',
   );
   $items['recurly_subscription_plan_select'] = array(
-    'variables' => array('plans' => NULL, 'entity_type' => NULL, 'entity' => NULL, 'currency' => NULL, 'mode' => 'signup', 'subscriptions' => NULL, 'subscription_id' => NULL),
+    'variables' => array(
+      'plans' => NULL,
+      'entity_type' => NULL,
+      'entity' => NULL,
+      'currency' => NULL,
+      'mode' => 'signup',
+      'subscriptions' => NULL,
+      'subscription_id' => NULL,
+    ),
     'template' => 'templates/recurly-subscription-plan-select',
     'file' => 'includes/recurly.pages.inc',
     // The $mode of "change" or "signup" may be appended to the template name.
@@ -380,7 +403,12 @@ function recurly_entity_update($entity, $entity_type) {
     }
     catch (Recurly_Error $e) {
       drupal_set_message(t('The billing system reported an error: "@error" To ensure proper billing, please correct the problem if possible or contact support.', array('@error' => $e->getMessage())), 'warning');
-      watchdog('recurly', 'Account information could not be sent to the Recurly, it reported "@error" while trying to update !title with the values @values.', array('@error' => $e->getMessage(), '!title' => l(entity_label($entity_type, $entity), $entity_type . '/' . $id), '@values' => print_r($updated_values, 1)), WATCHDOG_ERROR);
+      watchdog('recurly', 'Account information could not be sent to the Recurly, it reported "@error" while trying to update !title with the values @values.',
+        array(
+          '@error' => $e->getMessage(),
+          '!title' => l(entity_label($entity_type, $entity), $entity_type . '/' . $id),
+          '@values' => print_r($updated_values, 1),
+        ), WATCHDOG_ERROR);
     }
   }
 }
@@ -446,9 +474,9 @@ function recurly_entity_delete($entity, $entity_type) {
  * already passed HTTP basic authentication, and the hook implementation will
  * received an already parsed notification object.
  *
- * @param $key
+ * @param string $key
  *   Listener URL key used to ensure notification was sent to the proper URL.
- * @param $subdomain
+ * @param string $subdomain
  *   If specified, this is the subdomain of the Recurly account that sent the
  *   push notification; defaults to NULL indicating it is the default account as
  *   configured in the Recurly settings.
@@ -480,11 +508,21 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
 
     // Log the incoming push notification if enabled.
     if (variable_get('recurly_push_logging', FALSE)) {
-      watchdog('recurly', 'Incoming @type push notification: !notification', array('@type' => $notification->type, '!notification' => '<pre>' . check_plain(print_r($notification, TRUE)) . '</pre>'), WATCHDOG_NOTICE);
+      watchdog('recurly', 'Incoming @type push notification: !notification',
+        array(
+          '@type' => $notification->type,
+          '!notification' => '<pre>' . check_plain(print_r($notification, TRUE)) . '</pre>'),
+        WATCHDOG_NOTICE);
     }
 
     // If this is a new, canceled, or updated account set the database record.
-    if (in_array($notification->type, array('new_account_notification', 'new_subscription_notification', 'canceled_account_notification', 'reactivated_account_notification', 'billing_info_updated_notification'))) {
+    if (in_array($notification->type,
+      array('new_account_notification',
+        'new_subscription_notification',
+        'canceled_account_notification',
+        'reactivated_account_notification',
+        'billing_info_updated_notification',
+      ))) {
       // Retrieve the full account record from Recurly.
       try {
         $recurly_account = Recurly_Account::get($notification->account->account_code);
@@ -535,7 +573,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
 /**
  * Initializes the Recurly API client with a given set of account settings.
  *
- * @param $settings
+ * @param array $settings
  *   An array of Recurly account settings including the following keys or NULL
  *   to use the site-wide account settings.
  *   - username: the API username to use
@@ -544,7 +582,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
  *   - environment: the current environment of the given account, either
  *     'sandbox' or 'production'.
  *
- * @return
+ * @return bool
  *   TRUE or FALSE indicating whether or not the client was initialized with the
  *   specified account settings.
  */
@@ -574,7 +612,7 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
     // Include the library files and configure authentication.
     require_once $path . '/lib/recurly.php';
 
-    // Required for the API
+    // Required for the API.
     Recurly_Client::$apiKey = $settings['api_key'];
   }
   else {
@@ -589,14 +627,14 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
 /**
  * Loads a Recurly account record based on the given conditions.
  *
- * @param $conditions
+ * @param array $conditions
  *   An associative array of values to look for in the conditions of the query;
  *   normally used to look-up on account_code or uid.
- * @param $local
+ * @param bool $local
  *   Boolean indicating whether or not to only return local data; defaults to
  *   FALSE, meaning it will attempt to load the full linked account object.
  *
- * @return
+ * @return object
  *   The fully loaded account object from Recurly if possible. If Recurly cannot
  *   be accessed, just returns an object representing the data stored locally.
  *   If the account no longer exists at Recurly, the returned object will
@@ -650,21 +688,23 @@ function recurly_account_load($conditions = array(), $local = FALSE) {
 }
 
 /**
- * Saves an account record, optionally exporting the saved data to Recurly as a
- * new account or update request as necessary.
+ * Saves an account record.
  *
- * @param $recurly_account
+ * Optionally exporting the saved data to Recurly as a new account or update
+ * request as necessary.
+ *
+ * @param object $recurly_account
  *   The Recurly account object to save.
- * @param $entity_type
+ * @param string $entity_type
  *   The entity type with which this account is associated.
- * @param $entity_id
+ * @param int $entity_id
  *   The ID of the entity with which this account is associated.
- * @param $export
+ * @param bool $export
  *   Boolean indicating whether or not the saved account information should also
  *   be exported to Recurly by either creating a new account or updating an
  *   existing account based on the saved values using the Recurly API.
  *
- * @return
+ * @return mixed
  *   FALSE on failure of either the local save or optional export or
  *   STATUS_INSERT or STATUS_UPDATE indicating the type of query performed to
  *   save the account information locally.
@@ -780,8 +820,8 @@ function recurly_account_delete($recurly_account, $cancelation_method = NULL) {
 /**
  * Check if an account has any active subscriptions.
  *
- * @return
- *   Boolean TRUE if the user has an active subscription, or FALSE if no
+ * @return bool
+ *   TRUE if the user has an active subscription, or FALSE if no
  *   active subscriptions are located.
  */
 function recurly_account_has_active_subscriptions($account_code) {
@@ -899,7 +939,12 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
       return empty($local_account) || empty($active_subscriptions) || !empty($_POST);
     }
   }
-  elseif (in_array($operation, array('change_plan_latest', 'cancel_latest', 'reactivate_latest'))) {
+  elseif (in_array($operation,
+    array(
+      'change_plan_latest',
+      'cancel_latest',
+      'reactivate_latest',
+    ))) {
     return FALSE;
   }
   elseif ($operation === 'signup' && variable_get('recurly_subscription_max', '1') !== '1') {
@@ -918,14 +963,15 @@ function _recurly_user_access($op, $account) {
 }
 
 /**
- * Returns an array of subscription plan objects for the current account,
- * retrieving them from a local cache if possible.
+ * Returns an array of subscription plan objects for the current account.
+ * 
+ * Retrieves them from a local cache if possible.
  *
- * @param $reset_cache
+ * @param bool $reset_cache
  *   Boolean indicating whether or not to reset the subscription plan cache when
  *   retrieving plans.
  *
- * @return
+ * @return array
  *   An array of subscription plan objects.
  */
 function recurly_subscription_plans($reset_cache = FALSE) {
@@ -951,10 +997,10 @@ function recurly_subscription_plans($reset_cache = FALSE) {
 /**
  * Returns an edit URL for a subscription plan.
  *
- * @param $plan
+ * @param object $plan
  *   The subscription plan object returned by the Recurly client.
  *
- * @return
+ * @return string
  *   The URL for the plan's edit page at Recurly.
  */
 function recurly_subscription_plan_edit_url($plan) {
@@ -978,8 +1024,7 @@ function recurly_subscription_in_trial($subscription) {
 }
 
 /**
- * Returns the base Recurly URL for the current account with an optional path
- * appended to it.
+ * Returns base Recurly URL for the current account w/optional path appended.
  */
 function recurly_hosted_url($path = '') {
   // Generate the subdomain to use for the current account.
@@ -995,7 +1040,7 @@ function recurly_hosted_url($path = '') {
  * have variable locations, such as updating billing information or changing
  * plan levels.
  *
- * $param $operation
+ * @param string $operation
  *   May be one of the following operations:
  *    - select_plan ($context contains account_code or entity_type/entity_id)
  *    - change_plan
@@ -1003,9 +1048,10 @@ function recurly_hosted_url($path = '') {
  *    - update_billing ($context contains account_code)
  *    - subscribe ($context contains plan_code)
  *    - reactivate ($context contains account_code or entity_type/entity_id)
- * $param $context
+ * @param array $context
  *   An array of contextual information needed for generating the link.
- * @return
+ *
+ * @return string
  *   A string containing a URL for the operation, or NULL if no module is
  *   available to handle the operation.
  */
@@ -1034,12 +1080,16 @@ function recurly_recurly_url_info($operation, $context) {
   switch ($operation) {
     case 'select_plan':
       return url($parts[0] . '/' . $parts[1] . '/subscription/signup');
+
     case 'change_plan':
       return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
+
     case 'cancel':
       return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/cancel');
+
     case 'reactivate':
       return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
+
     case 'redeem_coupon':
       return url($parts[0] . '/' . $parts[1] . '/subscription/redeem-coupon');
   }
@@ -1070,15 +1120,6 @@ function _recurly_url_entity_url_parts($context) {
  * Provide a list of currencies supported by Recurly.
  */
 function recurly_currency_list() {
-  // Provide native support for the same currencies that Recurly supports:
-  // Currency code => array(
-  //   0 => 'symbol before',
-  //   1 => 'symbol after',
-  //   2 => 'thousand separator',
-  //   3 => 'decimal_separator',
-  //   4 => 'decimals',
-  //   5 => 'rounding_step',
-  // );
   $currencies = array(
     'USD' => array('$', ' USD'),
     'AUD' => array('$', ' AUD'),
@@ -1172,18 +1213,25 @@ function recurly_format_state($state) {
   switch ($state) {
     case 'active':
       return t('Active');
+
     case 'canceled':
       return t('Canceled (will not renew)');
+
     case 'expired':
       return t('Expired');
+
     case 'future':
       return t('Future Activation');
+
     case 'pending_subscription':
       return t('Switching to new plan');
+
     case 'in_trial':
       return t('Trial');
+
     case 'live':
       return t('Live');
+
     case 'past_due':
       return t('Past Due');
   }
@@ -1208,7 +1256,7 @@ function recurly_format_currency($price_in_cents, $currency, $html = FALSE) {
   }
   else {
     // Convert to a decimal amount.
-    $float = $price_in_cents/100;
+    $float = $price_in_cents / 100;
 
     // Round the amount if necessary i.e. Francs round up to the nearest 0.05.
     if ($rounding_step) {
@@ -1264,6 +1312,7 @@ function recurly_format_price_interval($amount, $count, $unit, $html = FALSE) {
     switch ($unit) {
       case 'days':
         return t('!amount per day', $replacements);
+
       case 'months':
         return t('!amount per month', $replacements);
     }
@@ -1278,6 +1327,7 @@ function recurly_format_price_interval($amount, $count, $unit, $html = FALSE) {
     switch ($unit) {
       case 'days':
         return t('!amount every !count days', $replacements);
+
       case 'months':
         return t('!amount every !count months', $replacements);
     }
@@ -1291,12 +1341,16 @@ function recurly_format_transaction_status($status) {
   switch ($status) {
     case 'success':
       return t('Successful payment');
+
     case 'failed':
       return t('Failed payment');
+
     case 'voided':
       return t('Voided');
+
     case 'declined':
       return t('Card declined');
+
     default:
       return check_plain($status);
   }
@@ -1309,8 +1363,9 @@ function recurly_format_transaction_status($status) {
  *   The Recurly coupon object being formatted for display.
  * @param string $currency
  *   The currency code in which the coupon is being redeemed.
- * @param boolean $html
+ * @param bool $html
  *   Whether to return the formatted string with wrapping HTML or not.
+ *
  * @return string
  *   The formatted string ready for printing.
  */

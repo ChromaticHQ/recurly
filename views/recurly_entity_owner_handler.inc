@@ -52,7 +52,7 @@ class recurly_entity_owner_handler extends views_handler_relationship {
     $join->construct();
     $join->adjusted = TRUE;
 
-    // use a short alias for this:
+    // Use a short alias for this:
     $alias = $def['table'] . '_' . $this->table;
 
     $this->alias = $this->query->add_relationship($alias, $join, $this->definition['base'], $this->relationship);

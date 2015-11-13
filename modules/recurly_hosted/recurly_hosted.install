@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Install hooks for Recurly Hosted module.
+ */
+
+/**
  * Implements hook_requirements().
  */
 function recurly_hosted_requirements($phase) {
