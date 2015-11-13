@@ -193,6 +193,11 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
 
 /**
  * Form callback; Display the form for updating billing information.
+ *
+ * @param string $entity_type
+ *   The type of the entity whose info is being updated.
+ * @param object $entity
+ *   The entity whose info is being updated.
  */
 function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity) {
   // Initialize the Recurly client with the site-wide settings.
