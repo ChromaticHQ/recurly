@@ -222,8 +222,8 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
 
+  _recurlyjs_form_attach_js($form);
   _recurlyjs_append_billing_fields($form);
-
   // Populate #default_value with existing billing info.
   $excluded_fields = array('month', 'year');
   foreach (element_children($form) as $form_element_name) {
@@ -231,8 +231,6 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
       $form[$form_element_name]['#default_value'] = $form_element_name != 'postal_code' ? $billing_info->$form_element_name : $billing_info->zip;
     }
   }
-
-  _recurlyjs_form_attach_js($form);
 
   $form['actions'] = array(
     '#type' => 'actions',
@@ -249,6 +247,7 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
  * Submit handler for recurlyjs_update_billing_form().
  */
 function recurlyjs_update_billing_submit($form, $form_state) {
+  $entity_type = $form['#entity_type'];
   $entity = $form['#entity'];
   $recurly_token = isset($form_state['values']['recurly-token']) ? $form_state['values']['recurly-token'] : NULL;
 
