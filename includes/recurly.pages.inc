@@ -117,7 +117,9 @@ function recurly_subscription_list_page($entity_type, $entity) {
       '#current_period_start' => recurly_format_date($subscription->current_period_started_at),
       '#current_period_ends_at' => recurly_format_date($subscription->current_period_ends_at),
       '#total' => recurly_format_currency($total, $subscription->currency),
-      '#subscription_links' => $links ? theme('links', array('links' => $links, 'attributes' => array('class' => array('inline', 'links')))) : NULL,
+      '#subscription_links' => $links ? theme('links', array(
+        'links' => $links,
+        'attributes' => array('class' => array('inline', 'links')))) : NULL,
       '#message' => $message,
       '#subscription' => $subscription,
       '#account' => $account,
@@ -186,10 +188,13 @@ function recurly_subscription_state_message($state, $context) {
   switch ($state) {
     case 'active':
       return '';
+
     case 'closed':
       return t('This account is closed.');
+
     case 'in_trial':
       return t('Currently in trial period.');
+
     case 'past_due':
       $url = recurly_url('update_billing', $context);
       if ($url) {
@@ -216,19 +221,22 @@ function recurly_subscription_state_message($state, $context) {
       }
     case 'pending_subscription':
       return t('This plan will be changed to @plan on @date.', array('@plan' => $context['subscription']->pending_subscription->plan->name, '@date' => recurly_format_date($context['subscription']->current_period_ends_at)));
+
     case 'future':
       return t('This plan has not started yet. Please contact support if you have any questions.');
+
     default:
       return '';
+
   }
 }
 
 /**
  * Get a list of all states in which a subscription exists currently.
  *
- * @param $subscription
+ * @param object $subscription
  *   A Recurly subscription object.
- * @param $account
+ * @param object $account
  *   A Recurly account object.
  */
 function recurly_subscription_get_states($subscription, $account) {
@@ -278,13 +286,13 @@ function recurly_subscription_get_states($subscription, $account) {
  * This menu callback is used both for new subscriptions and for updating
  * existing subscriptions.
  *
- * @param $entity_type
+ * @param string $entity_type
  *   The type of the entity whose subscription is being changed.
- * @param $entity
+ * @param object $entity
  *   The entity whose subscription is being changed.
- * @param $currency
+ * @param string $currency
  *   If this is a new subscription, the currency to be used.
- * @param $subscription_id
+ * @param int $subscription_id
  *   The UUID of the current subscription if changing the plan on an existing
  *   subscription.
  */
@@ -346,11 +354,24 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
       }
     }
   }
-  return theme(array('recurly_subscription_plan_select__' . $mode, 'recurly_subscription_plan_select'), array('plans' => $enabled_plans, 'entity_type' => $entity_type, 'entity' => $entity, 'currency' => $currency, 'mode' => $mode, 'subscriptions' => $plan_subscriptions, 'subscription_id' => $subscription_id));
+  return theme(
+    array(
+      'recurly_subscription_plan_select__' . $mode,
+      'recurly_subscription_plan_select',
+    ),
+  array(
+    'plans' => $enabled_plans,
+    'entity_type' => $entity_type,
+    'entity' => $entity,
+    'currency' => $currency,
+    'mode' => $mode,
+    'subscriptions' => $plan_subscriptions,
+    'subscription_id' => $subscription_id,
+  ));
 }
 
 /**
- * Shared preprocess function for the presentation of the signup and change page.
+ * Shared preprocess function for the presentation of the signup & change page.
  */
 function template_preprocess_recurly_subscription_plan_select(&$variables) {
   $plans = $variables['plans'];
@@ -400,8 +421,19 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
       'amount' => $unit_amount,
       'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
       'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
-      'signup_url' => recurly_url('subscribe', array('entity_type' => $entity_type, 'entity' => $entity, 'plan_code' => $plan_code, 'currency' => $currency)),
-      'change_url' => $current_subscription ? recurly_url('change_plan', array('entity_type' => $entity_type, 'entity' => $entity, 'subscription' => $current_subscription, 'plan_code' => $plan_code)) : NULL,
+      'signup_url' => recurly_url('subscribe', array(
+        'entity_type' => $entity_type,
+        'entity' => $entity,
+        'plan_code' => $plan_code,
+        'currency' => $currency,
+      )),
+      'change_url' => $current_subscription ? recurly_url('change_plan',
+        array(
+          'entity_type' => $entity_type,
+          'entity' => $entity,
+          'subscription' => $current_subscription,
+          'plan_code' => $plan_code,
+        )) : NULL,
       'selected' => FALSE,
     );
 
@@ -430,7 +462,7 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
 }
 
 /**
- * Page callback; Prepare the call to recurly_subscription_plan_change_confirm().
+ * Page callback; Prepare call to recurly_subscription_plan_change_confirm().
  */
 function recurly_subscription_plan_change_page($entity_type, $entity, $subscription_id, $new_plan_code) {
   // Initialize the Recurly client with the site-wide settings.
@@ -650,10 +682,10 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   );
 
   if (!$past_due && $prorated_amount = recurly_subscription_calculate_refund($subscription, 'prorated')) {
-    $form['terminate']['refund_amount']['#options']['terminate_prorated'] =  t('@amount - Prorated', array('@amount' => recurly_format_currency($prorated_amount, $subscription->currency)));
+    $form['terminate']['refund_amount']['#options']['terminate_prorated'] = t('@amount - Prorated', array('@amount' => recurly_format_currency($prorated_amount, $subscription->currency)));
   }
   if (!$past_due && $full_amount = recurly_subscription_calculate_refund($subscription, 'full')) {
-    $form['terminate']['refund_amount']['#options']['terminate_full'] =  t('@amount - Full', array('@amount' => recurly_format_currency($full_amount, $subscription->currency)));
+    $form['terminate']['refund_amount']['#options']['terminate_full'] = t('@amount - Full', array('@amount' => recurly_format_currency($full_amount, $subscription->currency)));
   }
 
   $form['terminate']['admin_description'] = array(
@@ -725,9 +757,11 @@ function recurly_subscription_cancel_confirm_submit($form, &$form_state) {
         case 'terminate_none':
           $subscription->terminateWithoutRefund();
           break;
+
         case 'terminate_prorated':
           $subscription->terminateAndPartialRefund();
           break;
+
         case 'terminate_full':
           $subscription->terminateAndRefund();
           break;
@@ -810,7 +844,14 @@ function recurly_invoices_page($entity_type, $entity) {
   $invoice_list = Recurly_InvoiceList::getForAccount($account->account_code, array('per_page' => $per_page));
   $invoices = recurly_pager_results($invoice_list, $per_page);
 
-  return theme('recurly_invoice_list', array('invoices' => $invoices, 'entity_type' => $entity_type, 'entity' => $entity, 'per_page' => $per_page, 'total' => $invoice_list->count()));
+  return theme('recurly_invoice_list',
+    array(
+      'invoices' => $invoices,
+      'entity_type' => $entity_type,
+      'entity' => $entity,
+      'per_page' => $per_page,
+      'total' => $invoice_list->count(),
+    ));
 }
 
 /**
@@ -883,7 +924,13 @@ function recurly_invoice_page($entity_type, $entity, $invoice_number) {
   }
 
   drupal_set_title(t('Invoice #@number', array('@number' => $invoice->invoice_number)));
-  return theme('recurly_invoice', array('invoice' => $invoice, 'invoice_account' => $invoice_account, 'entity_type' => $entity_type, 'entity' => $entity));
+  return theme('recurly_invoice',
+    array(
+      'invoice' => $invoice,
+      'invoice_account' => $invoice_account,
+      'entity_type' => $entity_type,
+      'entity' => $entity,
+    ));
 }
 
 /**
@@ -903,7 +950,10 @@ function recurly_subscription_redeem_coupon($form, &$form_state, $entity_type, $
   // and if they need to confirm replacing their coupon with a new one.
   if ($confirming_replacement_coupon) {
     $form_state['confirmed'] = TRUE;
-    $help = '<p>' . t('Your account already has a coupon that will be applied to your next invoice. Are you sure you want to replace your existing coupon "!old_coupon" with "!new_coupon"? You may not be able to use your previous coupon again.', array('!old_coupon' => recurly_format_coupon($form_state['existing_coupon'], $form_state['existing_redemption']->currency), '!new_coupon' => recurly_format_coupon($form_state['coupon'], $form_state['values']['coupon_currency']))) . '</p>';
+    $help = '<p>' . t('Your account already has a coupon that will be applied to your next invoice. Are you sure you want to replace your existing coupon "!old_coupon" with "!new_coupon"? You may not be able to use your previous coupon again.',
+      array(
+        '!old_coupon' => recurly_format_coupon($form_state['existing_coupon'], $form_state['existing_redemption']->currency),
+        '!new_coupon' => recurly_format_coupon($form_state['coupon'], $form_state['values']['coupon_currency']))) . '</p>';
   }
   elseif ($account->redemption) {
     $form_state['existing_redemption'] = $account->redemption->get();
@@ -1061,7 +1111,7 @@ function template_preprocess_recurly_invoice(&$variables) {
       $transaction_total += $transaction->amount_in_cents;
     }
     else {
-      $variables['transactions'][$transaction->uuid]['amount'] = '('. $variables['transactions'][$transaction->uuid]['amount'] . ')';
+      $variables['transactions'][$transaction->uuid]['amount'] = '(' . $variables['transactions'][$transaction->uuid]['amount'] . ')';
     }
   }
   $variables['transactions_total'] = recurly_format_currency($transaction_total, $invoice->currency);
@@ -1120,14 +1170,12 @@ function recurly_invoice_pdf($entity_type, $entity, $invoice_number) {
 /**
  * Utility function to retrieve a specific page of results from a Recurly_Pager.
  *
- * @param $pager_object
+ * @param object $pager_object
  *   Any object that extends a Recurly_Pager object, such as a
  *   Recurly_InvoiceList, Recurly_SubscriptionList, or Recurly_TransactionList.
- * @param $element
- *   A unique identifier for this pager.
- * @param $per_page
+ * @param int $per_page
  *   The number of items to display per page.
- * @param $page_num
+ * @param int $page_num
  *   The desired page number to display. Usually automatically determined from
  *   the URL.
  */
