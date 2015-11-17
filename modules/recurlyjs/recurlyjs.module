@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Uses Recurly.js to provide a Form API field to subscribe to a service.
+ * Uses Recurly.js to process subscription and billing forms.
  */
 
 /**

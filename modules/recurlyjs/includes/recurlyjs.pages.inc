@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Menu callbacks for the Recurly.js module.
+ * Callbacks for the Recurly.js module.
  */
 
 /**

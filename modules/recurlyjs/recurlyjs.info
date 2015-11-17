@@ -1,5 +1,5 @@
 name = Recurly.js
-description = Provides a Form API Recurly.js field and integration with the Field and Entity systems.
+description = Provides integration between Drupal and Recurlyjs.
 dependencies[] = recurly
 core = 7.x
 package = Recurly
