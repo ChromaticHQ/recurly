@@ -10,29 +10,28 @@
  */
 function recurly_requirements($phase) {
   $requirements = array();
-  $t = get_t();
   if ($phase == 'runtime') {
     $requirements['recurly'] = array(
-      'title' => $t('Recurly'),
+      'title' => t('Recurly'),
     );
     // Verify that the recurly php library is present.
     $path = libraries_get_path('recurly');
     if ($path && file_exists($path . '/lib/recurly.php')) {
-      $requirements['recurly']['value'] = $t('The required Recurly PHP library is installed.');
+      $requirements['recurly']['value'] = t('The required Recurly PHP library is installed.');
       $requirements['recurly']['severity'] = REQUIREMENT_OK;
     }
     else {
-      $requirements['recurly']['value'] = $t('The required Recurly PHP library is missing. Download the Recurly PHP library from <a href="https://github.com/recurly/recurly-client-php">https://github.com/recurly/recurly-client-php</a> and place it in sites/all/libraries so that "recurly.php" is located at sites/all/libraries/recurly/lib/recurly.php');
+      $requirements['recurly']['value'] = t('The required Recurly PHP library is missing. Download the Recurly PHP library from <a href="https://github.com/recurly/recurly-client-php">https://github.com/recurly/recurly-client-php</a> and place it in sites/all/libraries so that "recurly.php" is located at sites/all/libraries/recurly/lib/recurly.php');
       $requirements['recurly']['severity'] = REQUIREMENT_ERROR;
     }
   }
 
   // Ensure cURL exists if SimpleTest hasn't checked it already.
-  if (!module_exists('simpletest') && !function_exists('curl_init')) {
+  if (!\Drupal::moduleHandler()->moduleExists('simpletest') && !function_exists('curl_init')) {
     $requirements['recurly_curl'] = array(
-      'title' => $t('cURL'),
+      'title' => t('cURL'),
       'severity' => REQUIREMENT_ERROR,
-      'description' => $t('Recurly module requires the <a href="http://php.net/manual/en/curl.setup.php">PHP cURL library</a>.'),
+      'description' => t('Recurly module requires the <a href="http://php.net/manual/en/curl.setup.php">PHP cURL library</a>.'),
     );
   }
 
@@ -96,7 +95,7 @@ function recurly_schema() {
  */
 function recurly_install() {
   // Initialize the Recurly listener key variable.
-  variable_set('recurly_listener_key', substr(drupal_hash_base64(REQUEST_TIME), 0, 8));
+  \Drupal::configFactory()->getEditable('recurly.settings')->set('recurly_listener_key', substr(\Drupal\Component\Utility\Crypt::hashBase64(REQUEST_TIME), 0, 8))->save();
 }
 
 /**
@@ -104,26 +103,31 @@ function recurly_install() {
  */
 function recurly_uninstall() {
   // Remove the site-wide account settings.
-  variable_del('recurly_subdomain');
-  variable_del('recurly_private_api_key');
-  variable_del('recurly_public_key');
-  variable_del('recurly_default_currency');
-  variable_del('recurly_pages');
-  variable_del('recurly_token_mapping');
+  \Drupal::config('recurly.settings')->clear('recurly_subdomain')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_private_api_key')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_public_key')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_default_currency')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_pages')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_token_mapping')->save();
 
-  variable_del('recurly_subscription_cancel_behavior');
-  variable_del('recurly_subscription_display');
-  variable_del('recurly_subscription_downgrade_timeframe');
-  variable_del('recurly_subscription_max');
-  variable_del('recurly_subscription_plans');
-  variable_del('recurly_subscription_upgrade_timeframe');
+  \Drupal::config('recurly.settings')->clear('recurly_subscription_cancel_behavior')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_subscription_display')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_subscription_downgrade_timeframe')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_subscription_max')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_subscription_plans')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_subscription_upgrade_timeframe')->save();
 
-  variable_del('recurly_entity_type');
-  foreach (array_keys(entity_get_info()) as $entity_name) {
-    variable_del('recurly_bundle_' . $entity_name);
+  \Drupal::config('recurly.settings')->clear('recurly_entity_type')->save();
+  foreach (array_keys(\Drupal::entityManager()->getDefinitions()) as $entity_name) {
+    // @FIXME
+// // @FIXME
+// // The correct configuration object could not be determined. You'll need to
+// // rewrite this call manually.
+// variable_del('recurly_bundle_' . $entity_name);
+
   }
 
   // Remove the push notification settings.
-  variable_del('recurly_listener_key');
-  variable_del('recurly_push_logging');
+  \Drupal::config('recurly.settings')->clear('recurly_listener_key')->save();
+  \Drupal::config('recurly.settings')->clear('recurly_push_logging')->save();
 }

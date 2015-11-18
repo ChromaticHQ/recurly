@@ -13,43 +13,68 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
   );
-  $form['recurlyjs']['recurlyjs_address_requirement'] = array(
-    '#title' => t('Address requirement level'),
-    '#type' => 'select',
-    '#options' => array(
-      'full' => t('Full'),
-      'zipstreet' => t('Zip code and street'),
-      'zip' => t('Zip code only'),
-      'none' => t('None'),
-    ),
-    '#default_value' => variable_get('recurlyjs_address_requirement', 'full'),
-    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".',
-      array(
-        '!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'),
-        recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
-  );
-  $form['recurlyjs']['recurlyjs_enable_add_ons'] = array(
-    '#title' => t('Enable Add-ons'),
-    '#type' => 'checkbox',
-    '#default_value' => variable_get('recurlyjs_enable_add_ons', 1),
-    '#description' => t('Add-ons are options that may be displayed in addition to the base subscription. If a subscription does not have add-ons, nothing additional will be displayed.'),
-  );
-  $form['recurlyjs']['recurlyjs_enable_coupons'] = array(
-    '#title' => t('Enable coupons'),
-    '#type' => 'checkbox',
-    '#default_value' => variable_get('recurlyjs_enable_coupons', 0),
-    '#description' => t('Display the <em>Coupon Code</em> field on Recurly.js subscription forms.'),
-  );
-  $form['recurlyjs']['recurlyjs_accept_paypal'] = array(
-    '#title' => t('Enable PayPal'),
-    '#type' => 'checkbox',
-    '#default_value' => variable_get('recurlyjs_accept_paypal', FALSE),
-    '#description' => t('Show an option to pay with PayPal. This requires a PayPal Business account with Referential Transactions enabled. <a href="https://docs.recurly.com/payment-gateways/paypal-payments">See the Recurly Paypal documentation</a>.'),
-  );
+  // @FIXME
+// // @FIXME
+// // This looks like another module's variable. You'll need to rewrite this call
+// // to ensure that it uses the correct configuration object.
+// $form['recurlyjs']['recurlyjs_address_requirement'] = array(
+//     '#title' => t('Address requirement level'),
+//     '#type' => 'select',
+//     '#options' => array(
+//       'full' => t('Full'),
+//       'zipstreet' => t('Zip code and street'),
+//       'zip' => t('Zip code only'),
+//       'none' => t('None'),
+//     ),
+//     '#default_value' => variable_get('recurlyjs_address_requirement', 'full'),
+//     '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".',
+//       array(
+//         '!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'),
+//         recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
+//   );
+
+  // @FIXME
+// // @FIXME
+// // This looks like another module's variable. You'll need to rewrite this call
+// // to ensure that it uses the correct configuration object.
+// $form['recurlyjs']['recurlyjs_enable_add_ons'] = array(
+//     '#title' => t('Enable Add-ons'),
+//     '#type' => 'checkbox',
+//     '#default_value' => variable_get('recurlyjs_enable_add_ons', 1),
+//     '#description' => t('Add-ons are options that may be displayed in addition to the base subscription. If a subscription does not have add-ons, nothing additional will be displayed.'),
+//   );
+
+  // @FIXME
+// // @FIXME
+// // This looks like another module's variable. You'll need to rewrite this call
+// // to ensure that it uses the correct configuration object.
+// $form['recurlyjs']['recurlyjs_enable_coupons'] = array(
+//     '#title' => t('Enable coupons'),
+//     '#type' => 'checkbox',
+//     '#default_value' => variable_get('recurlyjs_enable_coupons', 0),
+//     '#description' => t('Display the <em>Coupon Code</em> field on Recurly.js subscription forms.'),
+//   );
+
+  // @FIXME
+// // @FIXME
+// // This looks like another module's variable. You'll need to rewrite this call
+// // to ensure that it uses the correct configuration object.
+// $form['recurlyjs']['recurlyjs_accept_paypal'] = array(
+//     '#title' => t('Enable PayPal'),
+//     '#type' => 'checkbox',
+//     '#default_value' => variable_get('recurlyjs_accept_paypal', FALSE),
+//     '#description' => t('Show an option to pay with PayPal. This requires a PayPal Business account with Referential Transactions enabled. <a href="https://docs.recurly.com/payment-gateways/paypal-payments">See the Recurly Paypal documentation</a>.'),
+//   );
+
 
   $jquery_requirement = FALSE;
-  if (module_exists('jquery_update')) {
-    $jquery_version = variable_get('jquery_update_jquery_version', '1.10');
+  if (\Drupal::moduleHandler()->moduleExists('jquery_update')) {
+    // @FIXME
+// // @FIXME
+// // This looks like another module's variable. You'll need to rewrite this call
+// // to ensure that it uses the correct configuration object.
+// $jquery_version = variable_get('jquery_update_jquery_version', '1.10');
+
     if (version_compare('1.7', $jquery_version) < 0) {
       $jquery_requirement = TRUE;
     }
@@ -80,7 +105,7 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
 
     // If the account is only allowed one subscription total, they shouldn't
     // ever see this signup page.
-    if (variable_get('recurly_subscription_max', '1') === '1' && count($current_subscriptions) && empty($_POST)) {
+    if (\Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1' && count($current_subscriptions) && empty($_POST)) {
       $current_subscription = reset($current_subscriptions);
       drupal_set_message(t('This account already has a @plan plan!', array('@plan' => $current_subscription->plan->name)));
       drupal_goto($entity_type . '/' . $id . '/subscription');
@@ -96,14 +121,23 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
   }
   // Although this menu callback contains little else besides the subscription
   // form, it's a separate function because it's highly likely to need theming.
-  $form = drupal_get_form('recurlyjs_subscribe_form', $entity_type, $entity, $plan_code, $currency);
+  $form = \Drupal::formBuilder()->getForm('recurlyjs_subscribe_form', $entity_type, $entity, $plan_code, $currency);
   try {
     $plan = Recurly_Plan::get($plan_code);
   }
   catch (Recurly_NotFoundError $e) {
     return MENU_NOT_FOUND;
   }
-  return theme('recurlyjs_subscribe_page', array('form' => $form));
+  // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// return theme('recurlyjs_subscribe_page', array('form' => $form));
+
 }
 
 /**
@@ -128,19 +162,24 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
   $form['#plan_code'] = $plan_code;
-  $form['#currency'] = $currency ?: variable_get('recurly_default_currency', 'USD');
+  $form['#currency'] = $currency ?: \Drupal::config('recurly.settings')->get('recurly_default_currency');
 
   _recurlyjs_form_attach_js($form);
   _recurlyjs_append_billing_fields($form);
-  if (variable_get('recurlyjs_enable_coupons')) {
-    $form['coupon_code'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Coupon Code'),
-      '#description' => t('Recurly coupon code to be applied to subscription.'),
-      '#element_validate' => array('_recurlyjs_element_validate_coupon_code'),
-      '#weight' => -250,
-    );
-  }
+  // @FIXME
+// // @FIXME
+// // This looks like another module's variable. You'll need to rewrite this call
+// // to ensure that it uses the correct configuration object.
+// if (variable_get('recurlyjs_enable_coupons')) {
+//     $form['coupon_code'] = array(
+//       '#type' => 'textfield',
+//       '#title' => t('Coupon Code'),
+//       '#description' => t('Recurly coupon code to be applied to subscription.'),
+//       '#element_validate' => array('_recurlyjs_element_validate_coupon_code'),
+//       '#weight' => -250,
+//     );
+//   }
+
 
   $form['actions'] = array(
     '#type' => 'actions',
@@ -186,7 +225,7 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
     $subscription->create();
   }
   catch (Recurly_Error $e) {
-    watchdog('recurlyjs', 'Unable to create subscription. Received the following error: @error', array('@error' => $e->getMessage()));
+    \Drupal::logger('recurlyjs')->notice('Unable to create subscription. Received the following error: @error', array('@error' => $e->getMessage()));
     drupal_set_message(t('Unable to create subscription.'), 'error');
     $form_state['rebuild'] = TRUE;
     return;
@@ -201,7 +240,7 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
     recurly_account_save($account, $entity_type, $entity_id);
   }
   catch (Recurly_Error $e) {
-    watchdog('recurly', 'New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
+    \Drupal::logger('recurly')->notice('New subscriber account could not be retreived from Recurly. Received the following error: @error', array('@error' => $e->getMessage()));
   }
 
   $form_state['redirect'] = $entity_type . '/' . $entity_id . '/subscription';
@@ -232,17 +271,17 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
     $billing_info = Recurly_BillingInfo::get($recurly_account->account_code);
     $form['existing'] = array(
       '#theme' => 'recurly_credit_card_information',
-      '#card_type' => check_plain($billing_info->card_type),
-      '#first_name' => check_plain($billing_info->first_name),
-      '#last_name' => check_plain($billing_info->last_name),
-      '#year' => check_plain($billing_info->year),
-      '#month' => check_plain($billing_info->month),
+      '#card_type' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->card_type),
+      '#first_name' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->first_name),
+      '#last_name' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->last_name),
+      '#year' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->year),
+      '#month' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->month),
       '#mask_length' => strcasecmp($billing_info->card_type, 'American Express') === 0 ? 11 : 12,
-      '#last_four' => check_plain($billing_info->last_four),
+      '#last_four' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->last_four),
     );
   }
   catch (Recurly_NotFoundError $e) {
-    watchdog('recurlyjs', 'Unable to retrieve billing information. Received the following error: @error', array('@error' => $e->getMessage()));
+    \Drupal::logger('recurlyjs')->notice('Unable to retrieve billing information. Received the following error: @error', array('@error' => $e->getMessage()));
     drupal_set_message(t('Unable to retrieve billing information.'), 'error');
     return $form;
   }
@@ -254,7 +293,7 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
   _recurlyjs_append_billing_fields($form);
   // Populate #default_value with existing billing info.
   $excluded_fields = array('month', 'year');
-  foreach (element_children($form) as $form_element_name) {
+  foreach (\Drupal\Core\Render\Element::children($form) as $form_element_name) {
     if (!in_array($form_element_name, $excluded_fields)) {
       $form[$form_element_name]['#default_value'] = $form_element_name != 'postal_code' ? $billing_info->$form_element_name : $billing_info->zip;
     }
@@ -502,7 +541,7 @@ function _recurlyjs_coupon_valid_for_plan(Recurly_Coupon $recurly_coupon, $plan_
  *   A Drupal form array.
  */
 function _recurlyjs_form_attach_js(&$form) {
-  $recurly_public_key = variable_get('recurly_public_key', '');
+  $recurly_public_key = \Drupal::config('recurly.settings')->get('recurly_public_key');
 
   // Add Recurly.js and the inline code to the page.
   $form['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';

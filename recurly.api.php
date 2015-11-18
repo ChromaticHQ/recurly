@@ -34,7 +34,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
       mymodule_reset_billing_limits($local_account->entity_id, $next_reset);
     }
     else {
-      watchdog('recurly', 'Recurly received a Push notification, but was unable to locate the account in the local database. The push notification contained the following information: @notification', array('@notification' => print_r($notification, 1)), WATCHDOG_ALERT);
+      \Drupal::logger('recurly')->alert('Recurly received a Push notification, but was unable to locate the account in the local database. The push notification contained the following information: @notification', array('@notification' => print_r($notification, 1)));
     }
   }
 
@@ -45,7 +45,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
       // Upgrade the account by assigning roles, changing fields, etc.
     }
     else {
-      watchdog('recurly', 'Recurly received a Push notification, but was unable to locate the account in the local database. The push notification contained the following information: @notification', array('@notification' => print_r($notification, 1)), WATCHDOG_ALERT);
+      \Drupal::logger('recurly')->alert('Recurly received a Push notification, but was unable to locate the account in the local database. The push notification contained the following information: @notification', array('@notification' => print_r($notification, 1)));
     }
   }
 }
@@ -95,7 +95,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
  */
 function hook_recurly_url_info($operation, $context) {
   // Only provide URLs for built-in page types.
-  $recurly_entity_type = variable_get('recurly_entity_type', 'user');
+  $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   $parts = _recurly_url_entity_url_parts($context);
   if (empty($recurly_entity_type) || empty($parts)) {
     return;
@@ -103,15 +103,27 @@ function hook_recurly_url_info($operation, $context) {
 
   switch ($operation) {
     case 'select_plan':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/signup');
+      // @FIXME
+// url() expects a route name or an external URI.
+// return url($parts[0] . '/' . $parts[1] . '/subscription/signup');
+
 
     case 'change_plan':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
+      // @FIXME
+// url() expects a route name or an external URI.
+// return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
+
 
     case 'cancel':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/cancel');
+      // @FIXME
+// url() expects a route name or an external URI.
+// return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/cancel');
+
 
     case 'reactivate':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
+      // @FIXME
+// url() expects a route name or an external URI.
+// return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
+
   }
 }

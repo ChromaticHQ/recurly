@@ -1,0 +1,34 @@
+recurly.settings:
+  type: mapping
+  label: Settings
+  mapping:
+    recurly_subscription_max:
+      type: string
+    recurly_default_currency:
+      type: string
+    recurly_public_key:
+      type: string
+    recurly_subscription_display:
+      type: string
+    recurly_subscription_upgrade_timeframe:
+      type: string
+    recurly_subscription_downgrade_timeframe:
+      type: string
+    recurly_subscription_cancel_behavior:
+      type: string
+    recurly_entity_type:
+      type: string
+    recurly_pages:
+      type: string
+    recurly_coupon_page:
+      type: string
+    recurly_subdomain:
+      type: string
+    recurly_listener_key:
+      type: string
+    recurly_push_logging:
+      type: boolean
+    recurly_private_api_key:
+      type: string
+    recurly_date_format:
+      type: string

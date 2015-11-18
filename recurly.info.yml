@@ -1,0 +1,7 @@
+name: Recurly
+description: 'Provides API integration with Recurly using their PHP client library.'
+dependencies:
+  - libraries
+core: 8.x
+package: Recurly
+type: module

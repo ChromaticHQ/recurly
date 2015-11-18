@@ -1,0 +1,10 @@
+recurly.settings_form:
+  route_name: recurly.settings_form
+  title: Settings
+  weight: -10
+  base_route: recurly.settings_form
+recurly.subscription_plans_overview:
+  route_name: recurly.subscription_plans_overview
+  title: 'Subscription plans'
+  weight: -5
+  base_route: recurly.settings_form

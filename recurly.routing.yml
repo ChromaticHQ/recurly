@@ -1,0 +1,28 @@
+recurly.process_push_notification:
+  path: '/recurly/listener/{key}/{subdomain}'
+  defaults:
+    subdomain: null
+    _controller: '\Drupal\recurly\Controller\DefaultController::recurly_process_push_notification'
+  requirements:
+    _access: 'true'
+recurly.settings_form:
+  path: '/admin/config/services/recurly'
+  defaults:
+    _title: Recurly
+    _form: \Drupal\recurly\Form\RecurlySettingsForm
+  requirements:
+    _permission: 'administer recurly'
+recurly.subscription_plans_overview:
+  path: '/admin/config/services/recurly/subscription-plans'
+  defaults:
+    _title: 'Subscription plans'
+    _form: \Drupal\recurly\Form\RecurlySubscriptionPlansForm
+  requirements:
+    _permission: 'administer recurly'
+recurly.subscription_redirect:
+  path: '/manage-subscription/{account_code}'
+  defaults:
+    _title: 'Account redirect'
+    _controller: '\Drupal\recurly\Controller\DefaultController::recurly_subscription_redirect'
+  requirements:
+    _access: 'true'

@@ -6,9 +6,7 @@
  * with Drupal user accounts.
  */
 
-/**
- * Implements hook_menu().
- */
+
 function recurly_menu() {
   $items = array();
 
@@ -64,150 +62,150 @@ function recurly_menu() {
   );
 
   // Configure built-in pages if enabled.
-  $entity_type = variable_get('recurly_entity_type', 'user');
-  if ($entity_type && variable_get('recurly_pages', '1')) {
-    $entity_path = $entity_type . '/%' . $entity_type;
-    $items[$entity_path . '/subscription'] = array(
-      'title' => 'Subscription',
-      'page callback' => 'recurly_subscription_list_page',
-      'page arguments' => array($entity_type, 1),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'main'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/list'] = array(
-      'title' => variable_get('recurly_subscription_max', '1') === '1' ? 'Summary' : 'List',
-      'page callback' => 'recurly_subscription_page',
-      'page arguments' => array($entity_type, 1),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'list'),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => 0,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/signup'] = array(
-      'title' => variable_get('recurly_subscription_max', '1') === '1' ? 'Signup' : 'Add plan',
-      'page callback' => 'recurly_subscription_plan_select',
-      'page arguments' => array($entity_type, 1),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'select_plan'),
-      'type' => variable_get('recurly_subscription_max', '1') === '1' ? MENU_DEFAULT_LOCAL_TASK : MENU_LOCAL_TASK,
-      'weight' => 1,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/change'] = array(
-      'title' => 'Change plan',
-      'page callback' => 'recurly_subscription_plan_select',
-      'page arguments' => array($entity_type, 1, NULL, 'latest'),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'change_plan_latest'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 5,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/cancel'] = array(
-      'title' => 'Cancel',
-      'page callback' => 'recurly_subscription_cancel_page',
-      'page arguments' => array($entity_type, 1, 'latest'),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'cancel_latest'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/reactivate'] = array(
-      'title' => 'Reactivate',
-      'page callback' => 'recurly_subscription_reactivate',
-      'page arguments' => array($entity_type, 1, 'latest'),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'reactivate_latest'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/id/%'] = array(
-      'title' => 'Select a new plan',
-      'page callback' => 'recurly_subscription_plan_select',
-      'page arguments' => array($entity_type, 1, NULL, 4),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'change_plan'),
-      'type' => MENU_CALLBACK,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/id/%/change/%'] = array(
-      'title' => 'Change subscription',
-      'page callback' => 'recurly_subscription_plan_change_page',
-      'page arguments' => array($entity_type, 1, 4, 6),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'change_plan'),
-      'type' => MENU_CALLBACK,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/id/%/cancel'] = array(
-      'title' => 'Cancel subscription',
-      'page callback' => 'recurly_subscription_cancel_page',
-      'page arguments' => array($entity_type, 1, 4),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'cancel'),
-      'type' => MENU_CALLBACK,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/id/%/reactivate'] = array(
-      'title' => 'Reactivate subscription',
-      'page callback' => 'recurly_subscription_reactivate',
-      'page arguments' => array($entity_type, 1, 4),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'reactivate'),
-      'type' => MENU_CALLBACK,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/invoices'] = array(
-      'title' => 'Invoices',
-      'page callback' => 'recurly_invoices_page',
-      'page arguments' => array($entity_type, 1),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'invoices'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 2,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/invoices/%'] = array(
-      'title' => 'Invoice',
-      'page callback' => 'recurly_invoice_page',
-      'page arguments' => array($entity_type, 1, 4),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'invoices'),
-      'type' => MENU_CALLBACK,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    $items[$entity_path . '/subscription/invoices/%/pdf'] = array(
-      'title' => 'Invoice PDF',
-      'page callback' => 'recurly_invoice_pdf',
-      'page arguments' => array($entity_type, 1, 4),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'invoices'),
-      'type' => MENU_CALLBACK,
-      'file' => 'includes/recurly.pages.inc',
-    );
-    if (variable_get('recurly_coupon_page', '1')) {
-      $items[$entity_path . '/subscription/redeem-coupon'] = array(
-        'title' => 'Redeem coupon',
-        'page callback' => 'drupal_get_form',
-        'page arguments' => array(
-          'recurly_subscription_redeem_coupon',
-          $entity_type,
-          1,
-        ),
-        'access callback' => 'recurly_subscription_page_access',
-        'access arguments' => array($entity_type, 1, 'update'),
-        'type' => MENU_LOCAL_TASK,
-        'weight' => 9,
-        'file' => 'includes/recurly.pages.inc',
-      );
-    }
-  }
+  // $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+  // if ($entity_type && \Drupal::config('recurly.settings')->get('recurly_pages')) {
+  //   $entity_path = $entity_type . '/%' . $entity_type;
+  //   $items[$entity_path . '/subscription'] = array(
+  //     'title' => 'Subscription',
+  //     'page callback' => 'recurly_subscription_list_page',
+  //     'page arguments' => array($entity_type, 1),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'main'),
+  //     'type' => MENU_LOCAL_TASK,
+  //     'weight' => 10,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/list'] = array(
+  //     'title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1' ? 'Summary' : 'List',
+  //     'page callback' => 'recurly_subscription_page',
+  //     'page arguments' => array($entity_type, 1),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'list'),
+  //     'type' => MENU_DEFAULT_LOCAL_TASK,
+  //     'weight' => 0,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/signup'] = array(
+  //     'title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1' ? 'Signup' : 'Add plan',
+  //     'page callback' => 'recurly_subscription_plan_select',
+  //     'page arguments' => array($entity_type, 1),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'select_plan'),
+  //     'type' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1' ? MENU_DEFAULT_LOCAL_TASK : MENU_LOCAL_TASK,
+  //     'weight' => 1,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/change'] = array(
+  //     'title' => 'Change plan',
+  //     'page callback' => 'recurly_subscription_plan_select',
+  //     'page arguments' => array($entity_type, 1, NULL, 'latest'),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'change_plan_latest'),
+  //     'type' => MENU_LOCAL_TASK,
+  //     'weight' => 5,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/cancel'] = array(
+  //     'title' => 'Cancel',
+  //     'page callback' => 'recurly_subscription_cancel_page',
+  //     'page arguments' => array($entity_type, 1, 'latest'),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'cancel_latest'),
+  //     'type' => MENU_LOCAL_TASK,
+  //     'weight' => 10,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/reactivate'] = array(
+  //     'title' => 'Reactivate',
+  //     'page callback' => 'recurly_subscription_reactivate',
+  //     'page arguments' => array($entity_type, 1, 'latest'),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'reactivate_latest'),
+  //     'type' => MENU_LOCAL_TASK,
+  //     'weight' => 10,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/id/%'] = array(
+  //     'title' => 'Select a new plan',
+  //     'page callback' => 'recurly_subscription_plan_select',
+  //     'page arguments' => array($entity_type, 1, NULL, 4),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'change_plan'),
+  //     'type' => MENU_CALLBACK,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/id/%/change/%'] = array(
+  //     'title' => 'Change subscription',
+  //     'page callback' => 'recurly_subscription_plan_change_page',
+  //     'page arguments' => array($entity_type, 1, 4, 6),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'change_plan'),
+  //     'type' => MENU_CALLBACK,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/id/%/cancel'] = array(
+  //     'title' => 'Cancel subscription',
+  //     'page callback' => 'recurly_subscription_cancel_page',
+  //     'page arguments' => array($entity_type, 1, 4),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'cancel'),
+  //     'type' => MENU_CALLBACK,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/id/%/reactivate'] = array(
+  //     'title' => 'Reactivate subscription',
+  //     'page callback' => 'recurly_subscription_reactivate',
+  //     'page arguments' => array($entity_type, 1, 4),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'reactivate'),
+  //     'type' => MENU_CALLBACK,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/invoices'] = array(
+  //     'title' => 'Invoices',
+  //     'page callback' => 'recurly_invoices_page',
+  //     'page arguments' => array($entity_type, 1),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'invoices'),
+  //     'type' => MENU_LOCAL_TASK,
+  //     'weight' => 2,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/invoices/%'] = array(
+  //     'title' => 'Invoice',
+  //     'page callback' => 'recurly_invoice_page',
+  //     'page arguments' => array($entity_type, 1, 4),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'invoices'),
+  //     'type' => MENU_CALLBACK,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   $items[$entity_path . '/subscription/invoices/%/pdf'] = array(
+  //     'title' => 'Invoice PDF',
+  //     'page callback' => 'recurly_invoice_pdf',
+  //     'page arguments' => array($entity_type, 1, 4),
+  //     'access callback' => 'recurly_subscription_page_access',
+  //     'access arguments' => array($entity_type, 1, 'invoices'),
+  //     'type' => MENU_CALLBACK,
+  //     'file' => 'includes/recurly.pages.inc',
+  //   );
+  //   if (\Drupal::config('recurly.settings')->get('recurly_coupon_page')) {
+  //     $items[$entity_path . '/subscription/redeem-coupon'] = array(
+  //       'title' => 'Redeem coupon',
+  //       'page callback' => 'drupal_get_form',
+  //       'page arguments' => array(
+  //         'recurly_subscription_redeem_coupon',
+  //         $entity_type,
+  //         1,
+  //       ),
+  //       'access callback' => 'recurly_subscription_page_access',
+  //       'access arguments' => array($entity_type, 1, 'update'),
+  //       'type' => MENU_LOCAL_TASK,
+  //       'weight' => 9,
+  //       'file' => 'includes/recurly.pages.inc',
+  //     );
+  //   }
+  // }
 
   return $items;
 }
@@ -245,10 +243,10 @@ function recurly_help($path, $arg) {
  * Implements hook_theme().
  */
 function recurly_theme() {
-  $items['recurly_subscription_plans_form'] = array(
-    'render element' => 'form',
-    'file' => 'includes/recurly.admin.inc',
-  );
+  // $items['recurly_subscription_plans_form'] = array(
+  //   'render element' => 'form',
+  //   'file' => 'includes/recurly.admin.inc',
+  // );
   $items['recurly_subscription_summary'] = array(
     'variables' => array(
       'plan_code' => NULL,
@@ -343,7 +341,7 @@ function recurly_views_api() {
  */
 function recurly_entity_update($entity, $entity_type) {
   // If this isn't the enabled Recurly entity type, do nothing.
-  if (variable_get('recurly_entity_type', 'user') !== $entity_type) {
+  if (\Drupal::config('recurly.settings')->get('recurly_entity_type') !== $entity_type) {
     return;
   }
 
@@ -360,11 +358,11 @@ function recurly_entity_update($entity, $entity_type) {
   $original_values = array();
   $updated_values = array();
   foreach ($mapping as $recurly_field => $token) {
-    $original_values[$recurly_field] = token_replace($token, array($entity_type => $original_entity), array('clear' => TRUE, 'sanitize' => FALSE));
-    $updated_values[$recurly_field] = token_replace($token, array($entity_type => $entity), array('clear' => TRUE, 'sanitize' => FALSE));
+    $original_values[$recurly_field] = \Drupal::token()->replace($token, array($entity_type => $original_entity), array('clear' => TRUE, 'sanitize' => FALSE));
+    $updated_values[$recurly_field] = \Drupal::token()->replace($token, array($entity_type => $entity), array('clear' => TRUE, 'sanitize' => FALSE));
   }
-  $original_values['username'] = entity_label($entity_type, $original_entity);
-  $updated_values['username'] = entity_label($entity_type, $entity);
+  $original_values['username'] = $original_entity->label();
+  $updated_values['username'] = $entity->label();
 
   // If there are any changes, push them to Recurly.
   if ($original_values !== $updated_values) {
@@ -403,12 +401,14 @@ function recurly_entity_update($entity, $entity_type) {
     }
     catch (Recurly_Error $e) {
       drupal_set_message(t('The billing system reported an error: "@error" To ensure proper billing, please correct the problem if possible or contact support.', array('@error' => $e->getMessage())), 'warning');
-      watchdog('recurly', 'Account information could not be sent to the Recurly, it reported "@error" while trying to update !title with the values @values.',
-        array(
-          '@error' => $e->getMessage(),
-          '!title' => l(entity_label($entity_type, $entity), $entity_type . '/' . $id),
-          '@values' => print_r($updated_values, 1),
-        ), WATCHDOG_ERROR);
+      // @FIXME
+// l() expects a Url object, created from a route name or external URI.
+// \Drupal::logger('recurly')->error('Account information could not be sent to the Recurly, it reported "@error" while trying to update !title with the values @values.', array(
+//           '@error' => $e->getMessage(),
+//           '!title' => l($entity->label(), $entity_type . '/' . $id),
+//           '@values' => print_r($updated_values, 1),
+//         ));
+
     }
   }
 }
@@ -422,7 +422,7 @@ function recurly_entity_update($entity, $entity_type) {
  * situation.
  */
 function recurly_user_cancel($edit, $account, $method) {
-  $entity_type = variable_get('recurly_entity_type', 'user');
+  $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   if ($entity_type === 'user') {
     // Check for a local account first, no need to attempt to close an account
     // if we don't have any information about it.
@@ -442,7 +442,7 @@ function recurly_user_cancel($edit, $account, $method) {
  * being deleted, or when subscriptions are on other entities, such as nodes.
  */
 function recurly_entity_delete($entity, $entity_type) {
-  if (variable_get('recurly_entity_type', 'user') === $entity_type) {
+  if (\Drupal::config('recurly.settings')->get('recurly_entity_type') === $entity_type) {
     // Check for a local account first, no need to attempt to close an account
     // if we don't have any information about it.
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
@@ -486,11 +486,11 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
 
   // If no subdomain was derived from the URL or the default account subdomain
   // was specified...
-  if (empty($subdomain) || $subdomain == variable_get('recurly_subdomain', '')) {
+  if (empty($subdomain) || $subdomain == \Drupal::config('recurly.settings')->get('recurly_subdomain')) {
     // Ensure the push notification was sent to the proper URL.
-    if ($key != variable_get('recurly_listener_key', '')) {
+    if ($key != \Drupal::config('recurly.settings')->get('recurly_listener_key')) {
       // Log the failed attempt and bail.
-      watchdog('recurly', 'Incoming push notification did not contain the proper URL key.', array(), WATCHDOG_WARNING);
+      \Drupal::logger('recurly')->warning('Incoming push notification did not contain the proper URL key.', array());
       return;
     }
 
@@ -507,12 +507,10 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
     }
 
     // Log the incoming push notification if enabled.
-    if (variable_get('recurly_push_logging', FALSE)) {
-      watchdog('recurly', 'Incoming @type push notification: !notification',
-        array(
+    if (\Drupal::config('recurly.settings')->get('recurly_push_logging')) {
+      \Drupal::logger('recurly')->notice('Incoming @type push notification: !notification', array(
           '@type' => $notification->type,
-          '!notification' => '<pre>' . check_plain(print_r($notification, TRUE)) . '</pre>'),
-        WATCHDOG_NOTICE);
+          '!notification' => '<pre>' . \Drupal\Component\Utility\SafeMarkup::checkPlain(print_r($notification, TRUE)) . '</pre>'));
     }
 
     // If this is a new, canceled, or updated account set the database record.
@@ -545,9 +543,9 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
         // First try to match based on the account code.
         // i.e. "user-1" would match the user with UID 1.
         $parts = explode('-', $recurly_account->account_code);
-        $entity_type = variable_get('recurly_entity_type', 'user');
+        $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
         if ($parts[0] === $entity_type) {
-          if (isset($parts[1]) && is_numeric($parts[1]) && ($entity = entity_load($parts[0], array($parts[1])))) {
+          if (isset($parts[1]) && is_numeric($parts[1]) && ($entity = \Drupal::entityManager()->getStorage($parts[0], array($parts[1])))) {
             recurly_account_save($recurly_account, $entity_type, $parts[1]);
           }
         }
@@ -566,7 +564,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
     }
 
     // Allow other modules to respond to incoming notifications.
-    module_invoke_all('recurly_process_push_notification', $subdomain, $notification);
+    \Drupal::moduleHandler()->invokeAll('recurly_process_push_notification', [$subdomain, $notification]);
   }
 }
 
@@ -599,9 +597,9 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
   // If no settings array was given, use the default account settings.
   if (empty($settings)) {
     $settings = array(
-      'api_key' => variable_get('recurly_private_api_key', ''),
-      'subdomain' => variable_get('recurly_subdomain', ''),
-      'public_key' => variable_get('recurly_public_key', ''),
+      'api_key' => \Drupal::config('recurly.settings')->get('recurly_private_api_key'),
+      'subdomain' => \Drupal::config('recurly.settings')->get('recurly_subdomain'),
+      'public_key' => \Drupal::config('recurly.settings')->get('recurly_public_key'),
     );
   }
 
@@ -616,7 +614,7 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
     Recurly_Client::$apiKey = $settings['api_key'];
   }
   else {
-    watchdog('recurly', 'Could not find the Recurly PHP client library in sites/all/libraries/recurly.', array(), WATCHDOG_ERROR);
+    \Drupal::logger('recurly')->error('Could not find the Recurly PHP client library in sites/all/libraries/recurly.', array());
     return FALSE;
   }
 
@@ -769,7 +767,7 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $expor
  */
 function recurly_account_close($recurly_account, $cancelation_method = NULL) {
   if (empty($cancelation_method)) {
-    $cancelation_method = variable_get('recurly_subscription_cancel_behavior', 'cancel');
+    $cancelation_method = \Drupal::config('recurly.settings')->get('recurly_subscription_cancel_behavior');
   }
 
   if (empty($recurly_account->orphaned)) {
@@ -799,7 +797,7 @@ function recurly_account_close($recurly_account, $cancelation_method = NULL) {
     catch (Recurly_Error $e) {
       // Throw the highest level alert. Failure could result in accounts getting
       // charged after the Drupal account is deleted.
-      watchdog('recurly', 'A Recurly account with the account code @code was intended to be closed, but may still open! The Recurly API returned the error "@error".', array('@code' => $recurly_account->account_code, '@error' => $e->getMessage()), WATCHDOG_ALERT);
+      \Drupal::logger('recurly')->alert('A Recurly account with the account code @code was intended to be closed, but may still open! The Recurly API returned the error "@error".', array('@code' => $recurly_account->account_code, '@error' => $e->getMessage()));
       return FALSE;
     }
   }
@@ -865,7 +863,7 @@ function recurly_account_get_subscriptions($account_code, $state) {
  * Access check for built-in subscription tab pages.
  */
 function recurly_subscription_page_access($entity_type, $entity, $operation) {
-  $entity_info = entity_get_info();
+  $entity_info = \Drupal::entityManager()->getDefinitions();
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
   // Access callback is generally provided by Entity API, but for users and
@@ -884,7 +882,8 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
   }
 
   // Check to make sure the bundle type (if any) matches.
-  $recurly_bundle = variable_get('recurly_bundle_' . $entity_type, 'user');
+  $recurly_bundle = \Drupal::config('recurly.settings')->get('recurly_bundle_' . $entity_type) ?: 'user';
+
   if ($bundle && $bundle !== $recurly_bundle) {
     return FALSE;
   }
@@ -892,7 +891,7 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
   // If the user does not have access to update this entity, they do not have
   // the ability to update the subscription.
   $update_access = ($access_callback && function_exists($access_callback)) ? $access_callback('update', $entity, NULL, $entity_type) : FALSE;
-  if (!$update_access || !user_access('manage recurly subscription')) {
+  if (!$update_access || !\Drupal::currentUser()->hasPermission('manage recurly subscription')) {
     return FALSE;
   }
 
@@ -900,27 +899,27 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
   // because it does not make logical sense to show invoices/billing/etc. for
   // an object that does not have a subscription at all.
   $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
-  $subscription_plans = variable_get('recurly_subscription_plans', array());
+  $subscription_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans');
   if ($operation === 'main') {
     return ($local_account || $subscription_plans);
   }
   elseif ($operation === 'select_plan') {
     // This tab is only visible when visited directly or if multiple plans are
     // allowed.
-    return !empty($subscription_plans) && arg(3) === 'signup' || variable_get('recurly_subscription_max', '1') !== '1';
+    return !empty($subscription_plans) && arg(3) === 'signup' || \Drupal::config('recurly.settings')->get('recurly_subscription_max') !== '1';
   }
   elseif ($operation === 'list') {
     // This is a hack to make it so that the list of subscriptions does not show
     // up as a sub-tab when showing the signup page.
     $access = !empty($local_account) && arg(3) !== 'signup';
-    if (variable_get('recurly_subscription_max', '1') !== '1') {
+    if (\Drupal::config('recurly.settings')->get('recurly_subscription_max') !== '1') {
       $access = $access || (!empty($local_account) && recurly_account_has_active_subscriptions($local_account->account_code));
     }
     return $access;
   }
   // These pages are only accessible if using the single-page mode. This
   // requires loading the latest active account for an entity.
-  elseif (variable_get('recurly_subscription_max', '1') === '1') {
+  elseif (\Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1') {
     $active_subscriptions = $local_account ? recurly_account_get_subscriptions($local_account->account_code, 'active') : array();
     $active_subscription = reset($active_subscriptions);
     if ($operation === 'change_plan_latest') {
@@ -947,7 +946,7 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
     ))) {
     return FALSE;
   }
-  elseif ($operation === 'signup' && variable_get('recurly_subscription_max', '1') !== '1') {
+  elseif ($operation === 'signup' && \Drupal::config('recurly.settings')->get('recurly_subscription_max') !== '1') {
     return TRUE;
   }
 
@@ -958,13 +957,13 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
  * Fallback access callback for users if Entity API is not installed.
  */
 function _recurly_user_access($op, $account) {
-  global $user;
+  $user = \Drupal::currentUser();
   return $user->uid && $user->uid == $account->uid;
 }
 
 /**
  * Returns an array of subscription plan objects for the current account.
- * 
+ *
  * Retrieves them from a local cache if possible.
  *
  * @param bool $reset_cache
@@ -1028,9 +1027,9 @@ function recurly_subscription_in_trial($subscription) {
  */
 function recurly_hosted_url($path = '') {
   // Generate the subdomain to use for the current account.
-  $subdomain = variable_get('recurly_subdomain', '');
+  $subdomain = \Drupal::config('recurly.settings')->get('recurly_subdomain');
 
-  return url('https://' . $subdomain . '.recurly.com/' . $path);
+  return \Drupal\Core\Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path);
 }
 
 /**
@@ -1056,7 +1055,7 @@ function recurly_hosted_url($path = '') {
  *   available to handle the operation.
  */
 function recurly_url($operation, $context) {
-  $urls = module_invoke_all('recurly_url_info', $operation, $context);
+  $urls = \Drupal::moduleHandler()->invokeAll('recurly_url_info', [$operation, $context]);
   $return_url = NULL;
   foreach ($urls as $url) {
     if ($url) {
@@ -1071,7 +1070,7 @@ function recurly_url($operation, $context) {
  */
 function recurly_recurly_url_info($operation, $context) {
   // Only provide URLs for built-in page types.
-  $recurly_entity_type = variable_get('recurly_entity_type', 'user');
+  $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   $parts = _recurly_url_entity_url_parts($context);
   if (empty($recurly_entity_type) || empty($parts)) {
     return;
@@ -1079,19 +1078,19 @@ function recurly_recurly_url_info($operation, $context) {
 
   switch ($operation) {
     case 'select_plan':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/signup');
+      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/signup');
 
     case 'change_plan':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
+      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
 
     case 'cancel':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/cancel');
+      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/cancel');
 
     case 'reactivate':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
+      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
 
     case 'redeem_coupon':
-      return url($parts[0] . '/' . $parts[1] . '/subscription/redeem-coupon');
+      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/redeem-coupon');
   }
 }
 
@@ -1105,7 +1104,7 @@ function _recurly_url_entity_url_parts($context) {
   }
   elseif (isset($context['account'])) {
     if ($account = recurly_account_load(array('account_code' => $context['account']->account_code), TRUE)) {
-      $entity = entity_load($account->entity_type, array($account->entity_id));
+      $entity = \Drupal::entityManager()->getStorage($account->entity_type, array($account->entity_id));
       $entity = reset($entity);
       $entity_type = $account->entity_type;
     }
@@ -1172,7 +1171,7 @@ function recurly_subscription_calculate_refund($subscription, $type = 'prorated'
  * Get the token mapping for Recurly variables with defaults populated.
  */
 function recurly_token_mapping() {
-  $mapping = variable_get('recurly_token_mapping', array());
+  $mapping = \Drupal::config('recurly.settings')->get('recurly_token_mapping') ?: array();
   $mapping += array(
     'email' => '[user:mail]',
     'username' => '[user:name]',
@@ -1194,7 +1193,7 @@ function recurly_token_mapping() {
  * Format a date for use in invoices.
  */
 function recurly_format_date($date) {
-  $format = variable_get('recurly_date_format', 'long');
+  $format = \Drupal::config('recurly.settings')->get('recurly_date_format');
   if (is_object($date)) {
     $date->setTimezone(new DateTimeZone('UTC'));
     $timestamp = $date->format('U');
@@ -1251,7 +1250,7 @@ function recurly_format_currency($price_in_cents, $currency, $html = FALSE) {
   $rounding_step = isset($currency_info[5]) ? $currency_info[5] : NULL;
 
   // Commerce module provides a more flexible and complete currency formatter.
-  if (module_exists('commerce')) {
+  if (\Drupal::moduleHandler()->moduleExists('commerce')) {
     $formatted = commerce_currency_format($price_in_cents, $currency, NULL, TRUE);
   }
   else {
@@ -1297,15 +1296,15 @@ function recurly_format_currency($price_in_cents, $currency, $html = FALSE) {
 function recurly_format_price_interval($amount, $count, $unit, $html = FALSE) {
   if ($amount === NULL) {
     if ($unit == 'days') {
-      return format_plural($count, '1 day trial', '@count day trial');
+      return \Drupal::translation()->formatPlural($count, '1 day trial', '@count day trial');
     }
     else {
-      return format_plural($count, '1 month trial', '@count month trial');
+      return \Drupal::translation()->formatPlural($count, '1 month trial', '@count month trial');
     }
   }
 
   $replacements = array(
-    '!count' => $html ? '<span class="plan-count">' . check_plain($count) . '<span>' : check_plain($count),
+    '!count' => $html ? '<span class="plan-count">' . \Drupal\Component\Utility\SafeMarkup::checkPlain($count) . '<span>' : \Drupal\Component\Utility\SafeMarkup::checkPlain($count),
     '!amount' => $html ? '<span class="plan-amount">' . $amount . '</span>' : $amount,
   );
   if ($count == 1) {
@@ -1352,7 +1351,7 @@ function recurly_format_transaction_status($status) {
       return t('Card declined');
 
     default:
-      return check_plain($status);
+      return \Drupal\Component\Utility\SafeMarkup::checkPlain($status);
   }
 }
 
@@ -1371,12 +1370,12 @@ function recurly_format_transaction_status($status) {
  */
 function recurly_format_coupon(Recurly_Coupon $coupon, $currency, $html = FALSE) {
   if ($coupon->discount_type === 'percent') {
-    $amount = check_plain($coupon->discount_percent) . '%';
+    $amount = \Drupal\Component\Utility\SafeMarkup::checkPlain($coupon->discount_percent) . '%';
   }
   else {
     $coupon_currency = $coupon->discount_in_cents[$currency];
     $amount = recurly_format_currency($coupon_currency->amount_in_cents, $currency, $html);
   }
 
-  return check_plain($coupon->name) . ' (' . t('!amount discount', array('!amount' => $amount)) . ')';
+  return \Drupal\Component\Utility\SafeMarkup::checkPlain($coupon->name) . ' (' . t('!amount discount', array('!amount' => $amount)) . ')';
 }

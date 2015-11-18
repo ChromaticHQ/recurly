@@ -1,0 +1,5 @@
+recurly.settings_form:
+  route_name: recurly.settings_form
+  title: Recurly
+  description: 'Configure your Recurly API settings and points of integration with Drupal.'
+  parent: system.admin_config_services

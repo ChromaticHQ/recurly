@@ -1,9 +1,0 @@
-name = Recurly
-description = Provides API integration with Recurly using their PHP client library.
-dependencies[] = libraries
-core = 7.x
-package = Recurly
-
-files[] = views/recurly_account_code_handler.inc
-files[] = views/recurly_entity_owner_handler.inc
-files[] = views/recurly_entity_owner_reverse_handler.inc

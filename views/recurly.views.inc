@@ -75,7 +75,7 @@ function recurly_views_data() {
 
   // Join from recurly_account to all entity types, using the entity_type and
   // entity_id columns.
-  $entity_info = entity_get_info();
+  $entity_info = \Drupal::entityManager()->getDefinitions();
 
   foreach (array_keys($entity_info) as $entity_type) {
     $recurly_account[$entity_type] = _recurly_entity_relationship_data('Recurly account', $entity_type);
@@ -89,7 +89,7 @@ function recurly_views_data() {
  */
 function recurly_views_data_alter(&$data) {
   // Add relationships from entity types to Recurly Accounts.
-  $entity_info = entity_get_info();
+  $entity_info = \Drupal::entityManager()->getDefinitions();
   foreach ($entity_info as $entity_type => $info) {
     $base_table = $info['base table'];
     $description = t('@base-entity from @join-entity', array('@join-entity' => $info['label'], '@base-entity' => 'Recurly Account'));
@@ -122,7 +122,7 @@ function recurly_views_data_alter(&$data) {
  *   An array suitable for using with a 'join' key in a table definition.
  */
 function _recurly_entity_relationship_data($label, $join_entity_type) {
-  $join_entity_info = entity_get_info($join_entity_type);
+  $join_entity_info = \Drupal::entityManager()->getDefinition($join_entity_type);
   $description = t('@join-entity from @base-entity', array('@join-entity' => $join_entity_info['label'], '@base-entity' => $label));
 
   // 'entity type' is a key not from Views directly, but used to determine

@@ -46,7 +46,7 @@ function recurly_subscription_list_page($entity_type, $entity) {
 
   // Unlikely that we'd have more than 50 subscriptions, but you never know.
   $per_page = 50;
-  $subscription_type = variable_get('recurly_subscription_display', 'live');
+  $subscription_type = \Drupal::config('recurly.settings')->get('recurly_subscription_display');
   $subscription_list = Recurly_SubscriptionList::getForAccount($account->account_code, array('per_page' => $per_page));
   $page_subscriptions = recurly_pager_results($subscription_list, $per_page);
 
@@ -75,7 +75,7 @@ function recurly_subscription_list_page($entity_type, $entity) {
       sort($states);
     }
 
-    if (variable_get('recurly_subscription_max', '1') === '1') {
+    if (\Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1') {
       $links = FALSE;
     }
     else {
@@ -90,8 +90,8 @@ function recurly_subscription_list_page($entity_type, $entity) {
       $full_add_on = Recurly_Addon::get($plan->plan_code, $add_on->add_on_code);
       $add_ons[$add_on->add_on_code] = array(
         'add_on_code' => $add_on->add_on_code,
-        'name' => check_plain($full_add_on->name),
-        'quantity' => check_plain($add_on->quantity),
+        'name' => \Drupal\Component\Utility\SafeMarkup::checkPlain($full_add_on->name),
+        'quantity' => \Drupal\Component\Utility\SafeMarkup::checkPlain($add_on->quantity),
         'cost' => recurly_format_currency($add_on->unit_amount_in_cents, $subscription->currency),
       );
       $total += $add_on->unit_amount_in_cents * $add_on->quantity;
@@ -104,37 +104,55 @@ function recurly_subscription_list_page($entity_type, $entity) {
       break;
     }
 
-    $subscriptions['subscriptions'][$subscription->uuid] = array(
-      '#theme' => 'recurly_subscription_summary',
-      '#plan_code' => $plan->plan_code,
-      '#plan_name' => check_plain($plan->name),
-      '#state_array' => $states,
-      '#cost' => recurly_format_currency($subscription->unit_amount_in_cents, $subscription->currency),
-      '#quantity' => $subscription->quantity,
-      '#add_ons' => $add_ons,
-      '#start_date' => recurly_format_date($subscription->activated_at),
-      '#end_date' => isset($subscription->expires_at) ? recurly_format_date($subscription->expires_at) : NULL,
-      '#current_period_start' => recurly_format_date($subscription->current_period_started_at),
-      '#current_period_ends_at' => recurly_format_date($subscription->current_period_ends_at),
-      '#total' => recurly_format_currency($total, $subscription->currency),
-      '#subscription_links' => $links ? theme('links', array(
-        'links' => $links,
-        'attributes' => array('class' => array('inline', 'links')))) : NULL,
-      '#message' => $message,
-      '#subscription' => $subscription,
-      '#account' => $account,
-    );
+    // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// $subscriptions['subscriptions'][$subscription->uuid] = array(
+//       '#theme' => 'recurly_subscription_summary',
+//       '#plan_code' => $plan->plan_code,
+//       '#plan_name' => \Drupal\Component\Utility\SafeMarkup::checkPlain($plan->name),
+//       '#state_array' => $states,
+//       '#cost' => recurly_format_currency($subscription->unit_amount_in_cents, $subscription->currency),
+//       '#quantity' => $subscription->quantity,
+//       '#add_ons' => $add_ons,
+//       '#start_date' => recurly_format_date($subscription->activated_at),
+//       '#end_date' => isset($subscription->expires_at) ? recurly_format_date($subscription->expires_at) : NULL,
+//       '#current_period_start' => recurly_format_date($subscription->current_period_started_at),
+//       '#current_period_ends_at' => recurly_format_date($subscription->current_period_ends_at),
+//       '#total' => recurly_format_currency($total, $subscription->currency),
+//       '#subscription_links' => $links ? theme('links', array(
+//         'links' => $links,
+//         'attributes' => array('class' => array('inline', 'links')))) : NULL,
+//       '#message' => $message,
+//       '#subscription' => $subscription,
+//       '#account' => $account,
+//     );
+
   }
 
-  $subscriptions['pager'] = array(
-    '#markup' => theme('pager'),
-    '#access' => $subscription_list->count() > $per_page,
-  );
+  // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// $subscriptions['pager'] = array(
+//     '#markup' => theme('pager'),
+//     '#access' => $subscription_list->count() > $per_page,
+//   );
 
-  drupal_alter('recurly_subscription_list_page', $subscriptions);
+
+  \Drupal::moduleHandler()->alter('recurly_subscription_list_page', $subscriptions);
 
   // If the user doesn't have any active subscriptions, redirect to the signup.
-  if (count(element_children($subscriptions['subscriptions'])) === 0) {
+  if (count(\Drupal\Core\Render\Element::children($subscriptions['subscriptions'])) === 0) {
     drupal_goto($entity_type . '/' . $id . '/subscription/signup');
   }
 
@@ -176,7 +194,7 @@ function recurly_subscription_links($entity_type, $entity, $subscription, $accou
     );
   }
   // Allow other modules to provide links, perhaps "suspend" for example.
-  drupal_alter('recurly_subscription_links', $links);
+  \Drupal::moduleHandler()->alter('recurly_subscription_links', $links);
 
   return $links;
 }
@@ -329,7 +347,7 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
   // If signing up to a new subscription, ensure the user doesn't have a plan.
   else {
     $subscriptions = array();
-    $currency = isset($currency) ? $currency : variable_get('recurly_default_currency', 'USD');
+    $currency = isset($currency) ? $currency : \Drupal::config('recurly.settings')->get('recurly_default_currency');
     $mode = 'signup';
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
@@ -345,7 +363,11 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
   }
 
   $all_plans = recurly_subscription_plans();
-  $enabled_plan_keys = variable_get('recurly_subscription_plans', array());
+  // @FIXME
+// Could not extract the default value because it is either indeterminate, or
+// not scalar. You'll need to provide a default value in
+// config/install/recurly.settings.yml and config/schema/recurly.schema.yml.
+$enabled_plan_keys = \Drupal::config('recurly.settings')->get('recurly_subscription_plans');
   $enabled_plans = array();
   foreach ($enabled_plan_keys as $plan_code => $enabled) {
     foreach ($all_plans as $plan) {
@@ -354,20 +376,29 @@ function recurly_subscription_plan_select($entity_type, $entity, $currency = NUL
       }
     }
   }
-  return theme(
-    array(
-      'recurly_subscription_plan_select__' . $mode,
-      'recurly_subscription_plan_select',
-    ),
-    array(
-      'plans' => $enabled_plans,
-      'entity_type' => $entity_type,
-      'entity' => $entity,
-      'currency' => $currency,
-      'mode' => $mode,
-      'subscriptions' => $plan_subscriptions,
-      'subscription_id' => $subscription_id,
-    ));
+  // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// return theme(
+//     array(
+//       'recurly_subscription_plan_select__' . $mode,
+//       'recurly_subscription_plan_select',
+//     ),
+//     array(
+//       'plans' => $enabled_plans,
+//       'entity_type' => $entity_type,
+//       'entity' => $entity,
+//       'currency' => $currency,
+//       'mode' => $mode,
+//       'subscriptions' => $plan_subscriptions,
+//       'subscription_id' => $subscription_id,
+//     ));
+
 }
 
 /**
@@ -414,9 +445,9 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
     }
     list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
     $variables['filtered_plans'][$plan_code] = array(
-      'plan_code' => check_plain($plan_code),
-      'name' => check_plain($plan->name),
-      'description' => check_plain($plan->description),
+      'plan_code' => \Drupal\Component\Utility\SafeMarkup::checkPlain($plan_code),
+      'name' => \Drupal\Component\Utility\SafeMarkup::checkPlain($plan->name),
+      'description' => \Drupal\Component\Utility\SafeMarkup::checkPlain($plan->description),
       'setup_fee' => $setup_fee_amount,
       'amount' => $unit_amount,
       'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
@@ -497,7 +528,7 @@ function recurly_subscription_plan_change_page($entity_type, $entity, $subscript
     return MENU_NOT_FOUND;
   }
 
-  return drupal_get_form('recurly_subscription_plan_change_confirm', $entity_type, $entity, $subscription, $previous_plan, $new_plan);
+  return \Drupal::formBuilder()->getForm('recurly_subscription_plan_change_confirm', $entity_type, $entity, $subscription, $previous_plan, $new_plan);
 }
 
 /**
@@ -511,7 +542,14 @@ function recurly_subscription_plan_change_confirm($form, $form_state, $entity_ty
   $previous_amount = $previous_plan->unit_amount_in_cents[$currency]->amount_in_cents;
   $new_amount = $new_plan->unit_amount_in_cents[$currency]->amount_in_cents;
 
-  drupal_set_title(t('Confirm switch to @plan?', array('@plan' => $new_plan->name)), FALSE);
+  // @FIXME
+// drupal_set_title() has been removed. There are now a few ways to set the title
+// dynamically, depending on the situation.
+// 
+// 
+// @see https://www.drupal.org/node/2067859
+// drupal_set_title(t('Confirm switch to @plan?', array('@plan' => $new_plan->name)), FALSE);
+
 
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
@@ -520,10 +558,10 @@ function recurly_subscription_plan_change_confirm($form, $form_state, $entity_ty
   $form['#new_plan'] = $new_plan;
 
   if ($new_amount >= $previous_amount) {
-    $timeframe = variable_get('recurly_subscription_upgrade_timeframe', 'now');
+    $timeframe = \Drupal::config('recurly.settings')->get('recurly_subscription_upgrade_timeframe');
   }
   else {
-    $timeframe = variable_get('recurly_subscription_downgrade_timeframe', 'renewal');
+    $timeframe = \Drupal::config('recurly.settings')->get('recurly_subscription_downgrade_timeframe');
   }
   $form['timeframe'] = array(
     '#type' => 'radios',
@@ -534,7 +572,7 @@ function recurly_subscription_plan_change_confirm($form, $form_state, $entity_ty
     ),
     '#description' => t('If changes take effect immediately, the price difference will either result in a credit applied when the subscription renews or will trigger a prorated charge within the hour.'),
     '#default_value' => $timeframe,
-    '#access' => user_access('administer recurly'),
+    '#access' => \Drupal::currentUser()->hasPermission('administer recurly'),
   );
 
   // TODO: We could potentially calculate the charge/credit amount here, but
@@ -547,7 +585,7 @@ function recurly_subscription_plan_change_confirm($form, $form_state, $entity_ty
   }
   $form['timeframe_help'] = array(
     '#markup' => $timeframe_message,
-    '#access' => !user_access('administer recurly'),
+    '#access' => !\Drupal::currentUser()->hasPermission('administer recurly'),
   );
   $form['actions'] = array(
     '#type' => 'actions',
@@ -627,21 +665,28 @@ function recurly_subscription_cancel_page($entity_type, $entity, $subscription_i
     }
   }
 
-  return drupal_get_form('recurly_subscription_cancel_confirm', $entity_type, $entity, $subscription);
+  return \Drupal::formBuilder()->getForm('recurly_subscription_cancel_confirm', $entity_type, $entity, $subscription);
 }
 
 /**
  * Form callback; Display a confirmation form for changing a subscription plan.
  */
 function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $entity, $subscription) {
-  drupal_set_title(t('Really cancel @plan?', array('@plan' => $subscription->plan->name)), FALSE);
+  // @FIXME
+// drupal_set_title() has been removed. There are now a few ways to set the title
+// dynamically, depending on the situation.
+// 
+// 
+// @see https://www.drupal.org/node/2067859
+// drupal_set_title(t('Really cancel @plan?', array('@plan' => $subscription->plan->name)), FALSE);
+
 
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
   $form['#subscription'] = $subscription;
 
   $past_due = isset($_GET['past_due']) && $_GET['past_due'] === '1';
-  $admin_access = user_access('administer recurly');
+  $admin_access = \Drupal::currentUser()->hasPermission('administer recurly');
   $in_trial = recurly_subscription_in_trial($subscription);
 
   // If in a trial, only cancel the account instead of terminating.
@@ -649,7 +694,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
     $cancel_behavior = 'cancel';
   }
   else {
-    $cancel_behavior = variable_get('recurly_subscription_cancel_behavior', 'cancel');
+    $cancel_behavior = \Drupal::config('recurly.settings')->get('recurly_subscription_cancel_behavior');
   }
 
   $form['cancel'] = array(
@@ -844,14 +889,23 @@ function recurly_invoices_page($entity_type, $entity) {
   $invoice_list = Recurly_InvoiceList::getForAccount($account->account_code, array('per_page' => $per_page));
   $invoices = recurly_pager_results($invoice_list, $per_page);
 
-  return theme('recurly_invoice_list',
-    array(
-      'invoices' => $invoices,
-      'entity_type' => $entity_type,
-      'entity' => $entity,
-      'per_page' => $per_page,
-      'total' => $invoice_list->count(),
-    ));
+  // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// return theme('recurly_invoice_list',
+//     array(
+//       'invoices' => $invoices,
+//       'entity_type' => $entity_type,
+//       'entity' => $entity,
+//       'per_page' => $per_page,
+//       'total' => $invoice_list->count(),
+//     ));
+
 }
 
 /**
@@ -875,12 +929,15 @@ function template_preprocess_recurly_invoice_list(&$variables) {
     }
 
     $row = array();
-    $row[] = l($invoice->invoice_number . $status, $entity_type . '/' . $id . '/subscription/invoices/' . $invoice->invoice_number);
+    // @FIXME
+// l() expects a Url object, created from a route name or external URI.
+// $row[] = l($invoice->invoice_number . $status, $entity_type . '/' . $id . '/subscription/invoices/' . $invoice->invoice_number);
+
     $row[] = recurly_format_date($invoice->created_at);
     $row[] = recurly_format_currency($invoice->total_in_cents, $invoice->currency);
     $rows[] = array(
       'data' => $row,
-      'class' => array(check_plain($invoice->state)),
+      'class' => array(\Drupal\Component\Utility\SafeMarkup::checkPlain($invoice->state)),
     );
   }
 
@@ -923,14 +980,30 @@ function recurly_invoice_page($entity_type, $entity, $invoice_number) {
     return MENU_NOT_FOUND;
   }
 
-  drupal_set_title(t('Invoice #@number', array('@number' => $invoice->invoice_number)));
-  return theme('recurly_invoice',
-    array(
-      'invoice' => $invoice,
-      'invoice_account' => $invoice_account,
-      'entity_type' => $entity_type,
-      'entity' => $entity,
-    ));
+  // @FIXME
+// drupal_set_title() has been removed. There are now a few ways to set the title
+// dynamically, depending on the situation.
+// 
+// 
+// @see https://www.drupal.org/node/2067859
+// drupal_set_title(t('Invoice #@number', array('@number' => $invoice->invoice_number)));
+
+  // @FIXME
+// theme() has been renamed to _theme() and should NEVER be called directly.
+// Calling _theme() directly can alter the expected output and potentially
+// introduce security issues (see https://www.drupal.org/node/2195739). You
+// should use renderable arrays instead.
+// 
+// 
+// @see https://www.drupal.org/node/2195739
+// return theme('recurly_invoice',
+//     array(
+//       'invoice' => $invoice,
+//       'invoice_account' => $invoice_account,
+//       'entity_type' => $entity_type,
+//       'entity' => $entity,
+//     ));
+
 }
 
 /**
@@ -980,8 +1053,8 @@ function recurly_subscription_redeem_coupon($form, &$form_state, $entity_type, $
   $form['coupon_currency'] = array(
     '#type' => 'select',
     '#title' => t('Coupon currency'),
-    '#options' => drupal_map_assoc(array_keys(recurly_currency_list())),
-    '#default_value' => variable_get('recurly_default_currency', 'USD'),
+    '#options' => array_combine(array_keys(recurly_currency_list()), array_keys(recurly_currency_list())),
+    '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
     '#description' => t('If your coupon specifies a currency, select it here. Not all coupons work in all currencies.'),
     '#access' => !$confirming_replacement_coupon,
   );
@@ -1082,21 +1155,21 @@ function template_preprocess_recurly_invoice(&$variables) {
   );
   if ($billing_info) {
     $variables += array(
-      'first_name' => check_plain($billing_info->first_name),
-      'last_name' => check_plain($billing_info->last_name),
-      'address1' => check_plain($billing_info->address1),
-      'address2' => isset($billing_info->address2) ? check_plain($billing_info->address2) : NULL,
-      'city' => check_plain($billing_info->city),
-      'state' => check_plain($billing_info->state),
-      'zip' => check_plain($billing_info->zip),
-      'country' => check_plain($billing_info->country),
+      'first_name' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->first_name),
+      'last_name' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->last_name),
+      'address1' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->address1),
+      'address2' => isset($billing_info->address2) ? \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->address2) : NULL,
+      'city' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->city),
+      'state' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->state),
+      'zip' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->zip),
+      'country' => \Drupal\Component\Utility\SafeMarkup::checkPlain($billing_info->country),
     );
   }
   foreach ($invoice->line_items as $line_item) {
     $variables['line_items'][$line_item->uuid] = array(
       'start_date' => recurly_format_date($line_item->start_date),
       'end_date' => recurly_format_date($line_item->end_date),
-      'description' => check_plain($line_item->description),
+      'description' => \Drupal\Component\Utility\SafeMarkup::checkPlain($line_item->description),
       'amount' => recurly_format_currency($line_item->total_in_cents, $line_item->currency),
     );
   }
