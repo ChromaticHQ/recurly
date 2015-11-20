@@ -103,31 +103,29 @@ function recurly_install() {
  */
 function recurly_uninstall() {
   // Remove the site-wide account settings.
-  \Drupal::config('recurly.settings')->clear('recurly_subdomain')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_private_api_key')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_public_key')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_default_currency')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_pages')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_token_mapping')->save();
+  \Drupal::configFactory()->getEditable('recurly.settings')
+    ->clear('recurly_subdomain')
+    ->clear('recurly_private_api_key')
+    ->clear('recurly_public_key')
+    ->clear('recurly_default_currency')
+    ->clear('recurly_pages')
+    ->clear('recurly_token_mapping')
+    ->clear('recurly_subscription_cancel_behavior')
+    ->clear('recurly_subscription_display')
+    ->clear('recurly_subscription_downgrade_timeframe')
+    ->clear('recurly_subscription_max')
+    ->clear('recurly_subscription_plans')
+    ->clear('recurly_subscription_upgrade_timeframe')
+    ->clear('recurly_entity_type')
+    ->save();
 
-  \Drupal::config('recurly.settings')->clear('recurly_subscription_cancel_behavior')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_subscription_display')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_subscription_downgrade_timeframe')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_subscription_max')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_subscription_plans')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_subscription_upgrade_timeframe')->save();
-
-  \Drupal::config('recurly.settings')->clear('recurly_entity_type')->save();
   foreach (array_keys(\Drupal::entityManager()->getDefinitions()) as $entity_name) {
-    // @FIXME
-// // @FIXME
-// // The correct configuration object could not be determined. You'll need to
-// // rewrite this call manually.
-// variable_del('recurly_bundle_' . $entity_name);
-
+    \Drupal::configFactory()->getEditable('recurly.settings')->clear('recurly_bundle_' . $entity_name)->save();
   }
 
   // Remove the push notification settings.
-  \Drupal::config('recurly.settings')->clear('recurly_listener_key')->save();
-  \Drupal::config('recurly.settings')->clear('recurly_push_logging')->save();
+  \Drupal::configFactory()->getEditable('recurly.settings')
+    ->clear('recurly_listener_key')
+    ->clear('recurly_push_logging')
+    ->save();
 }
