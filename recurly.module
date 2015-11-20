@@ -6,6 +6,7 @@
  * with Drupal user accounts.
  */
 
+use Drupal\Core\Routing\RouteMatchInterface;
 
 function recurly_menu() {
   $items = array();
@@ -232,9 +233,9 @@ function recurly_permission() {
 /**
  * Implements hook_help().
  */
-function recurly_help($path, $arg) {
-  switch ($path) {
-    case 'admin/config/services/recurly/subscription-plans':
+function recurly_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'recurly.subscription_plans_overview':
       return '<p>' . t('Plans should be defined and updated at Recurly.com itself. The order and enabled state of a plan will affect the built-in signup pages.') . '</p>';
   }
 }
