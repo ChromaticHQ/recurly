@@ -136,7 +136,7 @@ function _recurly_entity_relationship_data($label, $join_entity_type) {
       'base' => $join_entity_info->getBaseTable(),
       'base field' => $join_entity_info->getKeys()['id'],
       'field' => 'entity_id',
-      'id' => 'recurly_entity_owner',
+      'id' => 'entity_owner', // recurly_entity_owner
       'label' => $description,
       'title' => $description,
     ),
