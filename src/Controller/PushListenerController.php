@@ -1,11 +1,25 @@
-<?php
-namespace Drupal\recurly;
+<?php /**
+ * @file
+ * Contains \Drupal\recurly\Controller\PushListenerController.
+ */
+
+namespace Drupal\recurly\Controller;
+
+use Drupal\Core\Controller\ControllerBase;
 
 /**
  * Default controller for the recurly module.
  */
-class DefaultController extends ControllerBase {
+class PushListenerController extends ControllerBase {
 
+  /**
+   * Process push notification.
+   *
+   * @param string $key
+   *   Recurly listener key.
+   * @param string $subdomain
+   *   Recurly account subdomain.
+   */
   public function recurly_process_push_notification($key, $subdomain = NULL) {
     $notification = NULL;
 
@@ -51,9 +65,7 @@ class DefaultController extends ControllerBase {
         try {
           $recurly_account = Recurly_Account::get($notification->account->account_code);
         }
-        
-
-          catch (Recurly_NotFoundError $e) {
+        catch (Recurly_NotFoundError $e) {
           drupal_set_message(t('Account not found'));
           watchdog_exception('recurly', $e);
         }
@@ -71,7 +83,7 @@ class DefaultController extends ControllerBase {
         // If no local record exists and we've specified to create it...
         if (empty($local_account)) {
           // First try to match based on the account code.
-        // i.e. "user-1" would match the user with UID 1.
+          // i.e. "user-1" would match the user with UID 1.
           $parts = explode('-', $recurly_account->account_code);
           $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
           if ($parts[0] === $entity_type) {
@@ -81,16 +93,15 @@ class DefaultController extends ControllerBase {
               recurly_account_save($recurly_account, $entity_type, $parts[1]);
             }
           }
-
-            // Attempt to find a matching user account by e-mail address if the
-            // enabled entity type is user.
+          // Attempt to find a matching user account by e-mail address if the
+          // enabled entity type is user.
           elseif ($entity_type === 'user' && ($user = user_load_by_mail($recurly_account->email))) {
             recurly_account_save($recurly_account, 'user', $user->uid);
           }
         }
         elseif (!empty($local_account)) {
           // Otherwise if a local record was found and we want to keep it
-        // synchronized, save it again and let any modules respond.
+          // synchronized, save it again and let any modules respond.
           recurly_account_save($recurly_account, $local_account->entity_type, $local_account->entity_id);
         }
       }
@@ -102,34 +113,4 @@ class DefaultController extends ControllerBase {
       ]);
     }
   }
-
-  public function recurly_subscription_plans_overview() {
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
-    }
-
-    try {
-      $plans = recurly_subscription_plans();
-    }
-    
-      catch (Recurly_Error $e) {
-      return t('No plans could be retrieved from Recurly. Recurly reported the following error: "@error"', [
-        '@error' => $e->getMessage()
-        ]);
-    }
-
-    return \Drupal::formBuilder()->getForm('recurly_subscription_plans_form', $plans);
-  }
-
-  public function recurly_subscription_redirect($account_code) {
-    $account = recurly_account_load(['account_code' => $account_code], TRUE);
-    if ($account) {
-      drupal_goto($account->entity_type . '/' . $account->entity_id . '/subscription');
-    }
-    else {
-      return MENU_NOT_FOUND;
-    }
-  }
-
 }
