@@ -307,16 +307,6 @@ function recurly_theme() {
 }
 
 /**
- * Implements hook_views_api().
- */
-function recurly_views_api() {
-  return array(
-    'api' => 3,
-    'path' => drupal_get_path('module', 'recurly') . '/views',
-  );
-}
-
-/**
  * Implements hook_entity_update().
  *
  * Update the Recurly remote account when the local Drupal entity is updated.
@@ -1006,12 +996,18 @@ function recurly_subscription_in_trial($subscription) {
 
 /**
  * Returns base Recurly URL for the current account w/optional path appended.
+ *
+ * @param $path string
+ *   A path string.
+ *
+ * @return string
+ *   The uri to the Recurly hosted subdomain followed by the provided path.
  */
 function recurly_hosted_url($path = '') {
   // Generate the subdomain to use for the current account.
   $subdomain = \Drupal::config('recurly.settings')->get('recurly_subdomain');
 
-  return \Drupal\Core\Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path);
+  return \Drupal\Core\Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path)->getUri();
 }
 
 /**

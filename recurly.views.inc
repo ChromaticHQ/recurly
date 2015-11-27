@@ -27,34 +27,35 @@ function recurly_views_data() {
     'title' => t('Account code'),
     'help' => t('The unique Recurly account code.'),
     'field' => array(
-      'handler' => 'recurly_account_code_handler',
+      'id' => 'recurly_account_code',
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'id' => 'standard',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'id' => 'string',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument_string',
+      'id' => 'string',
     ),
   );
 
   $recurly_account['status'] = array(
     'title' => t('Account status'),
+    'help' => t('The Recurly account status.'),
     'field' => array(
-      'handler' => 'views_handler_field',
+      'id' => 'standard',
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort',
+      'id' => 'standard',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_string',
+      'id' => 'string',
     ),
     'argument' => array(
-      'handler' => 'views_handler_argument_string',
+      'id' => 'string',
     ),
   );
 
@@ -62,14 +63,14 @@ function recurly_views_data() {
     'title' => t('Updated'),
     'help' => t('The time the account was last updated.'),
     'field' => array(
-      'handler' => 'views_handler_field_date',
+      'id' => 'date',
       'click sortable' => TRUE,
     ),
     'sort' => array(
-      'handler' => 'views_handler_sort_date',
+      'handler' => 'date',
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_date',
+      'handler' => 'date',
     ),
   );
 
@@ -89,24 +90,24 @@ function recurly_views_data() {
  */
 function recurly_views_data_alter(&$data) {
   // Add relationships from entity types to Recurly Accounts.
-  $entity_info = \Drupal::entityManager()->getDefinitions();
-  foreach ($entity_info as $entity_type => $info) {
-    $base_table = $info['base table'];
-    $description = t('@base-entity from @join-entity', array('@join-entity' => $info['label'], '@base-entity' => 'Recurly Account'));
-    $data[$base_table][$entity_type] = array(
-      'title' => t('Recurly Account'),
-      'help' => t('The Recurly Account of this @entity-type.', array('@entity-type' => $entity_type)),
-      'relationship' => array(
-        'base type' => $entity_type,
-        'base' => 'recurly_account',
-        'base field' => 'entity_id',
-        'field' => 'uid',
-        'handler' => 'recurly_entity_owner_reverse_handler',
-        'label' => $description,
-        'title' => $description,
-      ),
-    );
-  }
+  // $entity_info = \Drupal::entityTypeManager()->getDefinitions();
+  // foreach ($entity_info as $entity_type => $entity_info) {
+  //   $base_table = $entity_info->getBaseTable();
+  //   $description = t('@base-entity from @join-entity', array('@join-entity' => $entity_info->getLabel()->render(), '@base-entity' => 'Recurly Account'));
+  //   $data[$base_table][$entity_type] = array(
+  //     'title' => t('Recurly Account'),
+  //     'help' => t('The Recurly Account of this @entity-type.', array('@entity-type' => $entity_type)),
+  //     'relationship' => array(
+  //       'base type' => $entity_type,
+  //       'base' => 'recurly_account',
+  //       'base field' => 'entity_id',
+  //       'field' => 'uid',
+  //       'handler' => 'recurly_entity_owner_reverse_handler',
+  //       'label' => $description,
+  //       'title' => $description,
+  //     ),
+  //   );
+  // }
 }
 
 /**
@@ -122,20 +123,20 @@ function recurly_views_data_alter(&$data) {
  *   An array suitable for using with a 'join' key in a table definition.
  */
 function _recurly_entity_relationship_data($label, $join_entity_type) {
-  $join_entity_info = \Drupal::entityManager()->getDefinition($join_entity_type);
-  $description = t('@join-entity from @base-entity', array('@join-entity' => $join_entity_info['label'], '@base-entity' => $label));
+  $join_entity_info = \Drupal::entityTypeManager()->getDefinition($join_entity_type);
+  $description = t('@join-entity from @base-entity', array('@join-entity' => $join_entity_info->getLabel()->render(), '@base-entity' => $label));
 
   // 'entity type' is a key not from Views directly, but used to determine
   // what entity type need to filter on in our relationship handler.
   return array(
-    'title' => $join_entity_info['label'],
+    'title' => $join_entity_info->getLabel()->render(),
     'help' => t('The @entity-type owner of this @label.', array('@entity-type' => $join_entity_type, '@label' => $label)),
     'relationship' => array(
       'entity type' => $join_entity_type,
-      'base' => $join_entity_info['base table'],
-      'base field' => $join_entity_info['entity keys']['id'],
+      'base' => $join_entity_info->getBaseTable(),
+      'base field' => $join_entity_info->getKeys()['id'],
       'field' => 'entity_id',
-      'handler' => 'recurly_entity_owner_handler',
+      'id' => 'recurly_entity_owner',
       'label' => $description,
       'title' => $description,
     ),
