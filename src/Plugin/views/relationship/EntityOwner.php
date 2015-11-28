@@ -30,13 +30,11 @@ class EntityOwner extends RelationshipPluginBase {
    * {@inheritdoc}
    */
   public function query() {
-    $this->ensureMyTable();
-
     // Figure out what base table this relationship brings to the party.
-    // dpm($this->options, 'options');
-    // return parent::query();
     $table_data = Views::viewsData()->get($this->definition['base']);
     $base_field = empty($this->definition['base field']) ? $table_data['table']['base']['field'] : $this->definition['base field'];
+
+    $this->ensureMyTable();
 
     $def = $this->definition;
     $def['table'] = $this->definition['base'];
@@ -44,20 +42,14 @@ class EntityOwner extends RelationshipPluginBase {
     $def['left_table'] = $this->tableAlias;
     $def['left_field'] = 'entity_id';
     $def['adjusted'] = TRUE;
-    $def['operator'] = '=';
     if (!empty($this->options['required'])) {
       $def['type'] = 'INNER';
     }
 
+    // This is the meat of our override where we add extra condition.
     $def['extra'] = sprintf("%s.entity_type = '%s'", $def['left_table'], $def['entity type']);
 
-    // Is this location still valid?
-    if (!empty($def['join_handler']) && class_exists($def['join_handler'])) {
-      $join = new $def['join_handler']();
-    }
-    else {
-      $join = Views::pluginManager('join')->createInstance('standard', $def);
-    }
+    $join = Views::pluginManager('join')->createInstance('standard', $def);
 
     // Use a short alias for this.
     $alias = $def['table'] . '_' . $this->table;
