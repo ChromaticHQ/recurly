@@ -22,7 +22,7 @@ use Drupal\views\Plugin\views\join\JoinPluginBase;
  * To use this handler, the Views table definition must contain an
  * 'entity type' key specifying the entity type for the specific handler.
  *
- * @ViewsRelationship("entity_owner")
+ * @ViewsRelationship("recurly_entity_owner")
  */
 class EntityOwner extends RelationshipPluginBase {
 

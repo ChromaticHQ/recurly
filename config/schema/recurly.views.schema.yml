@@ -1,6 +1,6 @@
 # Schema for the views plugins of the Recurly module.
 
-views.relationship.entity_owner:
+views.relationship.recurly_entity_owner:
   type: views_relationship
   label: 'Recurly Entity Owner'
   mapping:
