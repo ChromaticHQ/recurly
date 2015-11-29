@@ -413,14 +413,13 @@ function recurly_user_cancel($edit, $account, $method) {
  * mechanism other than "delete account". This fires when user accounts are
  * being deleted, or when subscriptions are on other entities, such as nodes.
  */
-function recurly_entity_delete($entity, $entity_type) {
-  if (\Drupal::config('recurly.settings')->get('recurly_entity_type') === $entity_type) {
+function recurly_entity_delete(\Drupal\Core\Entity\EntityInterface $entity) {
+  if (($entity_type = $entity->getEntityType()->getLowercaseLabel()) == \Drupal::config('recurly.settings')->get('recurly_entity_type')) {
     // Check for a local account first, no need to attempt to close an account
     // if we don't have any information about it.
-    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-    $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
+    $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()), TRUE);
     if ($local_account) {
-      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
+      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()));
       recurly_account_delete($recurly_account);
     }
   }
