@@ -40,14 +40,14 @@ class RecurlyEntityOwnerReverse extends RelationshipPluginBase {
     $def['table'] = $this->definition['base'];
     $def['field'] = $base_field;
     $def['left_table'] = $this->tableAlias;
-    $def['left_field'] = 'entity_id';
+    $def['left_field'] = $this->realField;
     $def['adjusted'] = TRUE;
     if (!empty($this->options['required'])) {
       $def['type'] = 'INNER';
     }
 
     // Add our extra condition.
-    $def['extra'] = sprintf("%s.entity_type = '%s'", $def['left_table'], $def['entity_type']);
+    $def['extra'] = sprintf("%s.entity_type = '%s'", $def['table'], $def['entity_type']);
 
     $join = Views::pluginManager('join')->createInstance('standard', $def);
 
