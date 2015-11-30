@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\recurly\Plugin\views\relationship\EntityOwner.
+ * Contains \Drupal\recurly\Plugin\views\relationship\RecurlyEntityOwnerReverse.
  */
 
 namespace Drupal\recurly\Plugin\views\relationship;
@@ -22,15 +22,15 @@ use Drupal\views\Plugin\views\join\JoinPluginBase;
  * To use this handler, the Views table definition must contain an
  * 'entity type' key specifying the entity type for the specific handler.
  *
- * @ViewsRelationship("recurly_entity_owner")
+ * @ViewsRelationship("recurly_entity_owner_reverse")
  */
-class EntityOwner extends RelationshipPluginBase {
+class RecurlyEntityOwnerReverse extends RelationshipPluginBase {
 
   /**
    * {@inheritdoc}
    */
   public function query() {
-    // Figure out what base table this relationship brings to the party.
+
     $table_data = Views::viewsData()->get($this->definition['base']);
     $base_field = empty($this->definition['base field']) ? $table_data['table']['base']['field'] : $this->definition['base field'];
 
@@ -46,8 +46,8 @@ class EntityOwner extends RelationshipPluginBase {
       $def['type'] = 'INNER';
     }
 
-    // This is the meat of our override, where we add extra condition.
-    $def['extra'] = sprintf("%s.entity_type = '%s'", $def['left_table'], $def['entity type']);
+    // Add our extra condition.
+    $def['extra'] = sprintf("%s.entity_type = '%s'", $def['left_table'], $def['entity_type']);
 
     $join = Views::pluginManager('join')->createInstance('standard', $def);
 

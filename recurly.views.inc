@@ -90,24 +90,22 @@ function recurly_views_data() {
  */
 function recurly_views_data_alter(&$data) {
   // Add relationships from entity types to Recurly Accounts.
-  // $entity_info = \Drupal::entityTypeManager()->getDefinitions();
-  // foreach ($entity_info as $entity_type => $entity_info) {
-  //   $base_table = $entity_info->getBaseTable();
-  //   $description = t('@base-entity from @join-entity', array('@join-entity' => $entity_info->getLabel()->render(), '@base-entity' => 'Recurly Account'));
-  //   $data[$base_table][$entity_type] = array(
-  //     'title' => t('Recurly Account'),
-  //     'help' => t('The Recurly Account of this @entity-type.', array('@entity-type' => $entity_type)),
-  //     'relationship' => array(
-  //       'base type' => $entity_type,
-  //       'base' => 'recurly_account',
-  //       'base field' => 'entity_id',
-  //       'field' => 'uid',
-  //       'handler' => 'recurly_entity_owner_reverse_handler',
-  //       'label' => $description,
-  //       'title' => $description,
-  //     ),
-  //   );
-  // }
+  $entity_info = \Drupal::entityTypeManager()->getDefinitions();
+  foreach ($entity_info as $entity_type => $info) {
+    $base_table = $info->getBaseTable();
+    $description = t('@base-entity from @join-entity', array('@join-entity' => $info->getLabel()->render(), '@base-entity' => 'Recurly Account'));
+    $data[$base_table][$entity_type] = array(
+      'title' => t('Recurly Account'),
+      'help' => t('The Recurly Account of this @entity-type.', array('@entity-type' => $entity_type)),
+      'relationship' => array(
+        'base' => 'recurly_account',
+        'base field' => 'entity_id',
+        'field' => 'uid',
+        'id' => 'recurly_entity_owner_reverse',
+        'label' => $description,
+      ),
+    );
+  }
 }
 
 /**
