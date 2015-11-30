@@ -10,3 +10,14 @@ views.relationship.recurly_entity_owner:
       sequence:
         type: string
         label: 'Entity Type'
+
+views.relationship.recurly_entity_owner_reverse:
+  type: views_relationship
+  label: 'Reverse Recurly Entity Owner'
+  mapping:
+    entity_type:
+      type: sequence
+      label: 'Entity Types'
+      sequence:
+        type: string
+        label: 'Entity Type'
