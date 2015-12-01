@@ -184,7 +184,8 @@ class RecurlySettingsForm extends ConfigFormBase {
       }
     }
 
-    $mapping = recurly_token_mapping();
+    $recurly_token_manager = \Drupal::service('recurly.token_manager');
+    $mapping = $recurly_token_manager->tokenMapping();
     $form['sync']['recurly_token_mapping'] = [
       '#title' => t('Token mappings'),
       '#type' => 'details',
