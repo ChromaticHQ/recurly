@@ -307,6 +307,23 @@ function recurly_theme() {
 }
 
 /**
+ * Implements hook_libraries_info().
+ */
+function recurly_libraries_info() {
+  $libraries['recurly'] = array(
+    'name' => 'Recurly',
+    'vendor url' => 'https://github.com/recurly/recurly-client-php',
+    'download url' => 'https://github.com/recurly/recurly-client-php/releases/latest',
+    'path' => 'lib',
+    'version' => '2.*',
+    'files' => array(
+      'php' => array('recurly.php'),
+    ),
+  );
+  return $libraries;
+}
+
+/**
  * Implements hook_entity_update().
  *
  * Update the Recurly remote account when the local Drupal entity is updated.
