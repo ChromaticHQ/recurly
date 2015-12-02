@@ -325,11 +325,12 @@ function recurly_entity_update(\Drupal\Core\Entity\EntityInterface $entity) {
   }
 
   // Check if any of the mapping tokens have changed.
-  $mapping = recurly_token_mapping();
   $original_entity = \Drupal::entityManager()->getStorage($entity_type)->load($entity->getOriginalId());
   $original_values = array();
   $updated_values = array();
-  foreach ($mapping as $recurly_field => $token) {
+
+  $recurly_token_manager = \Drupal::service('recurly.token_manager');
+  foreach ($recurly_token_manager->tokenMapping() as $recurly_field => $token) {
     $original_values[$recurly_field] = \Drupal::token()->replace($token, array($entity_type => $original_entity), array('clear' => TRUE, 'sanitize' => FALSE));
     $updated_values[$recurly_field] = \Drupal::token()->replace($token, array($entity_type => $entity), array('clear' => TRUE, 'sanitize' => FALSE));
   }
@@ -1025,28 +1026,6 @@ function recurly_subscription_calculate_refund($subscription, $type = 'prorated'
   elseif ($type === 'prorated') {
     return $subscription->unit_amount_in_cents * $remaining_time / $total_period_time;
   }
-}
-
-/**
- * Get the token mapping for Recurly variables with defaults populated.
- */
-function recurly_token_mapping() {
-  $mapping = \Drupal::config('recurly.settings')->get('recurly_token_mapping') ?: array();
-  $mapping += array(
-    'email' => '[user:mail]',
-    'username' => '[user:name]',
-    'first_name' => '',
-    'last_name' => '',
-    'company_name' => '',
-    'address1' => '',
-    'address2' => '',
-    'city' => '',
-    'state' => '',
-    'zip' => '',
-    'country' => '',
-    'phone' => '',
-  );
-  return $mapping;
 }
 
 /**

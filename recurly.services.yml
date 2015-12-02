@@ -1,0 +1,3 @@
+services:
+  recurly.token_manager:
+    class: Drupal\recurly\RecurlyTokenManager
