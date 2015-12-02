@@ -25,10 +25,10 @@ function recurly_requirements($phase) {
     }
     else {
       $requirements['recurly']['value'] = t('Not found');
-      $requirements['recurly']['description'] = t('@error Download the <a href=":recurly_link">Recurly PHP library</a>, extract the archive and place the directory in the %path directory on your server.', array(
+      $requirements['recurly']['description'] = t('@error Download the <a href=":recurly_link">Recurly PHP library</a>, extract the archive and place the directory at %path on your server.', array(
           '@error' => $error_message,
           ':recurly_link' => $library['download url'],
-          '%path' => 'libraries',
+          '%path' => 'libraries/recurly',
         )
       );
       $requirements['recurly']['severity'] = REQUIREMENT_ERROR;
