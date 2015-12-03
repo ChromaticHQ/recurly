@@ -989,8 +989,7 @@ function _recurly_url_entity_url_parts($context) {
     }
   }
   if (isset($entity)) {
-    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-    return array($entity_type, $id);
+    return array($entity_type, $entity->id());
   }
 }
 
