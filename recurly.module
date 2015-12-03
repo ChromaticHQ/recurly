@@ -336,7 +336,7 @@ function recurly_entity_update(\Drupal\Core\Entity\EntityInterface $entity) {
   }
 
   // Check if this entity has a remote Recurly account that we should sync.
-  $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id), TRUE);
+  $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()), TRUE);
   if (!$local_account) {
     return;
   }
@@ -357,7 +357,7 @@ function recurly_entity_update(\Drupal\Core\Entity\EntityInterface $entity) {
   // If there are any changes, push them to Recurly.
   if ($original_values !== $updated_values) {
     try {
-      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id));
+      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()));
       $address_fields = array(
         'address1',
         'address2',
@@ -954,6 +954,7 @@ function recurly_recurly_url_info($operation, $context) {
     return;
   }
 
+  // @FIXME: The calls to Url below need to be updated to use routes.
   switch ($operation) {
     case 'select_plan':
       return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/signup');
@@ -988,8 +989,7 @@ function _recurly_url_entity_url_parts($context) {
     }
   }
   if (isset($entity)) {
-    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-    return array($entity_type, $id);
+    return array($entity_type, $entity->id());
   }
 }
 
