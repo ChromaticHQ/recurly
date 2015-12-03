@@ -875,7 +875,8 @@ function recurly_subscription_plans($reset_cache = FALSE) {
  *   The URL for the plan's edit page at Recurly.
  */
 function recurly_subscription_plan_edit_url($plan) {
-  return recurly_hosted_url('company/plans/' . $plan->plan_code);
+  $recurly_url_manager = \Drupal::service('recurly.url_manager');
+  return $recurly_url_manager->hostedUrl('company/plans/' . $plan->plan_code);
 }
 
 /**
@@ -892,22 +893,6 @@ function recurly_subscription_in_trial($subscription) {
     }
   }
   return FALSE;
-}
-
-/**
- * Returns base Recurly URL for the current account w/optional path appended.
- *
- * @param $path string
- *   A path string.
- *
- * @return string
- *   The uri to the Recurly hosted subdomain followed by the provided path.
- */
-function recurly_hosted_url($path = '') {
-  // Generate the subdomain to use for the current account.
-  $subdomain = \Drupal::config('recurly.settings')->get('recurly_subdomain');
-
-  return \Drupal\Core\Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path)->getUri();
 }
 
 /**

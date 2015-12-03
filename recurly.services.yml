@@ -1,3 +1,5 @@
 services:
   recurly.token_manager:
     class: Drupal\recurly\RecurlyTokenManager
+  recurly.url_manager:
+    class: Drupal\recurly\RecurlyUrlManager

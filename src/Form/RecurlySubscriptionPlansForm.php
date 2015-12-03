@@ -160,12 +160,13 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
       );
     }
 
+    $recurly_url_manager = \Drupal::service('recurly.url_manager');
     // @TODO: Implement draggable table.
     $form['recurly_subscription_plans'] = array(
       '#type' => 'tableselect',
       '#header' => $header,
       '#options' => $options,
-      '#empty' => t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', array(':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? recurly_hosted_url('plans') : 'http://app.recurly.com')),
+      '#empty' => t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', array(':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? $recurly_url_manager->hostedUrl('plans') : 'http://app.recurly.com')),
       '#js_select' => FALSE,
       '#default_value' => $existing_plans,
       '#multiple' => TRUE,
