@@ -954,6 +954,7 @@ function recurly_recurly_url_info($operation, $context) {
     return;
   }
 
+  // @FIXME: The calls to Url below need to be updated to use routes.
   switch ($operation) {
     case 'select_plan':
       return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/signup');
