@@ -14,6 +14,8 @@ class RecurlyUrlManager {
    *
    * @param $path string
    *   A path string.
+   * @param $subdomain $string
+   *   A subdomain string.
    *
    * @return string
    *   The Recurly URL for the current account w/optional path appended.
