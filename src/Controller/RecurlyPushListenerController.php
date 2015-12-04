@@ -1,6 +1,6 @@
 <?php /**
  * @file
- * Contains \Drupal\recurly\Controller\PushListenerController.
+ * Contains \Drupal\recurly\Controller\RecurlyPushListenerController.
  */
 
 namespace Drupal\recurly\Controller;
@@ -10,7 +10,7 @@ use Drupal\Core\Controller\ControllerBase;
 /**
  * Default controller for the recurly module.
  */
-class PushListenerController extends ControllerBase {
+class RecurlyPushListenerController extends ControllerBase {
 
   /**
    * Process push notification.
