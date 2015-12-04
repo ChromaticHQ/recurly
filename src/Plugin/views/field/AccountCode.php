@@ -66,7 +66,8 @@ class AccountCode extends FieldPluginBase {
   private function renderLink($data, ResultRow $values) {
     if (!empty($this->options['link_to_recurly']) && ($account_code = $this->getValue($values)) && $data !== NULL && $data !== '') {
       $this->options['alter']['make_link'] = TRUE;
-      $this->options['alter']['path'] = recurly_hosted_url('accounts/' . $account_code);
+      $recurly_url_manager = \Drupal::service('recurly.url_manager');
+      $this->options['alter']['path'] = $recurly_url_manager->hostedUrl('accounts/' . $account_code);
     }
     return $data;
   }

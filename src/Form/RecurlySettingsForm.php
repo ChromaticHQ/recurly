@@ -87,11 +87,12 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#description' => t("The subdomain of your account."),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subdomain'),
     ];
+    $recurly_url_manager = \Drupal::service('recurly.url_manager');
     $form['account']['recurly_default_currency'] = [
       '#type' => 'textfield',
       '#title' => t('Default currency'),
       '#description' => t('Enter the 3-character currency code for the currency you would like to use by default. You can find a list of supported currencies in your <a href="!url">Recurly account currencies page</a>.', [
-        '!url' => recurly_hosted_url('configuration/currencies')
+        '!url' => $recurly_url_manager->hostedUrl('configuration/currencies')
         ]),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
       '#size' => 3,
