@@ -6,6 +6,7 @@
 namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Render\HtmlResponse;
 
 /**
  * Default controller for the recurly module.
@@ -20,7 +21,7 @@ class RecurlyPushListenerController extends ControllerBase {
    * @param string $subdomain
    *   Recurly account subdomain.
    */
-  public function recurly_process_push_notification($key, $subdomain = NULL) {
+  public function processPushNotification($key, $subdomain = NULL) {
     $notification = NULL;
 
     // If no subdomain was derived from the URL or the default account subdomain
@@ -29,8 +30,9 @@ class RecurlyPushListenerController extends ControllerBase {
       // Ensure the push notification was sent to the proper URL.
       if ($key != \Drupal::config('recurly.settings')->get('recurly_listener_key')) {
         // Log the failed attempt and bail.
-        \Drupal::logger('recurly')->warning('Incoming push notification did not contain the proper URL key.', []);
-        return;
+        $url_key_error_text = 'Incoming push notification did not contain the proper URL key.';
+        \Drupal::logger('recurly')->warning($url_key_error_text, []);
+        return new HtmlResponse($url_key_error_text, HtmlResponse::HTTP_FORBIDDEN);
       }
 
       // Initialize the Recurly client with the default account settings.
@@ -38,11 +40,11 @@ class RecurlyPushListenerController extends ControllerBase {
 
       // Retrieve the POST XML and create a notification object from it.
       $post_xml = file_get_contents('php://input');
-      $notification = new Recurly_PushNotification($post_xml);
+      $notification = new \Recurly_PushNotification($post_xml);
 
       // Bail if this is an empty or invalid notification.
       if (empty($notification) || empty($notification->type)) {
-        return;
+        return new HtmlResponse('Empty or invalid notification.', HtmlResponse::HTTP_BAD_REQUEST);
       }
 
       // Log the incoming push notification if enabled.
@@ -63,7 +65,7 @@ class RecurlyPushListenerController extends ControllerBase {
       ])) {
         // Retrieve the full account record from Recurly.
         try {
-          $recurly_account = Recurly_Account::get($notification->account->account_code);
+          $recurly_account = \Recurly_Account::get($notification->account->account_code);
         }
         catch (Recurly_NotFoundError $e) {
           drupal_set_message(t('Account not found'));
@@ -112,5 +114,8 @@ class RecurlyPushListenerController extends ControllerBase {
         $notification,
       ]);
     }
+    $subdomain_error_text = 'Incoming push notification did not contain the proper subdomain key.';
+    \Drupal::logger('recurly')->warning($subdomain_error_text, []);
+    return new HtmlResponse($subdomain_error_text, HtmlResponse::HTTP_FORBIDDEN);
   }
 }
