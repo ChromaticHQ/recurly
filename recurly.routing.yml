@@ -26,3 +26,6 @@ recurly.subscription_redirect:
     _controller: '\Drupal\recurly\Controller\DefaultController::recurly_subscription_redirect'
   requirements:
     _access: 'true'
+# Handles dynamic routes.
+route_callbacks:
+  - '\Drupal\recurly\Routing\RecurlySubscriptionRoutes::routes'
