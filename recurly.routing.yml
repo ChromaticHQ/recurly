@@ -19,13 +19,6 @@ recurly.subscription_plans_overview:
     _form: \Drupal\recurly\Form\RecurlySubscriptionPlansForm
   requirements:
     _permission: 'administer recurly'
-recurly.subscription_redirect:
-  path: '/manage-subscription/{account_code}'
-  defaults:
-    _title: 'Account redirect'
-    _controller: '\Drupal\recurly\Controller\DefaultController::recurly_subscription_redirect'
-  requirements:
-    _access: 'true'
 # Handles dynamic routes.
 route_callbacks:
   - '\Drupal\recurly\Routing\RecurlySubscriptionRoutes::routes'
