@@ -66,16 +66,6 @@ function recurly_menu() {
   // $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   // if ($entity_type && \Drupal::config('recurly.settings')->get('recurly_pages')) {
   //   $entity_path = $entity_type . '/%' . $entity_type;
-  //   $items[$entity_path . '/subscription'] = array(
-  //     'title' => 'Subscription',
-  //     'page callback' => 'recurly_subscription_list_page',
-  //     'page arguments' => array($entity_type, 1),
-  //     'access callback' => 'recurly_subscription_page_access',
-  //     'access arguments' => array($entity_type, 1, 'main'),
-  //     'type' => MENU_LOCAL_TASK,
-  //     'weight' => 10,
-  //     'file' => 'includes/recurly.pages.inc',
-  //   );
   //   $items[$entity_path . '/subscription/list'] = array(
   //     'title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1' ? 'Summary' : 'List',
   //     'page callback' => 'recurly_subscription_page',
