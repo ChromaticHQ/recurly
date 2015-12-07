@@ -1,0 +1,14 @@
+recurly.default:
+  version: 1.x
+  css:
+    theme:
+      css/recurly.css: {}
+  js:
+    js/recurly.js: {}
+  dependencies:
+    - core/jquery
+recurly.invoice:
+  version: 1.x
+  css:
+    theme:
+      css/recurly-invoice.css: {}

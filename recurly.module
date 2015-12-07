@@ -283,8 +283,7 @@ function recurly_theme() {
       'subscriptions' => NULL,
       'subscription_id' => NULL,
     ),
-    'template' => 'templates/recurly-subscription-plan-select',
-    'file' => 'includes/recurly.pages.inc',
+    'template' => 'recurly-subscription-plan-select',
     // The $mode of "change" or "signup" may be appended to the template name.
     'pattern' => 'recurly_subscription_plan_select__',
   );
@@ -1191,4 +1190,85 @@ function recurly_format_coupon(Recurly_Coupon $coupon, $currency, $html = FALSE)
   }
 
   return \Drupal\Component\Utility\SafeMarkup::checkPlain($coupon->name) . ' (' . t('!amount discount', array('!amount' => $amount)) . ')';
+}
+
+/**
+ * Shared preprocess function for the presentation of the signup & change page.
+ */
+function template_preprocess_recurly_subscription_plan_select(&$variables) {
+  $plans = $variables['plans'];
+  $currency = $variables['currency'];
+  $entity_type = $variables['entity_type'];
+  $entity = $variables['entity'];
+  $subscriptions = $variables['subscriptions'];
+  $subscription_id = $variables['subscription_id'];
+
+  $current_subscription = NULL;
+  foreach ($subscriptions as $subscription) {
+    if ($subscription->uuid === $subscription_id) {
+      $current_subscription = $subscription;
+      break;
+    }
+  }
+
+  // If currency is undefined, use the subscription currency.
+  if ($current_subscription && empty($currency)) {
+    $currency = $current_subscription->currency;
+    $variables['currency'] = $currency;
+  }
+
+  // Prepare an easy to loop-through list of subscriptions.
+  $variables['filtered_plans'] = [];
+  foreach ($plans as $plan_code => $plan) {
+    $setup_fee_amount = NULL;
+    foreach ($plan->setup_fee_in_cents as $setup_currency) {
+      if ($setup_currency->currencyCode === $currency) {
+        $setup_fee_amount = recurly_format_currency($setup_currency->amount_in_cents, $setup_currency->currencyCode, TRUE);
+        break;
+      }
+    }
+    $unit_amount = NULL;
+    foreach ($plan->unit_amount_in_cents as $unit_currency) {
+      if ($unit_currency->currencyCode === $currency) {
+        $unit_amount = recurly_format_currency($unit_currency->amount_in_cents, $unit_currency->currencyCode, TRUE);
+        break;
+      }
+    }
+    $variables['filtered_plans'][$plan_code] = [
+      'plan_code' => \Drupal\Component\Utility\SafeMarkup::checkPlain($plan_code),
+      'name' => \Drupal\Component\Utility\SafeMarkup::checkPlain($plan->name),
+      'description' => \Drupal\Component\Utility\SafeMarkup::checkPlain($plan->description),
+      'setup_fee' => $setup_fee_amount,
+      'amount' => $unit_amount,
+      'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
+      'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
+      // @FIXME. This will be NULL unless recurlyjs or recurly_hosted is
+      // enabled. We need a more elegant replacement for hook_recurly_url_info
+      // to handle this.
+      'signup_url' => NULL,
+      'change_url' => $current_subscription ? NULL : NULL, // @FIXME
+      'selected' => FALSE,
+    ];
+
+    // If we have a pending subscription, make that its shown as selected rather
+    // than the current active subscription. This should allow users to switch
+    // back to a previous plan after making a pending switch to another one.
+    foreach ($subscriptions as $subscription) {
+      if (!empty($subscription->pending_subscription)) {
+        if ($subscription->pending_subscription->plan->plan_code === $plan_code) {
+          $variables['filtered_plans'][$plan_code]['selected'] = TRUE;
+        }
+      }
+      elseif ($subscription->plan->plan_code === $plan_code) {
+        $variables['filtered_plans'][$plan_code]['selected'] = TRUE;
+      }
+    }
+  }
+
+  // Check if this is an account that is creating a new subscription.
+  $variables['expired_subscriptions'] = FALSE;
+  $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
+  if ($account) {
+    $variables['expired_subscriptions'] = empty($subscriptions);
+  }
 }
