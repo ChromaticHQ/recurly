@@ -7,6 +7,7 @@
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 function recurly_menu() {
   $items = array();
@@ -903,12 +904,13 @@ function recurly_subscription_in_trial($subscription) {
  * @param array $context
  *   An array of contextual information needed for generating the link.
  *
- * @return string
- *   A string containing a URL for the operation, or NULL if no module is
- *   available to handle the operation.
+ * @return \Drupal\Core\Url
+ *   A Drupal Url object containing a route and route parameters, or NULL if no
+ *   module is available to handle the operation.
  */
 function recurly_url($operation, $context) {
   $urls = \Drupal::moduleHandler()->invokeAll('recurly_url_info', [$operation, $context]);
+
   $return_url = NULL;
   foreach ($urls as $url) {
     if ($url) {
@@ -924,16 +926,16 @@ function recurly_url($operation, $context) {
 function recurly_recurly_url_info($operation, $context) {
   // Only provide URLs for built-in page types.
   $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
-  $parts = _recurly_url_entity_url_parts($context);
-  if (empty($recurly_entity_type) || empty($parts)) {
+  if (empty($recurly_entity_type) || $recurly_entity_type !== $context['entity_type']) {
     return;
   }
 
-  // @FIXME: The calls to Url below need to be updated to use routes.
   switch ($operation) {
     case 'select_plan':
-      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/signup');
+      return Url::fromRoute('recurly.subscription_signup', ['entity_type' => $context['entity_type'], 'id' => $context['entity']->id()]);
 
+    // @FIXME: The calls below need to be updated to use routes as shown above
+    // once the routes for these pages have been defined..
     case 'change_plan':
       return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
 
@@ -945,26 +947,6 @@ function recurly_recurly_url_info($operation, $context) {
 
     case 'redeem_coupon':
       return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/redeem-coupon');
-  }
-}
-
-/**
- * Load the parts of a URL given a context for hook_recurly_url_info().
- */
-function _recurly_url_entity_url_parts($context) {
-  if (isset($context['entity_type']) && isset($context['entity'])) {
-    $entity = $context['entity'];
-    $entity_type = $context['entity_type'];
-  }
-  elseif (isset($context['account'])) {
-    if ($account = recurly_account_load(array('account_code' => $context['account']->account_code), TRUE)) {
-      $entity = \Drupal::entityManager()->getStorage($account->entity_type, array($account->entity_id));
-      $entity = reset($entity);
-      $entity_type = $account->entity_type;
-    }
-  }
-  if (isset($entity)) {
-    return array($entity_type, $entity->id());
   }
 }
 
