@@ -10,13 +10,13 @@
  */
 function recurlyjs_requirements($phase) {
   $requirements = array();
-  $t = get_t();
   if ($phase == 'runtime') {
     // Verify that recurly_hosted isn't enabled at the same time.
-    if (module_exists('recurly_hosted')) {
+    if (\Drupal::moduleHandler()->moduleExists('recurly_hosted')) {
       $requirements['recurlyjs_conflict'] = array(
-        'title' => $t('Recurly.js conflict'),
-        'value' => $t('The "Recurly hosted pages" module should not be enabled at the same time as Recurly.js module. Disable Recurly hosted pages module to prevent conflicts.'),
+        'title' => t('Recurly.js'),
+        'title' => t('Recurly.js module conflict.'),
+        'value' => t('The "Recurly hosted pages" module should not be enabled at the same time as Recurly.js module. Disable Recurly hosted pages module to prevent conflicts.'),
         'severity' => REQUIREMENT_ERROR,
       );
     }
@@ -28,15 +28,10 @@ function recurlyjs_requirements($phase) {
  * Implements hook_uninstall().
  */
 function recurlyjs_uninstall() {
-  variable_del('recurlyjs_address_requirement');
-  variable_del('recurlyjs_enable_add_ons');
-  variable_del('recurlyjs_enable_coupons');
-}
-
-
-/**
- * Remove recurly_api_key.
- */
-function recurlyjs_update_7200() {
-  variable_del('recurly_api_key');
+  \Drupal::configFactory()->getEditable('recurlyjs.settings')
+    ->clear('recurlyjs_address_requirement')
+    ->clear('recurlyjs_enable_add_ons')
+    ->clear('recurlyjs_enable_coupons')
+    ->clear('recurlyjs_accept_paypal')
+    ->save();
 }

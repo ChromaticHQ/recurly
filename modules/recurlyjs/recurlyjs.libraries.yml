@@ -1,0 +1,25 @@
+recurlyjs.default:
+  version: 1.x
+  css:
+    theme:
+      css/recurlyjs.css: {}
+recurlyjs.element:
+  version: 1.x
+  js:
+    js/recurlyjs-element.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+recurlyjs.configure:
+  version: 1.x
+  js:
+    js/recurlyjs-configure.js: {}
+recurlyjs.recurlyjs:
+  remote: https://github.com/recurly/recurly-js
+  license:
+    name: MIT
+    url: https://github.com/recurly/recurly-js/blob/master/LICENSE.md
+    gpl-compatible: true
+  version: 3.*
+  js:
+    https://js.recurly.com/v3/recurly.js: { type: external, minified: true }

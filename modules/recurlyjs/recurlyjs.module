@@ -5,48 +5,10 @@
  * Uses Recurly.js to provide a Form API field to subscribe to a service.
  */
 
-/**
- * Implements hook_menu().
- */
-function recurlyjs_menu() {
-  $items = array();
-
-  // Configure built-in pages if enabled.
-  $entity_type = variable_get('recurly_entity_type', 'user');
-  if ($entity_type && variable_get('recurly_pages', '1')) {
-    $entity_info = entity_get_info();
-    $bundle = variable_get('recurly_bundle_' . $entity_type, NULL);
-    $bundle = empty($bundle) ? $entity_type : $bundle;
-
-    $entity_path = $entity_type . '/%' . $entity_type;
-    $items[$entity_path . '/subscription/billing'] = array(
-      'title' => 'Update billing information',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array(
-        'recurlyjs_update_billing_form',
-        $entity_type,
-        1,
-      ),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'update_billing'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 4,
-      'file' => 'includes/recurlyjs.pages.inc',
-    );
-
-    $items[$entity_path . '/subscription/signup/%'] = array(
-      'title' => 'Signup',
-      'page callback' => 'recurlyjs_subscribe_page',
-      'page arguments' => array($entity_type, 1, 4),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'signup'),
-      'type' => MENU_CALLBACK,
-      'file' => 'includes/recurlyjs.pages.inc',
-    );
-  }
-
-  return $items;
-}
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Render\RendererInterface;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_recurly_url_info().
@@ -54,15 +16,14 @@ function recurlyjs_menu() {
 function recurlyjs_recurly_url_info($operation, $context) {
   switch ($operation) {
     case 'update_billing':
-      $entity_info = recurly_account_load(array('account_code' => $context['account']->account_code), TRUE);
-      return url($entity_info->entity_type . '/' . $entity_info->entity_id . '/subscription/billing');
+      $entity_info = recurly_account_load(['account_code' => $context['account']->account_code], TRUE);
+      return Url::fromRoute('recurlyjs.update_billing', ['entity_type' => $context['entity_type'], 'id' => $context['entity']->id()]);
 
     case 'subscribe':
-      list($id, $vid, $bundle) = entity_extract_ids($context['entity_type'], $context['entity']);
-      $currency_string = !isset($context['currency']) || $context['currency'] == variable_get('recurly_default_currency', 'USD') ? '' : '/' . $context['currency'];
-      watchdog('recurly', 'subscribe');
-
-      return url($context['entity_type'] . '/' . $id . '/subscription/signup/' . $context['plan_code'] . $currency_string);
+      $default_currency = \Drupal::config('recurly.settings')->get('recurly_default_currency') ?: 'USD';
+      $currency_string = !isset($context['currency']) || $context['currency'] == $default_currency ? '' : '/' . $context['currency'];
+      \Drupal::logger('recurly')->notice('subscribe', []);
+      return Url::fromRoute('recurlyjs.subscription_signup', ['entity_type' => $context['entity_type'], 'entity_id' => $context['entity']->id(), 'plan_code' => $context['plan_code'], 'currency' => $currency_string]);
   }
 }
 
@@ -70,21 +31,85 @@ function recurlyjs_recurly_url_info($operation, $context) {
  * Implements hook_theme().
  */
 function recurlyjs_theme() {
-  $items['recurlyjs_update_billing'] = array(
+  $items['recurlyjs_update_billing'] = [
     'render element' => 'form',
-    'template' => 'templates/recurlyjs-update-billing',
-  );
-  $items['recurlyjs_subscribe_page'] = array(
-    'variables' => array('form' => NULL),
-    'template' => 'templates/recurlyjs-subscribe-page',
-  );
+    'template' => 'recurlyjs-update-billing',
+  ];
+  $items['recurlyjs_subscribe_page'] = [
+    'variables' => ['form' => NULL],
+    'template' => 'recurlyjs-subscribe-page',
+  ];
   return $items;
 }
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
-  module_load_include('inc', 'recurlyjs', 'includes/recurlyjs.pages');
+function recurlyjs_form_recurly_settings_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   _recurlyjs_form_recurly_settings_form_alter($form, $form_state);
+}
+
+/**
+ * Form callback; Modifies the Recurly form at admin/config/services/recurly.
+ */
+function _recurlyjs_form_recurly_settings_form_alter(&$form, FormStateInterface $form_state) {
+  $form['recurlyjs'] = [
+    '#type' => 'details',
+    '#title' => t('Recurly.js settings'),
+    '#open' => TRUE,
+  ];
+
+  $recurly_url_manager = \Drupal::service('recurly.url_manager');
+  $recurly_account_link_text = t('your Recurly account');
+  $form['recurlyjs']['recurlyjs_address_requirement'] = [
+    '#title' => t('Address requirement level'),
+    '#type' => 'select',
+    '#options' => [
+      'full' => t('Full'),
+      'zipstreet' => t('Zip code and street'),
+      'zip' => t('Zip code only'),
+      'none' => t('None'),
+    ],
+    '#default_value' => \Drupal::config('recurlyjs.settings')->get('address_requirement') ?: 'full',
+    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on %link in "Site Settings".',
+      [
+        // @FIXME: Url is not being escaped appropriately.
+        '%link' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? '<a href="' . Url::fromUri($recurly_url_manager->hostedUrl('configuration/edit'))->toString() . '">' . $recurly_account_link_text . '</a>' : $recurly_account_link_text
+      ]),
+  ];
+
+  $form['recurlyjs']['recurlyjs_enable_add_ons'] = [
+    '#title' => t('Enable Add-ons'),
+    '#type' => 'checkbox',
+    '#default_value' => \Drupal::config('recurlyjs.settings')->get('recurlyjs_enable_add_ons') ?: 1,
+    '#description' => t('Add-ons are options that may be displayed in addition to the base subscription. If a subscription does not have add-ons, nothing additional will be displayed.'),
+  ];
+
+  $form['recurlyjs']['recurlyjs_enable_coupons'] = [
+    '#title' => t('Enable coupons'),
+    '#type' => 'checkbox',
+    '#default_value' => \Drupal::config('recurlyjs.settings')->get('recurlyjs_enable_coupons') ?: 0,
+    '#description' => t('Display the <em>Coupon Code</em> field on Recurly.js subscription forms.'),
+  ];
+
+  $form['recurlyjs']['recurlyjs_accept_paypal'] = [
+    '#title' => t('Enable PayPal'),
+    '#type' => 'checkbox',
+    '#default_value' => \Drupal::config('recurlyjs.settings')->get('recurlyjs_accept_paypal') ?: FALSE,
+    '#description' => t('Show an option to pay with PayPal. This requires a PayPal Business account with Referential Transactions enabled. <a href="https://docs.recurly.com/payment-gateways/paypal-payments">See the Recurly Paypal documentation</a>.'),
+  ];
+
+  $form['#submit'][] = 'recurlyjs_settings_form_submit';
+}
+
+/**
+ * Form submit callback.
+ */
+function recurlyjs_settings_form_submit(array &$form, FormStateInterface $form_state) {
+  \Drupal::configFactory()->getEditable('recurlyjs.settings')
+    ->set('recurlyjs_address_requirement', $form_state->getValue('recurlyjs_address_requirement'))
+    ->set('recurlyjs_enable_add_ons', $form_state->getValue('recurlyjs_enable_add_ons'))
+    ->set('recurlyjs_enable_coupons', $form_state->getValue('recurlyjs_enable_coupons'))
+    ->set('recurlyjs_accept_paypal', $form_state->getValue('recurlyjs_accept_paypal'))
+    ->save();
 }
