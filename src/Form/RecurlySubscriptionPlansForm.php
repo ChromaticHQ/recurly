@@ -48,7 +48,7 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
     return ['recurly.settings'];
   }
 
-  public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       return t('Could not initialize the Recurly client.');

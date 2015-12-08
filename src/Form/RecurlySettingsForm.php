@@ -23,6 +23,13 @@ class RecurlySettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  protected function getEditableConfigNames() {
+    return ['recurly.settings'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config('recurly.settings')
       ->set('recurly_private_api_key', $form_state->getValue('recurly_private_api_key'))
@@ -47,13 +54,6 @@ class RecurlySettingsForm extends ConfigFormBase {
     }
 
     parent::submitForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames() {
-    return ['recurly.settings'];
   }
 
   public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
