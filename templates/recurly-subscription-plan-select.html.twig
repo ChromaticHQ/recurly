@@ -1,0 +1,47 @@
+{#
+
+/**
+ * @file
+ * Display a signup page listing all the available plans.
+ */
+#}
+
+{{ attach_library('recurly/recurly.default') }}
+
+<div class="recurly-signup">
+  {% if expired_subscriptions %}
+    <div class="messages warning"><?php print t('Your previously active plans have expired. Choose a plan to get started!'); ?></div>
+  {% endif %}
+
+  <div class="recurly-plan-list clearfix">
+    {% for plan in filtered_plans %}
+      <div class="plan plan-{{ plan['plan_code'] }}{{ ((mode == 'change') and (plan['selected'])) ? ' plan-selected' : '' }}">
+        <h2>{{ plan['name'] }}</h2>
+        <div class="plan-interval">{{ plan['plan_interval'] }}</div>
+        {% if plan['trial_interval'] is defined %}
+          <div class="plan-trial">{{ plan['trial_interval'] }}</div>
+        {% endif %}
+        <div class="plan-signup">
+          {% if mode == 'signup' %}
+            {% if plan['signup_url'] %}
+              {% if plan['selected'] %}
+                <strong>{{ 'Selected'|t }}</strong>
+              {% else %}
+                <a class="plan-select" href="{{ plan['signup_url'] }}">{{ 'Sign up'|t }}</a>
+              {% endif %}
+            {% else %}
+              {{ 'Contact us to sign up'|t }}
+            {% endif %}
+          {% else %}
+            {% if plan['selected'] %}
+              <strong>{{ 'Selected'|t }} ?></strong>
+            {% else %}
+              <a class="plan-select" href="{{ plan['change_url'] }}">{{ 'Select'|t }}</a>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="plan-description">{{ plan['description']|nl2br }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
