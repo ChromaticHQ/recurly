@@ -15,7 +15,7 @@
 
   <div class="recurly-plan-list clearfix">
     {% for plan in filtered_plans %}
-      <div class="plan plan-<?php print $plan['plan_code']; ?><?php print ($mode == 'change' && $plan['selected']) ? ' plan-selected' : '' ?>">
+      <div class="plan plan-{{ plan['plan_code'] }}{{ ((mode == 'change') and (plan['selected'])) ? ' plan-selected' : '' }}">
         <h2>{{ plan['name'] }}</h2>
         <div class="plan-interval">{{ plan['plan_interval'] }}</div>
         {% if plan['trial_interval'] is defined %}
