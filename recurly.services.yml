@@ -1,4 +1,9 @@
 services:
+  recurly.access_checker:
+    class: Drupal\recurly\Access\RecurlyAccessCheck
+    tags:
+      - { name: access_check, applies_to: _access_check_recurly }
+    arguments: ['@entity.manager']
   recurly.token_manager:
     class: Drupal\recurly\RecurlyTokenManager
   recurly.url_manager:

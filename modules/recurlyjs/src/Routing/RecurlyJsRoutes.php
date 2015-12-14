@@ -30,7 +30,7 @@ class RecurlyJsRoutes {
           '_form' => '\Drupal\recurlyjs\Form\RecurlyJsUpdateBillingForm',
           '_title' => 'Update billing information',
         ],
-        // @FIXME: Access callback.
+        // @FIXME: Add permission check for access to the specified entity.
         ['_permission' => 'administer recurly'],
         ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
       );
@@ -41,8 +41,8 @@ class RecurlyJsRoutes {
           '_controller' => '\Drupal\recurlyjs\Controller\RecurlyJsSubscriptionSignupController::subscribe',
           '_title' => 'Signup',
         ],
-        // @FIXME: Access callback.
-        ['_permission' => 'administer recurly'],
+        // @FIXME: Add permission check for access to the specified entity.
+        ['_access_check_recurly' => 'TRUE'],
         ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
       );
     }
