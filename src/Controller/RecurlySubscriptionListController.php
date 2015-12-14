@@ -49,15 +49,15 @@ class RecurlySubscriptionListController extends ControllerBase {
   /**
    * Route title callback.
    *
-   * @param int $id
+   * @param int $entity_id
    *   The id of the entity.
    *
    * @return array
    *   Recurly subscription details or a no-results message as a render array.
    */
-  public function subscriptionList($id) {
+  public function subscriptionList($entity_id) {
     /* @var \Drupal\Core\Entity\EntityStorageInterface $entity_storage */
-    $entity = $this->entityStorage->load($id);
+    $entity = $this->entityStorage->load($entity_id);
 
     $subscriptions = [];
     // Initialize the Recurly client with the site-wide settings.
