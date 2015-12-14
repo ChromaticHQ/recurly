@@ -29,7 +29,7 @@ class RecurlySubscriptionRoutes {
     // Add and configure the new route.
     $routes = [];
     $routes['recurly.subscription_list'] = new Route(
-      "/$entity_type/{id}/subscription",
+      "/$entity_type/{entity_id}/subscription",
       [
         '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionListController::subscriptionList',
         '_title' => 'Subscription Information',
@@ -38,7 +38,7 @@ class RecurlySubscriptionRoutes {
     );
 
     $routes['recurly.subscription_signup'] = new Route(
-      "/$entity_type/{id}/subscription/signup",
+      "/$entity_type/{entity_id}/subscription/signup",
       [
         '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionSelectPlanController::planSelect',
         '_title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1' ? 'Signup' : 'Add plan',
@@ -47,7 +47,7 @@ class RecurlySubscriptionRoutes {
       ['_permission' => 'administer recurly']
     );
     $routes['recurly.subscription_change'] = new Route(
-      "/$entity_type/{id}/subscription/change",
+      "/$entity_type/{entity_id}/subscription/change",
       [
         '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionSelectPlanController::planSelect',
         '_title' => 'Change Plan',

@@ -48,7 +48,7 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
    * This menu callback is used both for new subscriptions and for updating
    * existing subscriptions.
    *
-   * @param int $id
+   * @param int $entity_id
    *   The entity id whose subscription is being changed.
    * @param string $currency
    *   If this is a new subscription, the currency to be used.
@@ -56,9 +56,9 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
    *   The UUID of the current subscription if changing the plan on an existing
    *   subscription.
    */
-  public function planSelect($id, $currency = NULL, $subscription_id = NULL) {
+  public function planSelect($entity_id, $currency = NULL, $subscription_id = NULL) {
     /* @var \Drupal\user\UserInterface $user */
-    $entity = $this->entityStorage->load($id);
+    $entity = $this->entityStorage->load($entity_id);
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $content = $entity ? $entity->label() : t('No corresponding entity loaded!');
 
