@@ -73,7 +73,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     $currency = $form['#currency'];
     $recurly_token = $form_state->getValue('recurly-token');
     $coupon_code = $form_state->getValue('coupon_code');
-    $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()));
+    $recurly_account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
     if (!$recurly_account) {
       $recurly_account = new \Recurly_Account();
       // Account code is the only property required for Recurly account
@@ -93,11 +93,23 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       $subscription->create();
     }
     catch (\Recurly_Error $e) {
-      \Drupal::logger('recurlyjs')->error('Unable to create subscription. Received the following error: @error', array('@error' => $e->getMessage()));
+      \Drupal::logger('recurlyjs')->error('Unable to create subscription. Received the following error: @error', ['@error' => $e->getMessage()]);
       drupal_set_message(t('Unable to create subscription.'), 'error');
       $form_state->setRebuild(TRUE);
       return;
     }
+
+    drupal_set_message(t('Account upgraded to @plan!', ['@plan' => $subscription->plan->name]));
+    // Save the account locally immediately so that subscriber information may
+    // be retrieved when the user is directed back to the /subscription tab.
+    try {
+      $account = $subscription->account->get();
+      recurly_account_save($account, $entity_type, $entity->id());
+    }
+    catch (Recurly_Error $e) {
+      \Drupal::logger('recurlyjs')->error('New subscriber account could not be retreived from Recurly. Received the following error: @error', ['@error' => $e->getMessage()]);
+    }
+    return $this->redirect('recurly.subscription_list', ['entity' => $entity->id()]);
   }
 
   /**
@@ -122,7 +134,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     // Check that the coupon is available in the specified currency.
     if ($coupon && $coupon->discount_type !== 'percent') {
       if (!$coupon->discount_in_cents->offsetExists($currency)) {
-        form_error($element, t('The coupon code you have entered is not valid in @currency.', array('@currency' => $currency)));
+        form_error($element, t('The coupon code you have entered is not valid in @currency.', ['@currency' => $currency]));
         return;
       }
     }
