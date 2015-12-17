@@ -9,6 +9,9 @@ namespace Drupal\recurlyjs\Form;
 
 use Drupal\Core\Form\FormBase;
 
+/**
+ * RecurlyJS abstract class with common form elements to be shared.
+ */
 abstract class RecurlyJsFormBase extends FormBase {
 
   /**
@@ -172,10 +175,11 @@ abstract class RecurlyJsFormBase extends FormBase {
   /**
    * Element after_build callback to remove the input #name attribute.
    *
-   * https://docs.recurly.com/js/#build-a-card-form
+   * @see https://docs.recurly.com/js/#build-a-card-form
    */
   public function removeElementName($element, $form_state) {
     unset($element['#name']);
     return $element;
   }
+
 }

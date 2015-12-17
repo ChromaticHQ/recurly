@@ -9,6 +9,9 @@ namespace Drupal\recurlyjs\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * RecurlyJS subscribe form.
+ */
 class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
 
   /**
@@ -73,7 +76,8 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()));
     if (!$recurly_account) {
       $recurly_account = new \Recurly_Account();
-      // Account code is the only property required for Recurly account creation.
+      // Account code is the only property required for Recurly account
+      // creation.
       // https://dev.recurly.com/docs/create-an-account
       $recurly_account->account_code = $entity_type . '-' . $entity->id();
       $recurly_account->billing_info = new \Recurly_BillingInfo();
@@ -145,4 +149,5 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
   protected function couponValidForPlan(Recurly_Coupon $recurly_coupon, $plan_code) {
     return ($recurly_coupon->applies_to_all_plans || in_array($plan_code, $recurly_coupon->plan_codes));
   }
+
 }

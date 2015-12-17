@@ -48,4 +48,5 @@ class RecurlyJsRoutes {
     }
     return $routes;
   }
+
 }

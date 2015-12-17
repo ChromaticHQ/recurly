@@ -6,8 +6,6 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
-use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 
 /**
@@ -23,7 +21,12 @@ function recurlyjs_recurly_url_info($operation, $context) {
       $default_currency = \Drupal::config('recurly.settings')->get('recurly_default_currency') ?: 'USD';
       $currency_string = !isset($context['currency']) || $context['currency'] == $default_currency ? '' : '/' . $context['currency'];
       \Drupal::logger('recurly')->notice('subscribe', []);
-      return Url::fromRoute('recurlyjs.subscription_signup', ['entity_type' => $context['entity_type'], 'entity_id' => $context['entity']->id(), 'plan_code' => $context['plan_code'], 'currency' => $currency_string]);
+      return Url::fromRoute('recurlyjs.subscription_signup', [
+        'entity_type' => $context['entity_type'],
+        'entity_id' => $context['entity']->id(),
+        'plan_code' => $context['plan_code'],
+        'currency' => $currency_string,
+      ]);
   }
 }
 
@@ -61,6 +64,12 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, FormStateInterface 
 
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   $recurly_account_link_text = t('your Recurly account');
+  if (\Drupal::config('recurly.settings')->get('recurly_subdomain')) {
+    $recurly_account_link = '<a href="' . Url::fromUri($recurly_url_manager->hostedUrl('configuration/edit'))->toString() . '">' . $recurly_account_link_text . '</a>';
+  }
+  else {
+    $recurly_account_link = $recurly_account_link_text;
+  }
   $form['recurlyjs']['recurlyjs_address_requirement'] = [
     '#title' => t('Address requirement level'),
     '#type' => 'select',
@@ -74,7 +83,7 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, FormStateInterface 
     '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on %link in "Site Settings".',
       [
         // @FIXME: Url is not being escaped appropriately.
-        '%link' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? '<a href="' . Url::fromUri($recurly_url_manager->hostedUrl('configuration/edit'))->toString() . '">' . $recurly_account_link_text . '</a>' : $recurly_account_link_text
+        '%link' => $recurly_account_link,
       ]),
   ];
 

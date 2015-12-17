@@ -19,7 +19,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
   /**
    * Controller callback to trigger a user subscription.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity $entity
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity.
    * @param string $plan_code
    *   A Recurly plan code.
@@ -54,7 +54,11 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
       foreach ($current_subscriptions as $current_subscription) {
         if ($current_subscription->plan->plan_code === $plan_code && empty($_POST)) {
           drupal_set_message(t('This account already has a @plan plan!', ['@plan' => $current_subscription->plan->name]));
-          if ($url = recurly_url('subscribe', array('entity_type' => $entity_type, 'entity' => $entity, 'plan_code' => $plan_code))) {
+          if ($url = recurly_url('subscribe', [
+            'entity_type' => $entity_type,
+            'entity' => $entity,
+            'plan_code' => $plan_code,
+          ])) {
             return $this->redirect($url->getRouteName(), $url->getRouteParameters());
           }
         }
@@ -77,4 +81,5 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
       '#form' => $form,
     ];
   }
+
 }

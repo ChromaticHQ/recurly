@@ -10,9 +10,11 @@ namespace Drupal\recurlyjs\Form;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
 use Drupal\Component\Utility\SafeMarkup;
 
+/**
+ * RecurlyJS update billing form.
+ */
 class RecurlyJsUpdateBillingForm extends FormBase {
 
   /**
@@ -63,13 +65,7 @@ class RecurlyJsUpdateBillingForm extends FormBase {
 
     _recurlyjs_form_attach_js($form);
     $this->appendBillingFields($form);
-    // Populate #default_value with existing billing info.
-    // $excluded_fields = ['month', 'year'];
-    // foreach (\Drupal\Core\Render\Element::children($form) as $form_element_name) {
-    //   if (!in_[$form_element_name, $excluded_fields)) {
-    //     $form[$form_element_name]['#default_value'] = $form_element_name != 'postal_code' ? $billing_info->$form_element_name : $billing_info->zip;
-    //   }
-    // }
+    // @FIXME: Populate #default_value with existing billing info.
 
     $form['actions'] = [
       '#type' => 'actions',
@@ -87,7 +83,7 @@ class RecurlyJsUpdateBillingForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    dpm('submitForm!');
     parent::submitForm($form, $form_state);
   }
+
 }
