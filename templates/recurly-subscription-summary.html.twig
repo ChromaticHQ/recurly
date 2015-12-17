@@ -1,0 +1,54 @@
+{#
+
+/**
+ * @file
+ * Output a summary of a subscription with links to manage it.
+ */
+#}
+
+<div class="subscription mini clearfix">
+  <div class="subscription-summary clearfix {{ state_array|join(' ') }}">
+    <h2>{{ plan_name }}</h2>
+    {% if message %}
+      <div class="messages warning"><h2 class="element-invisible">{{ 'Warning message'|t }}</h2>{{ message }}</div>
+    {% endif %}
+    <table class="properties">
+      <tr class="status">
+        <th>{{ 'Status'|t }}</th>
+        <td>{{ state_status }}</td>
+      </tr>
+      <tr>
+        <th>{{ 'Start Date'|t }}</th>
+        <td>{{ start_date }}</td>
+      </tr>
+      <tr>
+        <th>
+          {{ period_end_header }}
+        </th>
+        <td>{{ end_date ?: current_period_ends_at }}</td>
+      </tr>
+    </table>
+    <div class="line-items">
+      <ul>
+        <li>
+          <div class="qty">{{ quantity }}</div>
+          <div class="cost">{{ cost }}</div>
+          <div class="name">{{ plan_name }}</div>
+        </li>
+        {% for add_on in add_ons %}
+        <li>
+          <div class="qty">{{ add_on['quantity'] }}</div>
+          <div class="cost">{{ add_on['cost'] }}</div>
+          <div class="name">{{ add_on['name'] }}</div>
+        </li>
+        {% endfor %}
+      </ul>
+      <div class="total">{{ total }}</div>
+    </div>
+  </div>
+  {% if subscription_links %}
+  <div class="subscription-links clearfix">
+    {{ subscription_links }}
+  </div>
+  {% endif %}
+</div>
