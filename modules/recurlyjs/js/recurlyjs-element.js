@@ -9,7 +9,7 @@ Drupal.recurly = Drupal.recurly || {};
 Drupal.behaviors.recurlyJSSubscribeForm = {
   attach: function (context, settings) {
     // Attaches submission handling to the subscribe form.
-    $('#recurlyjs-subscribe-form').once('recurlyjs-subscribe-form', function () {
+    $('#recurlyjs-subscribe').once('recurlyjs-subscribe').each(function () {
       $(this).on('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
     });
   }
@@ -17,6 +17,7 @@ Drupal.behaviors.recurlyJSSubscribeForm = {
 
 Drupal.behaviors.recurlyJSUpdateBillingForm = {
   attach: function (context, settings) {
+    // @FIXME. See above.
     $('#recurlyjs-update-billing-form').once('recurlyjs-update-billing-form', function () {
       $(this).on('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
     });
@@ -29,11 +30,11 @@ Drupal.behaviors.recurlyJSUpdateBillingForm = {
 Drupal.recurly.recurlyJSTokenFormSubmit = function(event) {
   event.preventDefault();
 
-  // Reset the errors display
+  // Reset the errors display.
   $('#recurly-form-errors').html('');
   $('input').removeClass('error');
 
-  // Disable the submit button
+  // Disable the submit button.
   $('button').prop('disabled', true);
 
   var form = this;

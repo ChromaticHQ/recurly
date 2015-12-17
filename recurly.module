@@ -273,8 +273,8 @@ function recurly_theme() {
     'template' => 'templates/recurly-invoice-list',
     'file' => 'includes/recurly.pages.inc',
   );
-  $items['recurly_subscription_plan_select'] = array(
-    'variables' => array(
+  $items['recurly_subscription_plan_select'] = [
+    'variables' => [
       'plans' => NULL,
       'entity_type' => NULL,
       'entity' => NULL,
@@ -282,11 +282,11 @@ function recurly_theme() {
       'mode' => 'signup',
       'subscriptions' => NULL,
       'subscription_id' => NULL,
-    ),
+    ],
     'template' => 'recurly-subscription-plan-select',
     // The $mode of "change" or "signup" may be appended to the template name.
     'pattern' => 'recurly_subscription_plan_select__',
-  );
+  ];
   $items['recurly_subscription_cancel_confirm'] = array(
     'render element' => 'form',
     'template' => 'templates/recurly-subscription-cancel-confirm',
@@ -1242,11 +1242,18 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
       'amount' => $unit_amount,
       'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
       'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
-      // @FIXME. This will be NULL unless recurlyjs or recurly_hosted is
-      // enabled. We need a more elegant replacement for hook_recurly_url_info
-      // to handle this.
-      'signup_url' => NULL,
-      'change_url' => $current_subscription ? NULL : NULL, // @FIXME
+      'signup_url' => recurly_url('subscribe', [
+        'entity_type' => $entity_type,
+        'entity' => $entity,
+        'plan_code' => $plan_code,
+        'currency' => $currency,
+      ]),
+      'change_url' => $current_subscription ? recurly_url('change_plan', [
+        'entity_type' => $entity_type,
+        'entity' => $entity,
+        'subscription' => $current_subscription,
+        'plan_code' => $plan_code,
+      ]) : NULL,
       'selected' => FALSE,
     ];
 
