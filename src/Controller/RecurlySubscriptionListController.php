@@ -8,9 +8,8 @@
 namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Component\Utility\Xss;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -19,46 +18,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class RecurlySubscriptionListController extends ControllerBase {
 
   /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected $entityStorage;
-
-  /**
-   * Constructs a RecurlySubscriptionListController object.
-   *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $entity_storage
-   *   The entity storage.
-   */
-  public function __construct(EntityStorageInterface $entity_storage) {
-    $this->entityStorage = $entity_storage;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
-
-    return new static(
-      $container->get('entity.manager')->getStorage($entity_type)
-    );
-  }
-
-  /**
    * Route title callback.
    *
-   * @param int $entity_id
-   *   The id of the entity.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity whose subscriptons should be listed.
    *
    * @return array
    *   Recurly subscription details or a no-results message as a render array.
    */
-  public function subscriptionList($entity_id) {
-    /* @var \Drupal\Core\Entity\EntityStorageInterface $entity_storage */
-    $entity = $this->entityStorage->load($entity_id);
-
+  public function subscriptionList(EntityInterface $entity) {
     $subscriptions = [];
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {

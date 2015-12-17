@@ -8,39 +8,10 @@
 namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Component\Utility\Xss;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class RecurlySubscriptionSelectPlanController extends ControllerBase {
-
-  /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected $entityStorage;
-
-  /**
-   * Constructs a RecurlySubscriptionSelectPlanController object.
-   *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $entity_storage
-   *   The entity storage.
-   */
-  public function __construct(EntityStorageInterface $entity_storage) {
-    $this->entityStorage = $entity_storage;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
-
-    return new static(
-      $container->get('entity.manager')->getStorage($entity_type)
-    );
-  }
 
   /**
    * Show a list of available plans to which a user may subscribe.
@@ -48,17 +19,15 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
    * This menu callback is used both for new subscriptions and for updating
    * existing subscriptions.
    *
-   * @param int $entity_id
-   *   The entity id whose subscription is being changed.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity whose subscription is being changed.
    * @param string $currency
    *   If this is a new subscription, the currency to be used.
    * @param int $subscription_id
    *   The UUID of the current subscription if changing the plan on an existing
    *   subscription.
    */
-  public function planSelect($entity_id, $currency = NULL, $subscription_id = NULL) {
-    /* @var \Drupal\user\UserInterface $user */
-    $entity = $this->entityStorage->load($entity_id);
+  public function planSelect(EntityInterface $entity, $currency = NULL, $subscription_id = NULL) {
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $content = $entity ? $entity->label() : t('No corresponding entity loaded!');
 
