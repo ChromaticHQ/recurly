@@ -15,15 +15,14 @@ function recurlyjs_recurly_url_info($operation, $context) {
   switch ($operation) {
     case 'update_billing':
       $entity_info = recurly_account_load(['account_code' => $context['account']->account_code], TRUE);
-      return Url::fromRoute('recurlyjs.update_billing', ['entity_type' => $context['entity_type'], 'id' => $context['entity']->id()]);
+      return Url::fromRoute('recurlyjs.update_billing', ['entity' => $context['entity']->id()]);
 
     case 'subscribe':
       $default_currency = \Drupal::config('recurly.settings')->get('recurly_default_currency') ?: 'USD';
       $currency_string = !isset($context['currency']) || $context['currency'] == $default_currency ? '' : '/' . $context['currency'];
       \Drupal::logger('recurly')->notice('subscribe', []);
       return Url::fromRoute('recurlyjs.subscription_signup', [
-        'entity_type' => $context['entity_type'],
-        'entity_id' => $context['entity']->id(),
+        'entity' => $context['entity']->id(),
         'plan_code' => $context['plan_code'],
         'currency' => $currency_string,
       ]);
