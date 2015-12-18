@@ -403,9 +403,9 @@ function recurly_user_cancel($edit, $account, $method) {
   if ($entity_type === 'user') {
     // Check for a local account first, no need to attempt to close an account
     // if we don't have any information about it.
-    $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $account->uid), TRUE);
+    $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $account->id()), TRUE);
     if ($local_account) {
-      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $account->uid));
+      $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $account->id()));
       recurly_account_close($recurly_account);
     }
   }
