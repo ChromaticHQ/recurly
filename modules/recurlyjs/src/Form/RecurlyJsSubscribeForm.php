@@ -106,7 +106,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       $account = $subscription->account->get();
       recurly_account_save($account, $entity_type, $entity->id());
     }
-    catch (Recurly_Error $e) {
+    catch (\Recurly_Error $e) {
       \Drupal::logger('recurlyjs')->error('New subscriber account could not be retreived from Recurly. Received the following error: @error', ['@error' => $e->getMessage()]);
     }
     return $this->redirect('recurly.subscription_list', ['entity' => $entity->id()]);
@@ -125,9 +125,9 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
 
     // Query Recurly to make sure this is a valid coupon code.
     try {
-      $coupon = Recurly_Coupon::get($coupon_code);
+      $coupon = \Recurly_Coupon::get($coupon_code);
     }
-    catch (Recurly_NotFoundError $e) {
+    catch (\Recurly_NotFoundError $e) {
       form_error($element, t('The coupon code you have entered is not valid.'));
       return;
     }
@@ -158,7 +158,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
    * @return BOOL
    *   TRUE if the coupon is valid for the specified plan, else FALSE.
    */
-  protected function couponValidForPlan(Recurly_Coupon $recurly_coupon, $plan_code) {
+  protected function couponValidForPlan(\Recurly_Coupon $recurly_coupon, $plan_code) {
     return ($recurly_coupon->applies_to_all_plans || in_array($plan_code, $recurly_coupon->plan_codes));
   }
 

@@ -9,9 +9,11 @@ namespace Drupal\recurly\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
 use Drupal\Component\Utility\SafeMarkup;
 
+/**
+ * Recurly subscription plans form.
+ */
 class RecurlySubscriptionPlansForm extends ConfigFormBase {
 
   /**
@@ -19,26 +21,6 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
    */
   public function getFormId() {
     return 'recurly_subscription_plans_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Order our variable based on the form order.
-    $form_state_plans = $form_state->getValue('recurly_subscription_plans');
-    $recurly_subscription_plans = array();
-    foreach ($form_state->getUserInput()['weights'] as $plan_code => $weight) {
-      if (isset($form_state_plans[$plan_code])) {
-        $recurly_subscription_plans[$plan_code] = $form_state_plans[$plan_code];
-      }
-    }
-    // Note that we don't actually need to care able the "weight" field values,
-    // since the order of POST is actually changed based on the field position.
-    \Drupal::configFactory()->getEditable('recurly.settings')->set('recurly_subscription_plans', $recurly_subscription_plans)->save();
-    drupal_set_message(t('Status and order of subscription plans updated!'));
-
-    parent::submitForm($form, $form_state);
   }
 
   /**
@@ -59,7 +41,7 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
     try {
       $plans = recurly_subscription_plans();
     }
-    catch (Recurly_Error $e) {
+    catch (\Recurly_Error $e) {
       return t('No plans could be retrieved from Recurly. Recurly reported the following error: "@error"', array('@error' => $e->getMessage()));
     }
     $form['weights']['#tree'] = TRUE;
@@ -74,7 +56,8 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
         'setup_amounts' => array(),
       );
 
-      // TODO: Remove reset() calls once Recurly_CurrencyList implements Iterator.
+      // TODO: Remove reset() calls once Recurly_CurrencyList implements
+      // Iterator.
       // See https://github.com/recurly/recurly-client-php/issues/37
       $unit_amounts = in_array('IteratorAggregate', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
       $setup_fees = in_array('IteratorAggregate', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
@@ -185,4 +168,25 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
 
     return $form;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Order our variable based on the form order.
+    $form_state_plans = $form_state->getValue('recurly_subscription_plans');
+    $recurly_subscription_plans = array();
+    foreach ($form_state->getUserInput()['weights'] as $plan_code => $weight) {
+      if (isset($form_state_plans[$plan_code])) {
+        $recurly_subscription_plans[$plan_code] = $form_state_plans[$plan_code];
+      }
+    }
+    // Note that we don't actually need to care about the "weight" field values,
+    // since the order of POST is actually changed based on the field position.
+    \Drupal::configFactory()->getEditable('recurly.settings')->set('recurly_subscription_plans', $recurly_subscription_plans)->save();
+    drupal_set_message(t('Status and order of subscription plans updated!'));
+
+    parent::submitForm($form, $form_state);
+  }
+
 }

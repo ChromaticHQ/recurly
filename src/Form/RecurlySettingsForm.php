@@ -323,7 +323,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       ],
       '#description' => t('Single-plan mode allows users are only one subscription at a time, preventing them from having multiple plans active at the same time. If users are allowed to sign up for more than one subscription, use Multiple-plan mode.'),
       '#access' => count($plan_options),
-      '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') ?: 1,
+      '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subscription_max'),
       '#states' => $pages_enabled,
     ];
     $form['pages']['recurly_subscription_upgrade_timeframe'] = [

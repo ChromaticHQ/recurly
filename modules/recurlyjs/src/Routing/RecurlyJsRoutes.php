@@ -40,7 +40,7 @@ class RecurlyJsRoutes {
         [
           '_controller' => '\Drupal\recurlyjs\Controller\RecurlyJsSubscriptionSignupController::subscribe',
           '_title' => 'Signup',
-          'operation' => 'select_plan',
+          'operation' => 'signup',
         ],
         // @FIXME: Add permission check for access to the specified entity.
         ['_access_check_recurly' => 'TRUE'],
