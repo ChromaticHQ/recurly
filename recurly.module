@@ -220,11 +220,13 @@ function recurly_theme() {
   //   'render element' => 'form',
   //   'file' => 'includes/recurly.admin.inc',
   // );
-  $items['recurly_subscription_summary'] = array(
-    'variables' => array(
+  $items['recurly_subscription_summary'] = [
+    'variables' => [
       'plan_code' => NULL,
       'plan_name' => NULL,
       'state_array' => NULL,
+      'state_status' => NULL,
+      'period_end_header' => NULL,
       'cost' => NULL,
       'quantity' => NULL,
       'add_ons' => array(),
@@ -237,9 +239,9 @@ function recurly_theme() {
       'message' => NULL,
       'subscription' => NULL,
       'account' => NULL,
-    ),
-    'template' => 'templates/recurly-subscription-summary',
-  );
+    ],
+    'template' => 'recurly-subscription-summary',
+  ];
   $items['recurly_credit_card_information'] = array(
     'variables' => array(
       'first_name' => NULL,

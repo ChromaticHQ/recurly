@@ -10,7 +10,7 @@
 
 <div class="recurly-signup">
   {% if expired_subscriptions %}
-    <div class="messages warning"><?php print t('Your previously active plans have expired. Choose a plan to get started!'); ?></div>
+    <div class="messages warning">{{ 'Your previously active plans have expired. Choose a plan to get started!'|t }}</div>
   {% endif %}
 
   <div class="recurly-plan-list clearfix">
