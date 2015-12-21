@@ -22,7 +22,7 @@ class RecurlySubscriptionRoutes {
    */
   public function routes() {
     // Find out what kind of entity we're dealing with.
-    $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
 
     // Add and configure the new route.
     $routes = [];
