@@ -1,0 +1,28 @@
+{#
+
+/**
+ * @file
+ * Print the output of the subscription cancelation form.
+ */
+#}
+
+{% if form['terminate']['#access'] and subscription_in_trial %}
+  <div class="messages warning">{{ 'This plan is currently in a trial, so no refund will be issued if terminated.'|t }}</div>
+{% elseif form['terminate']['#access'] and past_due %}
+  <div class="messages warning">{{ 'Even though this account is past due, canceling the account will not close it immediately. Terminate the account to close it immediately.'|t }}</div>
+{% endif %}
+
+{% if form['cancel']['#access'] %}
+  <h2>{{ 'Cancel at Renewal'|t }}</h2>
+  {{ form['cancel'] }}
+{% endif %}
+
+{% if form['terminate']['#access'] %}
+  {% if form['terminate']['refund_amount']['#access'] %}
+  <h2>{{ 'Terminate Immediately'|t }}</h2>
+  {% endif %}
+
+  {{ form['terminate'] }}
+{% endif %}
+
+{{ form }}

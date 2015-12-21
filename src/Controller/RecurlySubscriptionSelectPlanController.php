@@ -9,21 +9,27 @@ namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Component\Utility\Xss;
 
+/**
+ * Recurly select plan controller.
+ */
 class RecurlySubscriptionSelectPlanController extends ControllerBase {
+
+  const SELECT_PLAN_MODE_SIGNUP = 'signup';
+
+  const SELECT_PLAN_MODE_CHANGE = 'change';
 
   /**
    * Show a list of available plans to which a user may subscribe.
    *
-   * This menu callback is used both for new subscriptions and for updating
-   * existing subscriptions.
+   * This method is used both for new subscriptions and for updating existing
+   * subscriptions.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity whose subscription is being changed.
    * @param string $currency
    *   If this is a new subscription, the currency to be used.
-   * @param int $subscription_id
+   * @param string $subscription_id
    *   The UUID of the current subscription if changing the plan on an existing
    *   subscription.
    */
@@ -45,14 +51,14 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
         $subscription = reset($subscriptions);
         $subscription_id = $subscription->uuid;
         $currency = $subscription->plan->currency;
-        $mode = 'change';
+        $mode = self::SELECT_PLAN_MODE_CHANGE;
       }
       else {
         try {
           $subscription = Recurly_Subscription::get($subscription_id);
           $subscriptions[$subscription->uuid] = $subscription;
           $currency = $subscription->plan->currency;
-          $mode = 'change';
+          $mode = self::SELECT_PLAN_MODE_CHANGE;
         }
         catch (Recurly_NotFoundError $e) {
           throw new NotFoundHttpException(t('Subscription not found'));
@@ -63,7 +69,7 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
     else {
       $subscriptions = [];
       $currency = isset($currency) ? $currency : \Drupal::config('recurly.settings')->get('recurly_default_currency');
-      $mode = 'signup';
+      $mode = self::SELECT_PLAN_MODE_SIGNUP;
       $entity_type = $entity->getEntityType()->getLowercaseLabel();
       $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
       if ($account) {
@@ -103,4 +109,5 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
       '#subscription_id' => $subscription_id,
     ];
   }
+
 }

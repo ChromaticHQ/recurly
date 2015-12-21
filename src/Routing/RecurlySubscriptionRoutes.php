@@ -47,14 +47,66 @@ class RecurlySubscriptionRoutes {
       ['_access_check_recurly' => 'TRUE'],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
-    $routes['recurly.subscription_change'] = new Route(
+    $routes['recurly.subscription_plan_select'] = new Route(
       "/$entity_type/{entity}/subscription/change",
       [
         '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionSelectPlanController::planSelect',
         '_title' => 'Change Plan',
+        'subscription_id' => 'latest',
+        'operation' => 'change_plan_latest',
       ],
       // @FIXME: Add permission check for access to the specified entity.
-      ['_permission' => 'administer recurly'],
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+
+    // Cancel routes.
+    $routes['recurly.subscription_cancel_latest'] = new Route(
+      "$entity_type/{entity}/subscription/cancel",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionCancelController::subscriptionCancel',
+        '_title' => 'Cancel subscription',
+        'subscription_id' => 'latest',
+        'operation' => 'cancel_latest',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+    $routes['recurly.subscription_cancel'] = new Route(
+      "$entity_type/{entity}/subscription/id/{subscription_id}/cancel",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionCancelController::subscriptionCancel',
+        '_title' => 'Cancel subscription',
+        'operation' => 'cancel',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+
+    // Change routes.
+    $routes['recurly.subscription_change'] = new Route(
+      "$entity_type/{entity}/subscription/change",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionSelectPlanController::planSelect',
+        '_title' => 'Change plan',
+        'subscription_id' => 'latest',
+        'operation' => 'change_plan_latest',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+    $routes['recurly.subscription_plan_change'] = new Route(
+      "$entity_type/{entity}/subscription/id/{subscription_id}/change/{new_plan_code}",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionChangeController::changePlan',
+        '_title' => 'Change subscription',
+        'operation' => 'change_plan',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
     return $routes;

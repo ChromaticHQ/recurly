@@ -157,18 +157,19 @@ class RecurlySubscriptionListController extends ControllerBase {
       'entity_type' => $entity_type,
       'entity' => $entity,
       'subscription' => $subscription,
+      'plan_code' => $subscription->plan->plan_code,
       'account' => $account,
     ];
 
     $links = [];
     if ($subscription->state === 'active') {
       $links['change'] = [
-        'href' => recurly_url('change_plan', $url_context),
+        'url' => recurly_url('change_plan', $url_context),
         'external' => TRUE,
         'title' => t('Change plan'),
       ];
       $links['cancel'] = [
-        'href' => recurly_url('cancel', $url_context),
+        'url' => recurly_url('cancel', $url_context),
         'external' => TRUE,
         'title' => t('Cancel'),
         // Pass in the past_due flag to accurately calculate refunds.
@@ -177,7 +178,7 @@ class RecurlySubscriptionListController extends ControllerBase {
     }
     elseif ($subscription->state === 'canceled') {
       $links['reactivate'] = [
-        'href' => recurly_url('reactivate', $url_context),
+        'url' => recurly_url('reactivate', $url_context),
         'external' => TRUE,
         'title' => t('Reactivate'),
       ];
