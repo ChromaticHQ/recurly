@@ -109,6 +109,42 @@ class RecurlySubscriptionRoutes {
       ['_access_check_recurly' => 'TRUE'],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
+
+    // Invoice routes.
+    $routes['recurly.subscription_invoices'] = new Route(
+      "$entity_type/{entity}/subscription/invoices",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlyInvoicesController::invoicesList',
+        '_title' => 'Invoices',
+        'operation' => 'invoices',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+    $routes['recurly.subscription_invoice'] = new Route(
+      "$entity_type/{entity}/subscription/invoices/{invoice_number}",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlyInvoicesController::getInvoice',
+        '_title' => 'Invoice',
+        'operation' => 'invoices',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+    $routes['recurly.subscription_invoice_pdf'] = new Route(
+      "$entity_type/{entity}/subscription/invoices/{invoice_number}/pdf",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlyInvoicesController::getInvoicePdf',
+        '_title' => 'Invoice PDF',
+        'operation' => 'invoices',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+
     return $routes;
   }
 

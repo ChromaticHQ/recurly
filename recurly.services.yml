@@ -4,6 +4,8 @@ services:
     tags:
       - { name: access_check, applies_to: _access_check_recurly }
     arguments: ['@entity.manager']
+  recurly.pager_manager:
+    class: Drupal\recurly\RecurlyPagerManager
   recurly.token_manager:
     class: Drupal\recurly\RecurlyTokenManager
   recurly.url_manager:
