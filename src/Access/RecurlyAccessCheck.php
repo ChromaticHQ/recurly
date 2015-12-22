@@ -24,9 +24,17 @@ class RecurlyAccessCheck implements AccessInterface {
   public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity, $operation) {
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
 
-    // If the operation is anything but subscribe, do not allow access to the page
-    // because it does not make logical sense to show invoices/billing/etc. for
-    // an object that does not have a subscription at all.
+    // If subscriptions are attached to users, only allow users to view their
+    // own subscriptions.
+    if ($entity_type == 'user') {
+      if (\Drupal::currentUser()->id() != $entity->id()) {
+        return AccessResult::forbidden();
+      }
+    }
+
+    // If the operation is anything but subscribe, do not allow access to the
+    // page because it does not make logical sense to show invoices/billing/etc.
+    // for an object that does not have a subscription at all.
     $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()), TRUE);
     $subscription_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
     $recurly_subscription_max = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
@@ -42,8 +50,8 @@ class RecurlyAccessCheck implements AccessInterface {
       }
     }
     elseif ($operation == 'list') {
-      // This is a hack to make it so that the list of subscriptions does not show
-      // up as a sub-tab when showing the signup page.
+      // This is a hack to make it so that the list of subscriptions does not
+      // show up as a sub-tab when showing the signup page.
       $access = !empty($local_account) && $this->pathIsSignup($route);
       if ($recurly_subscription_max != 1) {
         $access = $access || (!empty($local_account) && recurly_account_has_active_subscriptions($local_account->account_code));

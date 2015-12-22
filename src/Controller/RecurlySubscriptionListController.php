@@ -252,8 +252,8 @@ class RecurlySubscriptionListController extends ControllerBase {
 
     // Determine if in a trial.
     if ($subscription->trial_started_at && $subscription->trial_ends_at) {
-      $subscription->trial_started_at->setTimezone(new DateTimeZone('UTC'));
-      $subscription->trial_ends_at->setTimezone(new DateTimeZone('UTC'));
+      $subscription->trial_started_at->setTimezone(new \DateTimeZone('UTC'));
+      $subscription->trial_ends_at->setTimezone(new \DateTimeZone('UTC'));
       $start = $subscription->trial_started_at->format('U');
       $end = $subscription->trial_ends_at->format('U');
       if (REQUEST_TIME > $start && REQUEST_TIME < $end) {
