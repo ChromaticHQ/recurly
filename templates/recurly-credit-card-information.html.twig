@@ -1,0 +1,13 @@
+{#
+
+/**
+ * @file
+ * Prints out a summary of an existing credit card with masked digits.
+ */
+#}
+
+<div class="credit-card-information">
+  <div class="credit-card-name">{{ first_name }} {{ last_name }}</div>
+  <div class="credit-card-date"> {{ card_type }} {{ 'Exp:'|t }} {{ exp_date }}</div>
+  <div class="credit-card-number">{{ card_num_masked }}</div>
+</div>

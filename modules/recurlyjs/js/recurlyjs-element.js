@@ -17,8 +17,8 @@ Drupal.behaviors.recurlyJSSubscribeForm = {
 
 Drupal.behaviors.recurlyJSUpdateBillingForm = {
   attach: function (context, settings) {
-    // @FIXME. See above.
-    $('#recurlyjs-update-billing-form').once('recurlyjs-update-billing-form', function () {
+    // Attaches submission handling to the update billing form.
+    $('#recurlyjs-update-billing').once('recurlyjs-update-billing').each(function () {
       $(this).on('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
     });
   }

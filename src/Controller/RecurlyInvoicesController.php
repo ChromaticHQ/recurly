@@ -97,7 +97,7 @@ class RecurlyInvoicesController extends ControllerBase {
     // @see https://www.drupal.org/node/2067859
     // drupal_set_title(t('Invoice #@number', array('@number' => $invoice->invoice_number)));
 
-    if ($invoice->state !== 'collected') {
+    if ($invoice->state != 'collected') {
       $url = recurly_url('update_billing', ['entity' => $entity]);
       if ($url) {
         $error_message = t('This invoice is past due! Please <a href="!url">update your billing information</a>.', ['!url' => $url->toString()]);

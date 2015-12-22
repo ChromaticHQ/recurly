@@ -150,7 +150,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
    *
    * @todo Move to recurly.module?
    *
-   * @param Recurly_Coupon $recurly_coupon
+   * @param \Recurly_Coupon $recurly_coupon
    *   A Recurly coupon object.
    * @param string $plan_code
    *   A Recurly plan code.
