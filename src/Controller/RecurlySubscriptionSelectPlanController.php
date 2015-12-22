@@ -43,7 +43,6 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
     }
 
     // If loading an existing subscription.
-    // @TODO: Test existing sub.
     if ($subscription_id) {
       if ($subscription_id === 'latest') {
         $local_account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()], TRUE);

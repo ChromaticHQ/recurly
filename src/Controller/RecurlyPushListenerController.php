@@ -80,8 +80,8 @@ class RecurlyPushListenerController extends ControllerBase {
 
         // Look for a pre-existing local record.
         $local_account = recurly_account_load([
-          'account_code' => $recurly_account->account_code
-          ], TRUE);
+          'account_code' => $recurly_account->account_code,
+        ], TRUE);
 
         // If no local record exists and we've specified to create it...
         if (empty($local_account)) {
@@ -91,7 +91,7 @@ class RecurlyPushListenerController extends ControllerBase {
           $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
           if ($parts[0] === $entity_type) {
             if (isset($parts[1]) && is_numeric($parts[1]) && ($entity = \Drupal::entityManager()->getStorage($parts[0], [
-              $parts[1]
+              $parts[1],
               ]))) {
               recurly_account_save($recurly_account, $entity_type, $parts[1]);
             }
@@ -119,4 +119,5 @@ class RecurlyPushListenerController extends ControllerBase {
     \Drupal::logger('recurly')->warning($subdomain_error_text, []);
     return new HtmlResponse($subdomain_error_text, HtmlResponse::HTTP_FORBIDDEN);
   }
+
 }

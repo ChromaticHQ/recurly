@@ -1,0 +1,14 @@
+{#
+
+/**
+ * @file
+ * Output a list of invoices for a particular account. Typically displayed under
+ * user/x/subscription/invoices.
+ */
+#}
+
+{{ table }}
+
+{% if total > per_page %}
+  {{ pager }}
+{% endif %}

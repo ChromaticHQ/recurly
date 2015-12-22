@@ -1,3 +1,9 @@
+recurly.manage_subscription:
+  path: 'manage-subscription/{account_code}'
+  defaults:
+    _controller: '\Drupal\recurly\Controller\RecurlyManageSubscriptionController::subscriptionRedirect'
+  requirements:
+    _access: 'TRUE'
 recurly.process_push_notification:
   path: '/recurly/listener/{key}/{subdomain}'
   defaults:
