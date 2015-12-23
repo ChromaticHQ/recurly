@@ -90,7 +90,7 @@ function recurly_views_data() {
  */
 function recurly_views_data_alter(&$data) {
   // Add relationships from entity types to Recurly Accounts.
-  $entity_info = \Drupal::entityTypeManager()->getDefinitions(); 
+  $entity_info = \Drupal::entityTypeManager()->getDefinitions();
   foreach ($entity_info as $entity_type => $info) {
     $base_table = $info->getBaseTable();
     $description = t('@base-entity from @join-entity', array('@join-entity' => $info->getLabel()->render(), '@base-entity' => 'Recurly Account'));
@@ -115,7 +115,7 @@ function recurly_views_data_alter(&$data) {
  *
  * @param string $label
  *   The label to use for the base table or entity type, such as
- *   'Recurly account.'
+ *   "Recurly account."
  * @param string $join_entity_type
  *   The entity type being joined to, such as 'user'.
  *
