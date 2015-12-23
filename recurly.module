@@ -658,11 +658,14 @@ function recurly_recurly_url_info($operation, $context) {
         'subscription_id' => $context['subscription']->uuid,
       ]);
 
+    case 'reactivate':
+      return Url::fromRoute('recurly.subscription_reactivate', [
+        'entity' => $context['entity']->id(),
+        'subscription_id' => $context['subscription']->uuid,
+      ]);
+
     // @FIXME: The calls below need to be updated to use routes as shown above
     // once the routes for these pages have been defined.
-    case 'reactivate':
-      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
-
     case 'redeem_coupon':
       return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/redeem-coupon');
   }

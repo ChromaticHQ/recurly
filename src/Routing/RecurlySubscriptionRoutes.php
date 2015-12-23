@@ -145,6 +145,34 @@ class RecurlySubscriptionRoutes {
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
 
+    // Reactivate routes.
+    $routes['recurly.subscription_reactivate_latest'] = new Route(
+      "$entity_type/{entity}/subscription/reactivate",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionReactivateController::reactivateSubscription',
+        '_title' => 'Reactivate',
+        'operation' => 'reactivate_latest',
+      ],
+      [
+        '_entity_access' => 'entity.update',
+        '_access_check_recurly' => 'TRUE',
+      ],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+    $routes['recurly.subscription_reactivate'] = new Route(
+      "$entity_type/{entity}/subscription/id/{subscription_id}/reactivate",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionReactivateController::reactivateSubscription',
+        '_title' => 'Reactivate',
+        'operation' => 'reactivate',
+      ],
+      [
+        '_entity_access' => 'entity.update',
+        '_access_check_recurly' => 'TRUE',
+      ],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+
     return $routes;
   }
 

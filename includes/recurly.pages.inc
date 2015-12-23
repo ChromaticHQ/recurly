@@ -6,46 +6,6 @@
  */
 
 /**
- * Menu callback; Reactivate a subscription immediately and redirect.
- */
-function recurly_subscription_reactivate($entity_type, $entity, $subscription_id) {
-  // Initialize the Recurly client with the site-wide settings.
-  if (!recurly_client_initialize()) {
-    return t('Could not initialize the Recurly client.');
-  }
-
-  // Load the subscription.
-  if ($subscription_id === 'latest') {
-    list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-    $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id), TRUE);
-    $subscriptions = recurly_account_get_subscriptions($local_account->account_code, 'active');
-    $subscription = reset($subscriptions);
-  }
-  else {
-    try {
-      $subscription = Recurly_Subscription::get($subscription_id);
-    }
-    catch (Recurly_NotFoundError $e) {
-      drupal_set_message(t('Subscription not found'));
-      return MENU_NOT_FOUND;
-    }
-  }
-
-  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-
-  try {
-    $subscription->reactivate();
-    drupal_set_message(t('Plan @plan reactivated! Normal billing will resume on @date.', array('@plan' => $subscription->plan->name, '@date' => recurly_format_date($subscription->current_period_ends_at))));
-  }
-  catch (Recurly_Error $e) {
-    drupal_set_message(t('The plan could not be reactivated because the billing service encountered an error.'));
-    return;
-  }
-
-  drupal_goto($entity_type . '/' . $id . '/subscription');
-}
-
-/**
  * Menu callback; Display form for redeeming a coupon.
  */
 function recurly_subscription_redeem_coupon($form, &$form_state, $entity_type, $entity) {
