@@ -35,7 +35,7 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_list' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
