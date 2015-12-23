@@ -96,34 +96,36 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
 function hook_recurly_url_info($operation, $context) {
   // Only provide URLs for built-in page types.
   $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
-  $parts = _recurly_url_entity_url_parts($context);
-  if (empty($recurly_entity_type) || empty($parts)) {
+  if (empty($recurly_entity_type) || $recurly_entity_type !== $context['entity_type']) {
     return;
   }
 
-  switch ($operation) {
+    switch ($operation) {
     case 'select_plan':
-      // @FIXME
-// url() expects a route name or an external URI.
-// return url($parts[0] . '/' . $parts[1] . '/subscription/signup');
-
+      return Url::fromRoute('recurly.subscription_signup', ['entity' => $context['entity']->id()]);
 
     case 'change_plan':
-      // @FIXME
-// url() expects a route name or an external URI.
-// return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/change' . (isset($context['plan_code']) ? '/' . $context['plan_code'] : ''));
-
+      return Url::fromRoute('recurly.subscription_plan_change', [
+        'entity' => $context['entity']->id(),
+        'subscription_id' => $context['subscription']->uuid,
+        'new_plan_code' => isset($context['plan_code']) ? $context['plan_code'] : NULL,
+      ]);
 
     case 'cancel':
-      // @FIXME
-// url() expects a route name or an external URI.
-// return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/cancel');
-
+      return Url::fromRoute('recurly.subscription_cancel', [
+        'entity' => $context['entity']->id(),
+        'subscription_id' => $context['subscription']->uuid,
+      ]);
 
     case 'reactivate':
-      // @FIXME
-// url() expects a route name or an external URI.
-// return url($parts[0] . '/' . $parts[1] . '/subscription/id/' . $context['subscription']->uuid . '/reactivate');
+      return Url::fromRoute('recurly.subscription_reactivate', [
+        'entity' => $context['entity']->id(),
+        'subscription_id' => $context['subscription']->uuid,
+      ]);
 
+    // @FIXME: The calls below need to be updated to use routes as shown above
+    // once the routes for these pages have been defined.
+    case 'redeem_coupon':
+      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/redeem-coupon');
   }
 }
