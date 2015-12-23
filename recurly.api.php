@@ -123,9 +123,7 @@ function hook_recurly_url_info($operation, $context) {
         'subscription_id' => $context['subscription']->uuid,
       ]);
 
-    // @FIXME: The calls below need to be updated to use routes as shown above
-    // once the routes for these pages have been defined.
     case 'redeem_coupon':
-      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/redeem-coupon');
+      return Url::fromRoute('recurly.redeem_coupon', ['entity' => $context['entity']->id()]);
   }
 }
