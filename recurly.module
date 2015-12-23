@@ -659,10 +659,8 @@ function recurly_recurly_url_info($operation, $context) {
         'subscription_id' => $context['subscription']->uuid,
       ]);
 
-    // @FIXME: The calls below need to be updated to use routes as shown above
-    // once the routes for these pages have been defined.
     case 'redeem_coupon':
-      return \Drupal\Core\Url::fromUri($parts[0] . '/' . $parts[1] . '/subscription/redeem-coupon');
+      return Url::fromRoute('recurly.redeem_coupon', ['entity' => $context['entity']->id()]);
   }
 }
 
@@ -887,7 +885,7 @@ function recurly_format_transaction_status($status) {
 /**
  * Format a Recurly coupon in a human-readable string.
  *
- * @param Recurly_Coupon $coupon
+ * @param \Recurly_Coupon $coupon
  *   The Recurly coupon object being formatted for display.
  * @param string $currency
  *   The currency code in which the coupon is being redeemed.
@@ -897,7 +895,7 @@ function recurly_format_transaction_status($status) {
  * @return string
  *   The formatted string ready for printing.
  */
-function recurly_format_coupon(Recurly_Coupon $coupon, $currency, $html = FALSE) {
+function recurly_format_coupon(\Recurly_Coupon $coupon, $currency, $html = FALSE) {
   if ($coupon->discount_type === 'percent') {
     $amount = SafeMarkup::checkPlain($coupon->discount_percent) . '%';
   }
@@ -906,7 +904,7 @@ function recurly_format_coupon(Recurly_Coupon $coupon, $currency, $html = FALSE)
     $amount = recurly_format_currency($coupon_currency->amount_in_cents, $currency, $html);
   }
 
-  return SafeMarkup::checkPlain($coupon->name) . ' (' . t('!amount discount', ['!amount' => $amount]) . ')';
+  return SafeMarkup::checkPlain($coupon->name) . ' (' . t('@amount discount', ['@amount' => $amount]) . ')';
 }
 
 /**

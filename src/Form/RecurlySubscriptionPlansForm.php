@@ -7,27 +7,20 @@
 
 namespace Drupal\recurly\Form;
 
-use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\SafeMarkup;
 
 /**
  * Recurly subscription plans form.
  */
-class RecurlySubscriptionPlansForm extends ConfigFormBase {
+class RecurlySubscriptionPlansForm extends FormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
     return 'recurly_subscription_plans_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames() {
-    return ['recurly.settings'];
   }
 
   /**
@@ -185,8 +178,6 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
     // since the order of POST is actually changed based on the field position.
     \Drupal::configFactory()->getEditable('recurly.settings')->set('recurly_subscription_plans', $recurly_subscription_plans)->save();
     drupal_set_message(t('Status and order of subscription plans updated!'));
-
-    parent::submitForm($form, $form_state);
   }
 
 }

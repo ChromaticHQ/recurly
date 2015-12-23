@@ -173,6 +173,21 @@ class RecurlySubscriptionRoutes {
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
 
+    if (\Drupal::config('recurly.settings')->get('recurly_coupon_page') ?: 1) {
+      $routes['recurly.redeem_coupon'] = new Route(
+        "$entity_type/{entity}/subscription/redeem-coupon",
+        [
+          '_form' => '\Drupal\recurly\Form\RecurlyRedeemCouponForm',
+          '_title' => 'Redeem coupon',
+          'operation' => 'update',
+        ],
+        [
+          '_entity_access' => 'entity.update',
+          '_access_check_recurly' => 'TRUE',
+        ],
+        ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+      );
+    }
     return $routes;
   }
 

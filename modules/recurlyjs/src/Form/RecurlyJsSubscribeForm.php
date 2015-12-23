@@ -115,7 +115,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
   /**
    * Element validate callback.
    */
-  protected function validateCouponCode($element, &$form_state, $form) {
+  public function validateCouponCode($element, &$form_state, $form) {
     $coupon_code = isset($form_state['values']['coupon_code']) ? $form_state['values']['coupon_code'] : NULL;
     if (!$coupon_code) {
       return;
