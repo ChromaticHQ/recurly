@@ -22,40 +22,9 @@ use Symfony\Component\Routing\Route;
 abstract class RecurlyAccess implements AccessInterface {
 
   /**
-   * A fully loaded account object from Recurly if one can be found.
-   */
-  protected $localAccount = FALSE;
-
-  /**
-   * An array of subscription plans.
-   */
-  protected $subscriptionPlans = [];
-
-  /**
-   * The maximum number of subscriptions.
-   */
-  protected $recurlySubscriptionMax = 0;
-
-  /**
    * {@inheritdoc}
    */
   public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity, $operation) {
-    // Store the entity type.
-    $this->entity_type = $entity->getEntityType()->getLowercaseLabel();
-
-    // If subscriptions are attached to users, only allow users to view their
-    // own subscriptions.
-    if ($entity_type == 'user') {
-      if (\Drupal::currentUser()->id() != $entity->id()) {
-        return AccessResult::forbidden();
-      }
-    }
-
-    // Set variables used to determine access for various operations.
-    $this->localAccount = recurly_account_load(array('entity_type' => $this->entity_type, 'entity_id' => $entity->id()), TRUE);
-    $this->subscriptionPlans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
-    $this->recurly_subscription_max = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
-
   }
 
   /**

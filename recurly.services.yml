@@ -1,8 +1,13 @@
 services:
-  access_check.recurly:
-    class: Drupal\recurly\Access\RecurlyAccessOperation
+  access_check.recurly.default:
+    class: Drupal\recurly\Access\RecurlyAccessDefault
     tags:
-      - { name: access_check, applies_to: _access_check_recurly }
+      - { name: access_check, applies_to: _access_check_recurly_default }
+    arguments: ['@entity.manager']
+  access_check.recurly.user.self:
+    class: Drupal\recurly\Access\RecurlyAccessUser
+    tags:
+      - { name: access_check, applies_to: _access_check_recurly_user }
     arguments: ['@entity.manager']
   access_check.recurly.list:
     class: Drupal\recurly\Access\RecurlyAccessList

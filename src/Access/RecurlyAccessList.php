@@ -26,22 +26,16 @@ class RecurlyAccessList extends RecurlyAccess {
    * {@inheritdoc}
    */
   public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity, $operation) {
-    $access = parent::access($route, $route_match, $entity, $operation);
-    if (get_class($access) == 'AccessResult') {
-      return $access;
-    }
-
+    $entity_type = $entity->getEntityType()->getLowercaseLabel();
+    $local_account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()], TRUE);
+    $recurly_subscription_max = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
     // This is a hack to make it so that the list of subscriptions does not
     // show up as a sub-tab when showing the signup page.
-    $access = !empty($this->localAccount) && $this->pathIsSignup($route);
-    if ($this->recurlySubscriptionMax != 1) {
-      $access = $access || (!empty($this->localAccount) && recurly_account_has_active_subscriptions($this->localAccount->account_code));
+    $access = !empty($local_account) && $this->pathIsSignup($route);
+    if ($recurly_subscription_max != 1) {
+      $access = $access || (!empty($local_account) && recurly_account_has_active_subscriptions($local_account->account_code));
     }
-    if ($access) {
-      return AccessResult::allowed();
-    }
-    return AccessResult::forbidden();
-
+    return $access ? AccessResult::allowed() : AccessResult::forbidden();
   }
 
 }
