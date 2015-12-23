@@ -36,9 +36,10 @@ class RecurlySettingsForm extends ConfigFormBase {
   public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
     // Recommend setting some subscription plans if not enabled.
     $plan_options = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
+
     if (empty($plan_options) && \Drupal::config('recurly.settings')->get('recurly_private_api_key') && \Drupal::config('recurly.settings')->get('recurly_pages')) {
       drupal_set_message(t('Recurly built-in pages are enabled, but no plans have yet been enabled. Enable plans on the <a href="!url">Subscription Plans page</a>.', [
-        '!url' => Url::fromRoute('recurly.subscription_plans_overview'),
+        '!url' => Url::fromRoute('recurly.subscription_plans_overview')->toString(),
       ]), 'warning', FALSE);
     }
 
