@@ -27,10 +27,6 @@ function recurly_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_theme().
  */
 function recurly_theme() {
-  // $items['recurly_subscription_plans_form'] = array(
-  //   'render element' => 'form',
-  //   'file' => 'includes/recurly.admin.inc',
-  // );
   $items['recurly_subscription_summary'] = [
     'variables' => [
       'plan_code' => NULL,
@@ -58,12 +54,11 @@ function recurly_theme() {
       'first_name' => NULL,
       'last_name' => NULL,
       'card_type' => NULL,
-      'year' => NULL,
-      'month' => NULL,
-      'mask_length' => NULL,
+      'exp_date' => NULL,
       'last_four' => NULL,
+      'card_num_masked' => NULL,
     ],
-    'template' => 'templates/recurly-credit-card-information',
+    'template' => 'recurly-credit-card-information',
   ];
   $items['recurly_invoice'] = [
     'variables' => [
