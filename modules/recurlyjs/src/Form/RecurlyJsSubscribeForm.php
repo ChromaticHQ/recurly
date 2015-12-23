@@ -32,7 +32,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       $form['error'] = [
-        '#markup' => t('Could not initialize the Recurly client.'),
+        '#markup' => $this->t('Could not initialize the Recurly client.'),
       ];
       return $form;
     }
@@ -47,8 +47,8 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     if (\Drupal::config('recurlyjs.settings')->get('recurlyjs_enable_coupons')) {
       $form['coupon_code'] = [
         '#type' => 'textfield',
-        '#title' => t('Coupon Code'),
-        '#description' => t('Recurly coupon code to be applied to subscription.'),
+        '#title' => $this->t('Coupon Code'),
+        '#description' => $this->t('Recurly coupon code to be applied to subscription.'),
         '#element_validate' => ['::validateCouponCode'],
         '#weight' => -250,
       ];
@@ -58,7 +58,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     ];
     $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => t('Purchase'),
+      '#value' => $this->t('Purchase'),
     ];
     return $form;
   }
@@ -94,12 +94,12 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     }
     catch (\Recurly_Error $e) {
       \Drupal::logger('recurlyjs')->error('Unable to create subscription. Received the following error: @error', ['@error' => $e->getMessage()]);
-      drupal_set_message(t('Unable to create subscription.'), 'error');
+      drupal_set_message($this->t('Unable to create subscription.'), 'error');
       $form_state->setRebuild(TRUE);
       return;
     }
 
-    drupal_set_message(t('Account upgraded to @plan!', ['@plan' => $subscription->plan->name]));
+    drupal_set_message($this->t('Account upgraded to @plan!', ['@plan' => $subscription->plan->name]));
     // Save the account locally immediately so that subscriber information may
     // be retrieved when the user is directed back to the /subscription tab.
     try {
@@ -128,19 +128,19 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       $coupon = \Recurly_Coupon::get($coupon_code);
     }
     catch (\Recurly_NotFoundError $e) {
-      form_error($element, t('The coupon code you have entered is not valid.'));
+      form_error($element, $this->t('The coupon code you have entered is not valid.'));
       return;
     }
     // Check that the coupon is available in the specified currency.
     if ($coupon && $coupon->discount_type !== 'percent') {
       if (!$coupon->discount_in_cents->offsetExists($currency)) {
-        form_error($element, t('The coupon code you have entered is not valid in @currency.', ['@currency' => $currency]));
+        form_error($element, $this->t('The coupon code you have entered is not valid in @currency.', ['@currency' => $currency]));
         return;
       }
     }
     // Check the the coupon is valid for the specified plan.
     if ($coupon && !$this->couponValidForPlan($coupon, $plan_code)) {
-      form_error($element, t('The coupon code you have entered is not valid for the specified plan.'));
+      form_error($element, $this->t('The coupon code you have entered is not valid for the specified plan.'));
       return;
     }
   }

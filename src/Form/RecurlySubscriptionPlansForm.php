@@ -29,13 +29,13 @@ class RecurlySubscriptionPlansForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
     try {
       $plans = recurly_subscription_plans();
     }
     catch (\Recurly_Error $e) {
-      return t('No plans could be retrieved from Recurly. Recurly reported the following error: "@error"', array('@error' => $e->getMessage()));
+      return $this->t('No plans could be retrieved from Recurly. Recurly reported the following error: "@error"', array('@error' => $e->getMessage()));
     }
     $form['weights']['#tree'] = TRUE;
 
@@ -55,7 +55,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
       $unit_amounts = in_array('IteratorAggregate', class_implements($plan->unit_amount_in_cents)) ? $plan->unit_amount_in_cents : reset($plan->unit_amount_in_cents);
       $setup_fees = in_array('IteratorAggregate', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
       foreach ($unit_amounts as $unit_amount) {
-        $form['#plans'][$plan->plan_code]['unit_amounts'][$unit_amount->currencyCode] = t('@unit_price every @interval_length @interval_unit',
+        $form['#plans'][$plan->plan_code]['unit_amounts'][$unit_amount->currencyCode] = $this->t('@unit_price every @interval_length @interval_unit',
           array(
             '@unit_price' => recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode),
             '@interval_length' => $plan->plan_interval_length,
@@ -90,14 +90,14 @@ class RecurlySubscriptionPlansForm extends FormBase {
 
       // Add an edit link if available for the current user.
       $operations['edit'] = array(
-        'title' => t('edit'),
+        'title' => $this->t('edit'),
         'url' => recurly_subscription_plan_edit_url($details['plan']),
       );
 
       // Add a purchase link if Hosted Payment Pages are enabled.
       if (\Drupal::moduleHandler()->moduleExists('recurly_hosted')) {
         $operations['purchase'] = array(
-          'title' => t('purchase'),
+          'title' => $this->t('purchase'),
           'url' => recurly_hosted_subscription_plan_purchase_url($details['plan']->plan_code),
         );
       }
@@ -112,11 +112,11 @@ class RecurlySubscriptionPlansForm extends FormBase {
     }
 
     $header = array(
-      'plan_title' => array('data' => t('Subscription plan'), 'colspan' => 1),
-      'price' => t('Price'),
-      'setup_fee' => t('Setup fee'),
-      'trial' => t('Trial'),
-      'operations' => t('Operations'),
+      'plan_title' => array('data' => $this->t('Subscription plan'), 'colspan' => 1),
+      'price' => $this->t('Price'),
+      'setup_fee' => $this->t('Setup fee'),
+      'trial' => $this->t('Trial'),
+      'operations' => $this->t('Operations'),
     );
 
     $options = array();
@@ -134,7 +134,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
         'plan_title' => SafeMarkup::checkPlain($plan->name) . ' <small>(' . SafeMarkup::checkPlain($plan_code) . ')</small>' . $description,
         'price' => implode('<br />', $plan_details['unit_amounts']),
         'setup_fee' => implode('<br />', $plan_details['setup_amounts']),
-        'trial' => $plan->trial_interval_length ? t('@trial_length @trial_unit', array('@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit)) : t('No trial'),
+        'trial' => $plan->trial_interval_length ? $this->t('@trial_length @trial_unit', array('@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit)) : $this->t('No trial'),
         'operations' => drupal_render($plan_details['operations']),
       );
     }
@@ -145,7 +145,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
       '#type' => 'tableselect',
       '#header' => $header,
       '#options' => $options,
-      '#empty' => t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', array(':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? $recurly_url_manager->hostedUrl('plans') : 'http://app.recurly.com')),
+      '#empty' => $this->t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', array(':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? $recurly_url_manager->hostedUrl('plans') : 'http://app.recurly.com')),
       '#js_select' => FALSE,
       '#default_value' => $existing_plans,
       '#multiple' => TRUE,
@@ -156,7 +156,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
     );
     $form['actions']['submit'] = array(
       '#type' => 'submit',
-      '#value' => t('Update plans'),
+      '#value' => $this->t('Update plans'),
     );
 
     return $form;
@@ -177,7 +177,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
     // Note that we don't actually need to care about the "weight" field values,
     // since the order of POST is actually changed based on the field position.
     \Drupal::configFactory()->getEditable('recurly.settings')->set('recurly_subscription_plans', $recurly_subscription_plans)->save();
-    drupal_set_message(t('Status and order of subscription plans updated!'));
+    drupal_set_message($this->t('Status and order of subscription plans updated!'));
   }
 
 }

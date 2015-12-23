@@ -28,7 +28,7 @@ class RecurlySubscriptionCancelController extends ControllerBase {
   public function subscriptionCancel(EntityInterface $entity, $subscription_id) {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
@@ -46,7 +46,7 @@ class RecurlySubscriptionCancelController extends ControllerBase {
         $subscription = \Recurly_Subscription::get($subscription_id);
       }
       catch (\Recurly_NotFoundError $e) {
-        drupal_set_message(t('Subscription not found'));
+        drupal_set_message($this->t('Subscription not found'));
         throw new NotFoundHttpException();
       }
     }

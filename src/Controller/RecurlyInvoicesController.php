@@ -25,7 +25,7 @@ class RecurlyInvoicesController extends ControllerBase {
   public function invoicesList(EntityInterface $entity) {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
     // Load the account information. This should already be cached by the access
@@ -64,7 +64,7 @@ class RecurlyInvoicesController extends ControllerBase {
   public function getInvoice(EntityInterface $entity, $invoice_number) {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
     // Load the account information. This should already be cached by the access
@@ -77,7 +77,7 @@ class RecurlyInvoicesController extends ControllerBase {
       $invoice = \Recurly_Invoice::get($invoice_number);
     }
     catch (\Recurly_NotFoundError $e) {
-      drupal_set_message(t('Invoice not found'));
+      drupal_set_message($this->t('Invoice not found'));
       throw new NotFoundHttpException();
     }
 
@@ -100,10 +100,10 @@ class RecurlyInvoicesController extends ControllerBase {
     if ($invoice->state != 'collected') {
       $url = recurly_url('update_billing', ['entity' => $entity]);
       if ($url) {
-        $error_message = t('This invoice is past due! Please <a href="!url">update your billing information</a>.', ['!url' => $url->toString()]);
+        $error_message = $this->t('This invoice is past due! Please <a href="!url">update your billing information</a>.', ['!url' => $url->toString()]);
       }
       else {
-        $error_message = t('This invoice is past due! Please contact an administrator to update your billing information.');
+        $error_message = $this->t('This invoice is past due! Please contact an administrator to update your billing information.');
       }
     }
 
@@ -133,7 +133,7 @@ class RecurlyInvoicesController extends ControllerBase {
   public function getInvoicePdf(EntityInterface $entity, $invoice_number) {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
     // Load the account information. This should already be cached by the access
@@ -147,7 +147,7 @@ class RecurlyInvoicesController extends ControllerBase {
       $pdf = \Recurly_Invoice::getInvoicePdf($invoice_number);
     }
     catch (\Recurly_NotFoundError $e) {
-      drupal_set_message(t('Invoice not found'));
+      drupal_set_message($this->t('Invoice not found'));
       throw new NotFoundHttpException();
     }
 

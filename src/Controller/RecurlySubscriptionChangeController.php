@@ -30,7 +30,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
   public function changePlan(EntityInterface $entity, $subscription_id, $new_plan_code) {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
     // Load the subscription.
@@ -38,7 +38,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
       $subscription = \Recurly_Subscription::get($subscription_id);
     }
     catch (\Recurly_NotFoundError $e) {
-      drupal_set_message(t('Subscription not found.'));
+      drupal_set_message($this->t('Subscription not found.'));
       return MENU_NOT_FOUND;
     }
 
@@ -47,7 +47,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
       $previous_plan = \Recurly_Plan::get($subscription->plan->plan_code);
     }
     catch (\Recurly_NotFoundError $e) {
-      drupal_set_message(t('Plan code "@plan" not found.', ['@plan' => $subscription->plan->plan_code]));
+      drupal_set_message($this->t('Plan code "@plan" not found.', ['@plan' => $subscription->plan->plan_code]));
       return MENU_NOT_FOUND;
     }
 
@@ -56,7 +56,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
       $new_plan = \Recurly_Plan::get($new_plan_code);
     }
     catch (\Recurly_NotFoundError $e) {
-      drupal_set_message(t('Plan code "@plan" not found.', ['@plan' => $new_plan_code]));
+      drupal_set_message($this->t('Plan code "@plan" not found.', ['@plan' => $new_plan_code]));
       return MENU_NOT_FOUND;
     }
 

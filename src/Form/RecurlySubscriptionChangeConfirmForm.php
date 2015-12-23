@@ -57,12 +57,12 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
     }
     $form['timeframe'] = [
       '#type' => 'radios',
-      '#title' => t('Changes take effect'),
+      '#title' => $this->t('Changes take effect'),
       '#options' => [
-        'now' => t('Immediately'),
-        'renewal' => t('On next renewal'),
+        'now' => $this->t('Immediately'),
+        'renewal' => $this->t('On next renewal'),
       ],
-      '#description' => t('If changes take effect immediately, the price difference will either result in a credit applied when the subscription renews or will trigger a prorated charge within the hour.'),
+      '#description' => $this->t('If changes take effect immediately, the price difference will either result in a credit applied when the subscription renews or will trigger a prorated charge within the hour.'),
       '#default_value' => $timeframe,
       '#access' => \Drupal::currentUser()->hasPermission('administer recurly'),
     ];
@@ -70,10 +70,10 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
     // TODO: We could potentially calculate the charge/credit amount here, but
     // math gets messy when switching between plans with different lengths.
     if ($timeframe === 'now') {
-      $timeframe_message = '<p>' . t('The new plan will take effect immediately and a prorated charge (or credit) will be applied to this account.') . '</p>';
+      $timeframe_message = '<p>' . $this->t('The new plan will take effect immediately and a prorated charge (or credit) will be applied to this account.') . '</p>';
     }
     else {
-      $timeframe_message = '<p>' . t('The new plan will take effect on the next billing cycle.') . '</p>';
+      $timeframe_message = '<p>' . $this->t('The new plan will take effect on the next billing cycle.') . '</p>';
     }
     $form['timeframe_help'] = [
       '#markup' => $timeframe_message,
@@ -84,13 +84,13 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
     ];
     $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => t('Change plan'),
+      '#value' => $this->t('Change plan'),
     ];
 
     // Add a cancel option to the confirmation form.
     $form['actions']['cancel'] = [
       '#type' => 'link',
-      '#title' => t('Cancel'),
+      '#title' => $this->t('Cancel'),
       '#url' => \Drupal\Core\Url::fromRoute('recurly.subscription_change', ['entity' => $entity->id()]),
     ];
     return $form;
@@ -117,13 +117,13 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
       }
     }
     catch (Recurly_Error $e) {
-      drupal_set_message(t('The plan could not be updated because the billing service encountered an error.'));
+      drupal_set_message($this->t('The plan could not be updated because the billing service encountered an error.'));
       return;
     }
 
-    $message = t('Plan changed to @plan!', ['@plan' => $new_plan->name]);
+    $message = $this->t('Plan changed to @plan!', ['@plan' => $new_plan->name]);
     if ($timeframe !== 'now') {
-      $message .= ' ' . t('Changes will become active starting <strong>@date</strong>.', ['@date' => recurly_format_date($subscription->current_period_ends_at)]);
+      $message .= ' ' . $this->t('Changes will become active starting <strong>@date</strong>.', ['@date' => recurly_format_date($subscription->current_period_ends_at)]);
     }
     drupal_set_message($message);
     $form_state->setRedirect('recurly.subscription_list', ['entity' => $entity->id()]);

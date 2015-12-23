@@ -32,7 +32,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
   public function subscribe(EntityInterface $entity, $plan_code, $currency = NULL) {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
@@ -45,7 +45,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
       // ever see this signup page.
       if ((\Drupal::config('recurly.settings')->get('recurly_subscription_max') ?: '1') === '1' && count($current_subscriptions) && empty($_POST)) {
         $current_subscription = reset($current_subscriptions);
-        drupal_set_message(t('This account already has a @plan plan!', ['@plan' => $current_subscription->plan->name]));
+        drupal_set_message($this->t('This account already has a @plan plan!', ['@plan' => $current_subscription->plan->name]));
         if ($url = recurly_url('select_plan', array('entity_type' => $entity_type, 'entity' => $entity))) {
           return $this->redirect($url->getRouteName(), $url->getRouteParameters());
         }
@@ -53,7 +53,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
       // Otherwise check if they already have one of this same plan.
       foreach ($current_subscriptions as $current_subscription) {
         if ($current_subscription->plan->plan_code === $plan_code && empty($_POST)) {
-          drupal_set_message(t('This account already has a @plan plan!', ['@plan' => $current_subscription->plan->name]));
+          drupal_set_message($this->t('This account already has a @plan plan!', ['@plan' => $current_subscription->plan->name]));
           if ($url = recurly_url('subscribe', [
             'entity_type' => $entity_type,
             'entity' => $entity,

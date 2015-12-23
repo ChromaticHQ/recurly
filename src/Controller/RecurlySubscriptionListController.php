@@ -30,7 +30,7 @@ class RecurlySubscriptionListController extends ControllerBase {
     $subscriptions = [];
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
     // Load the account information. This should already be cached by the access
     // check to this page by recurly_subscription_page_access().
@@ -167,12 +167,12 @@ class RecurlySubscriptionListController extends ControllerBase {
       $links['change'] = [
         'url' => recurly_url('change_plan', $url_context),
         'external' => TRUE,
-        'title' => t('Change plan'),
+        'title' => $this->t('Change plan'),
       ];
       $links['cancel'] = [
         'url' => recurly_url('cancel', $url_context),
         'external' => TRUE,
-        'title' => t('Cancel'),
+        'title' => $this->t('Cancel'),
         // Pass in the past_due flag to accurately calculate refunds.
         'query' => in_array('past_due', $states) ? ['past_due' => '1'] : NULL,
       ];
@@ -181,7 +181,7 @@ class RecurlySubscriptionListController extends ControllerBase {
       $links['reactivate'] = [
         'url' => recurly_url('reactivate', $url_context),
         'external' => TRUE,
-        'title' => t('Reactivate'),
+        'title' => $this->t('Reactivate'),
       ];
     }
     // Allow other modules to provide links, perhaps "suspend" for example.
@@ -199,40 +199,40 @@ class RecurlySubscriptionListController extends ControllerBase {
         return '';
 
       case 'closed':
-        return t('This account is closed.');
+        return $this->t('This account is closed.');
 
       case 'in_trial':
-        return t('Currently in trial period.');
+        return $this->t('Currently in trial period.');
 
       case 'past_due':
         $url = recurly_url('update_billing', $context);
         if ($url) {
-          return t('This account is past due. Please <a href="!url">update your billing information</a>.', ['!url' => $url]);
+          return $this->t('This account is past due. Please <a href="!url">update your billing information</a>.', ['!url' => $url]);
         }
         else {
-          return t('This account is past due. Please contact an administrator to update your billing information.');
+          return $this->t('This account is past due. Please contact an administrator to update your billing information.');
         }
       case 'canceled':
         $url = recurly_url('reactivate', $context);
         if ($url) {
-          return t('This plan is canceled and will not renew. You may <a href="!url">reactivate the plan</a> to resume billing.', ['!url' => $url]);
+          return $this->t('This plan is canceled and will not renew. You may <a href="!url">reactivate the plan</a> to resume billing.', ['!url' => $url]);
         }
         else {
-          return t('This plan is canceled and will not renew.');
+          return $this->t('This plan is canceled and will not renew.');
         }
       case 'expired':
         $url = recurly_url('select_plan', $context);
         if ($url) {
-          return t('This plan has expired. Please <a href="!url">purchase a new subscription</a>.', ['!url' => $url]);
+          return $this->t('This plan has expired. Please <a href="!url">purchase a new subscription</a>.', ['!url' => $url]);
         }
         else {
-          return t('This plan has expired.');
+          return $this->t('This plan has expired.');
         }
       case 'pending_subscription':
-        return t('This plan will be changed to @plan on @date.', ['@plan' => $context['subscription']->pending_subscription->plan->name, '@date' => recurly_format_date($context['subscription']->current_period_ends_at)]);
+        return $this->t('This plan will be changed to @plan on @date.', ['@plan' => $context['subscription']->pending_subscription->plan->name, '@date' => recurly_format_date($context['subscription']->current_period_ends_at)]);
 
       case 'future':
-        return t('This plan has not started yet. Please contact support if you have any questions.');
+        return $this->t('This plan has not started yet. Please contact support if you have any questions.');
 
       default:
         return '';
@@ -300,9 +300,9 @@ class RecurlySubscriptionListController extends ControllerBase {
   protected function periodEndHeaderString($states) {
     if (count(array_intersect(['canceled', 'non_renewing', 'expired'], $states))
       && !in_array('in_trial', $states)) {
-      return t('Expiration Date');
+      return $this->t('Expiration Date');
     }
-    return t('Next Invoice');
+    return $this->t('Next Invoice');
   }
 
 }
