@@ -16,7 +16,20 @@ use Drupal\Component\Utility\SafeMarkup;
  */
 class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
 
+  /**
+   * Card type string to match against Recurly response.
+   */
   const CARD_TYPE_AMEX = 'American Express';
+
+  /**
+   * American Express card number length.
+   */
+  const CARD_LENGTH_AMEX = 11;
+
+  /**
+   * Standard credit card length.
+   */
+  const CARD_LENGTH_OTHER = 12;
 
   /**
    * {@inheritdoc}
@@ -48,7 +61,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
       $exp_date = sprintf('%1$02d', SafeMarkup::checkPlain($billing_info->month)->__toString()) . '/' . SafeMarkup::checkPlain($billing_info->year);
       // Determine the correct number of masked card numbers depending on the
       // type of card.
-      $mask_length = strcasecmp($billing_info->card_type, self::CARD_TYPE_AMEX) === 0 ? 11 : 12;
+      $mask_length = strcasecmp($billing_info->card_type, self::CARD_TYPE_AMEX) === 0 ? self::CARD_LENGTH_AMEX : self::CARD_LENGTH_OTHER;
       $form['existing'] = [
         '#theme' => 'recurly_credit_card_information',
         '#card_type' => SafeMarkup::checkPlain($billing_info->card_type),
