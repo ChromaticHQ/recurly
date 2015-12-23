@@ -7,26 +7,19 @@
 
 namespace Drupal\recurly\Form;
 
-use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Recurly subscription change form.
  */
-class RecurlySubscriptionChangeConfirmForm extends ConfigFormBase {
+class RecurlySubscriptionChangeConfirmForm extends FormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
     return 'recurly_subscription_change_confirm_form';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEditableConfigNames() {
-    return ['recurly.settings'];
   }
 
   /**
@@ -107,8 +100,6 @@ class RecurlySubscriptionChangeConfirmForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    parent::submitForm($form, $form_state);
-
     $entity = $form['#entity'];
     $entity_type = $form['#entity_type'];
     $subscription = $form['#subscription'];
