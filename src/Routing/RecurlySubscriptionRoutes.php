@@ -124,6 +124,85 @@ class RecurlySubscriptionRoutes {
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
+
+    // Invoice routes.
+    $routes['recurly.subscription_invoices'] = new Route(
+      "$entity_type/{entity}/subscription/invoices",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlyInvoicesController::invoicesList',
+        '_title' => 'Invoices',
+        'operation' => 'invoices',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+    $routes['recurly.subscription_invoice'] = new Route(
+      "$entity_type/{entity}/subscription/invoices/{invoice_number}",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlyInvoicesController::getInvoice',
+        '_title' => 'Invoice',
+        'operation' => 'invoices',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+    $routes['recurly.subscription_invoice_pdf'] = new Route(
+      "$entity_type/{entity}/subscription/invoices/{invoice_number}/pdf",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlyInvoicesController::getInvoicePdf',
+        '_title' => 'Invoice PDF',
+        'operation' => 'invoices',
+      ],
+      // @FIXME: Add permission check for access to the specified entity.
+      ['_access_check_recurly' => 'TRUE'],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+
+    // Reactivate routes.
+    $routes['recurly.subscription_reactivate_latest'] = new Route(
+      "$entity_type/{entity}/subscription/reactivate",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionReactivateController::reactivateSubscription',
+        '_title' => 'Reactivate',
+        'operation' => 'reactivate_latest',
+      ],
+      [
+        '_entity_access' => 'entity.update',
+        '_access_check_recurly' => 'TRUE',
+      ],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+    $routes['recurly.subscription_reactivate'] = new Route(
+      "$entity_type/{entity}/subscription/id/{subscription_id}/reactivate",
+      [
+        '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionReactivateController::reactivateSubscription',
+        '_title' => 'Reactivate',
+        'operation' => 'reactivate',
+      ],
+      [
+        '_entity_access' => 'entity.update',
+        '_access_check_recurly' => 'TRUE',
+      ],
+      ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+    );
+
+    if (\Drupal::config('recurly.settings')->get('recurly_coupon_page') ?: 1) {
+      $routes['recurly.redeem_coupon'] = new Route(
+        "$entity_type/{entity}/subscription/redeem-coupon",
+        [
+          '_form' => '\Drupal\recurly\Form\RecurlyRedeemCouponForm',
+          '_title' => 'Redeem coupon',
+          'operation' => 'update',
+        ],
+        [
+          '_entity_access' => 'entity.update',
+          '_access_check_recurly' => 'TRUE',
+        ],
+        ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
+      );
+    }
     return $routes;
   }
 

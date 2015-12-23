@@ -1,0 +1,95 @@
+{#
+
+/**
+ * @file
+ * Print out an individual invoice. Typically displayed under
+ * user/x/subscriptions/invoice/[invoice-uuid]
+ */
+#}
+
+<div class="invoice">
+  <div class="invoice-pdf">{{ pdf_link }}</div>
+  {% if error_message %}
+    <div class="messages error">{{ error_message }}</div>
+  {% endif %}
+  <div class="invoice-date">{{ invoice_date }}</div>
+
+  {% if billing_info %}
+  <div class="bill-to">
+    <b>{{ first_name }} {{ last_name}}</b><br />
+    {{ address1 }}<br />
+    {% if address2 %}
+      {{ address2 }}<br />
+    {% endif %}
+    {{ city }}, {{ state }} {{ zip }}<br />
+    {{ country }}
+  </div>
+  {% endif %}
+  <div class="invoice-line-items clearfix">
+    <h2>{{ 'Services'|t }}</h2>
+    <table class="line-items grid">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'Date'|t }}</th>
+          <th scope="col">{{ 'Description'|t }}</th>
+          <th class="right" scope="col">{{ 'Subtotal'|t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($line_items as $line_item): ?>
+        {% for line_item in line_items %}
+        <tr>
+          <td>{{ line_item['start_date'] }}
+          {% if line_item['end_date'] %}- {{ line_item['end_date'] }}{% endif %}</td>
+          <td>{{ line_item['description'] }}</td>
+          <td class="right">{{ line_item['amount'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <table class="invoice-calculations">
+      <tbody>
+        <tr class="invoice-subtotal">
+          <th scope="row">{{ 'Subtotal'|t }}:</th>
+          <td class="right">{{ subtotal }}</td>
+        </tr>
+        <tr class="invoice-total">
+          <th scope="row">{{ 'Total'|t }}:</th>
+          <td class="right">{{ total }}</td>
+        </tr>
+        <tr class="paid">
+          <th scope="row">{{ 'Paid'|t }}</th>
+          <td class="right">{{ paid }}</td>
+        </tr>
+        <tr class="invoice-toal">
+          <th scope="row">{{ 'Total Due'|t }}:</th>
+          <td class="right"><b>{{ due }}</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="invoice-payments clearfix">
+    <h2>{{ 'Payments'|t }}</h2>
+    <table class="payments grid">
+      <tbody>
+        <tr>
+          <th class="item-date">{{ 'Date'|t }}</th>
+          <th class="item-description">{{ 'Payment Description'|t }}</th>
+          <th class="line-total">{{ 'Amount'|t }}</th>
+        </tr>
+        {% for transaction in transactions %}
+        <tr>
+          <td class="item-date">{{ transaction['date'] }}</td>
+          <td class="item-description">{{ transaction['description'] }}</td>
+          <td class="line-total">{{ transaction['amount'] }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td>&nbsp;</td>
+          <td class="item-description"><b>{{ 'Payment Total|t '}}</b></td>
+          <td class="line-total"><b>{{ transactions_total }}</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

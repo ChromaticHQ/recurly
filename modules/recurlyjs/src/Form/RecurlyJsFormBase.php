@@ -8,6 +8,7 @@
 namespace Drupal\recurlyjs\Form;
 
 use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * RecurlyJS abstract class with common form elements to be shared.
@@ -17,7 +18,7 @@ abstract class RecurlyJsFormBase extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
     $form['#attached']['library'][] = 'recurlyjs/recurlyjs.recurlyjs';
     $form['#attached']['library'][] = 'recurlyjs/recurlyjs.element';
 
@@ -26,6 +27,12 @@ abstract class RecurlyJsFormBase extends FormBase {
     // @FIXME: Include inline call to configure RecurlyJS.
     // @see: https://github.com/CHROMATIC-LLC/recurly/blob/7.x-2.x/modules/recurlyjs/includes/recurlyjs.pages.inc#L510-L513
     return $this->appendBillingFields($form);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
   }
 
   /**
