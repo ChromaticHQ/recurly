@@ -56,7 +56,7 @@ abstract class RecurlyJsFormBase extends FormBase {
 
     $form['first_name'] = [
       '#type' => 'textfield',
-      '#title' => t('First Name'),
+      '#title' => $this->t('First Name'),
       '#attributes' => [
         'data-recurly' => 'first_name',
       ],
@@ -65,7 +65,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['last_name'] = [
       '#type' => 'textfield',
-      '#title' => t('Last Name'),
+      '#title' => $this->t('Last Name'),
       '#attributes' => [
         'data-recurly' => 'last_name',
       ],
@@ -74,7 +74,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['address1'] = [
       '#type' => 'textfield',
-      '#title' => t('Address Line 1'),
+      '#title' => $this->t('Address Line 1'),
       '#attributes' => [
         'data-recurly' => 'address1',
       ],
@@ -83,7 +83,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['address2'] = [
       '#type' => 'textfield',
-      '#title' => t('Address Line 2'),
+      '#title' => $this->t('Address Line 2'),
       '#attributes' => [
         'data-recurly' => 'address2',
       ],
@@ -92,7 +92,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['city'] = [
       '#type' => 'textfield',
-      '#title' => t('City'),
+      '#title' => $this->t('City'),
       '#attributes' => [
         'data-recurly' => 'city',
       ],
@@ -101,7 +101,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['state'] = [
       '#type' => 'textfield',
-      '#title' => t('State'),
+      '#title' => $this->t('State'),
       '#attributes' => [
         'data-recurly' => 'state',
       ],
@@ -110,7 +110,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['postal_code'] = [
       '#type' => 'textfield',
-      '#title' => t('Postal Code'),
+      '#title' => $this->t('Postal Code'),
       '#attributes' => [
         'data-recurly' => 'postal_code',
       ],
@@ -119,7 +119,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['country'] = [
       '#type' => 'textfield',
-      '#title' => t('Country'),
+      '#title' => $this->t('Country'),
       '#attributes' => [
         'data-recurly' => 'country',
       ],
@@ -128,7 +128,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['vat_number'] = [
       '#type' => 'textfield',
-      '#title' => t('VAT Number'),
+      '#title' => $this->t('VAT Number'),
       '#attributes' => [
         'data-recurly' => 'vat_number',
       ],
@@ -137,7 +137,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['number'] = [
       '#type' => 'textfield',
-      '#title' => t('Card Number'),
+      '#title' => $this->t('Card Number'),
       '#attributes' => [
         'data-recurly' => 'number',
       ],
@@ -146,7 +146,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['month'] = [
       '#type' => 'textfield',
-      '#title' => t('MM'),
+      '#title' => $this->t('MM'),
       '#attributes' => [
         'data-recurly' => 'month',
       ],
@@ -155,7 +155,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['year'] = [
       '#type' => 'textfield',
-      '#title' => t('YYYY'),
+      '#title' => $this->t('YYYY'),
       '#attributes' => [
         'data-recurly' => 'year',
       ],
@@ -164,7 +164,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     ];
     $form['tax_code'] = [
       '#type' => 'hidden',
-      '#title' => t('digital'),
+      '#title' => $this->t('digital'),
       '#attributes' => [
         'data-recurly' => 'tax_code',
       ],

@@ -35,11 +35,11 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
    */
   public function planSelect(EntityInterface $entity, $currency = NULL, $subscription_id = NULL) {
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
-    $content = $entity ? $entity->label() : t('No corresponding entity loaded!');
+    $content = $entity ? $entity->label() : $this->t('No corresponding entity loaded!');
 
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
-      return t('Could not initialize the Recurly client.');
+      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
     // If loading an existing subscription.
@@ -60,7 +60,7 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
           $mode = self::SELECT_PLAN_MODE_CHANGE;
         }
         catch (Recurly_NotFoundError $e) {
-          throw new NotFoundHttpException(t('Subscription not found'));
+          throw new NotFoundHttpException($this->t('Subscription not found'));
         }
       }
     }

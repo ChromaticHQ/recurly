@@ -61,14 +61,14 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
       '#access' => $admin_access || $cancel_behavior === 'cancel',
     ];
     $form['cancel']['description'] = [
-      '#markup' => '<p>' . t('Canceling a subscription will cause it not to renew. If you cancel the subscription, it will continue until <strong>@date</strong>. On that date, the subscription will expire and not be invoiced again. The subscription can be reactivated before it expires.', array('@date' => recurly_format_date($subscription->current_period_ends_at))) . '</p>',
+      '#markup' => '<p>' . $this->t('Canceling a subscription will cause it not to renew. If you cancel the subscription, it will continue until <strong>@date</strong>. On that date, the subscription will expire and not be invoiced again. The subscription can be reactivated before it expires.', array('@date' => recurly_format_date($subscription->current_period_ends_at))) . '</p>',
     ];
     $form['cancel']['actions'] = [
       '#type' => 'actions',
     ];
     $form['cancel']['actions']['cancel'] = [
       '#type' => 'submit',
-      '#value' => t('Cancel at Renewal'),
+      '#value' => $this->t('Cancel at Renewal'),
     ];
 
     $form['terminate'] = [
@@ -76,9 +76,9 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
     ];
     $form['terminate']['refund_amount'] = [
       '#type' => 'radios',
-      '#title' => t('Refund amount'),
+      '#title' => $this->t('Refund amount'),
       '#options' => [
-        self::TERMINATE_NONE => t('@amount - None', ['@amount' => recurly_format_currency(0, $subscription->currency)]),
+        self::TERMINATE_NONE => $this->t('@amount - None', ['@amount' => recurly_format_currency(0, $subscription->currency)]),
       ],
       '#default_value' => $cancel_behavior === 'cancel' ? NULL : $cancel_behavior,
       '#weight' => 1,
@@ -86,28 +86,28 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
     ];
 
     if (!$past_due && $prorated_amount = recurly_subscription_calculate_refund($subscription, 'prorated')) {
-      $form['terminate']['refund_amount']['#options'][self::TERMINATE_PRORATED] = t('@amount - Prorated', ['@amount' => recurly_format_currency($prorated_amount, $subscription->currency)]);
+      $form['terminate']['refund_amount']['#options'][self::TERMINATE_PRORATED] = $this->t('@amount - Prorated', ['@amount' => recurly_format_currency($prorated_amount, $subscription->currency)]);
     }
     if (!$past_due && $full_amount = recurly_subscription_calculate_refund($subscription, 'full')) {
-      $form['terminate']['refund_amount']['#options'][self::TERMINATE_FULL] = t('@amount - Full', ['@amount' => recurly_format_currency($full_amount, $subscription->currency)]);
+      $form['terminate']['refund_amount']['#options'][self::TERMINATE_FULL] = $this->t('@amount - Full', ['@amount' => recurly_format_currency($full_amount, $subscription->currency)]);
     }
 
     $form['terminate']['admin_description'] = [
       '#type' => 'markup',
-      '#markup' => '<p>' . t('If you would like the subscription to end immediately, you may terminate the subscription now. Optionally, you may also issue a refund for the time remaining (prorated) or for the full amount. New subscriptions to this account will need to sign up for a new plan.') . '</p>',
+      '#markup' => '<p>' . $this->t('If you would like the subscription to end immediately, you may terminate the subscription now. Optionally, you may also issue a refund for the time remaining (prorated) or for the full amount. New subscriptions to this account will need to sign up for a new plan.') . '</p>',
       '#access' => $admin_access,
     ];
 
     // Use a more friendly description of the process for non-administrators.
-    $friendly_description = t('This subscription will be ended immediately. If you would like to subscribe again, you will need to start a new subscription.');
+    $friendly_description = $this->t('This subscription will be ended immediately. If you would like to subscribe again, you will need to start a new subscription.');
     if ($past_due) {
       $friendly_description .= '';
     }
     elseif ($cancel_behavior === self::TERMINATE_PRORATED) {
-      $friendly_description .= ' ' . t('A refund of @amount will be credited to your account.', ['@amount' => recurly_format_currency($prorated_amount, $subscription->currency)]);
+      $friendly_description .= ' ' . $this->t('A refund of @amount will be credited to your account.', ['@amount' => recurly_format_currency($prorated_amount, $subscription->currency)]);
     }
     elseif ($cancel_behavior === self::TERMINATE_FULL) {
-      $friendly_description .= ' ' . t('A refund of @amount will be credited to your account.', ['@amount' => recurly_format_currency($full_amount, $subscription->currency)]);
+      $friendly_description .= ' ' . $this->t('A refund of @amount will be credited to your account.', ['@amount' => recurly_format_currency($full_amount, $subscription->currency)]);
     }
     $form['terminate']['user_description'] = [
       '#type' => 'markup',
@@ -120,13 +120,13 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
     ];
     $form['terminate']['actions']['terminate'] = [
       '#type' => 'submit',
-      '#value' => $admin_access ? t('Terminate Immediately') : t('Cancel Plan'),
+      '#value' => $admin_access ? $this->t('Terminate Immediately') : $this->t('Cancel Plan'),
     ];
 
     // Add a cancel option to the confirmation form.
     $form['actions']['cancel'] = [
       '#type' => 'link',
-      '#title' => t('Cancel'),
+      '#title' => $this->t('Cancel'),
       '#url' => \Drupal\Core\Url::fromRoute('recurly.subscription_list', ['entity' => $entity->id()]),
     ];
 
@@ -145,14 +145,14 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
     if ($form['cancel']['actions']['cancel']['#value'] === $clicked_button) {
       try {
         $subscription->cancel();
-        drupal_set_message(t('Plan @plan canceled! It will expire on @date.', [
+        drupal_set_message($this->t('Plan @plan canceled! It will expire on @date.', [
           '@plan' => $subscription->plan->name,
           '@date' => recurly_format_date($subscription->current_period_ends_at),
         ]));
         return $this->redirect('recurly.subscription_list', ['entity' => $entity->id()]);
       }
       catch (\Recurly_Error $e) {
-        drupal_set_message(t('The plan could not be canceled because the billing service encountered an error.'), 'error');
+        drupal_set_message($this->t('The plan could not be canceled because the billing service encountered an error.'), 'error');
         return;
       }
     }
@@ -171,11 +171,11 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
             $subscription->terminateAndRefund();
             break;
         }
-        drupal_set_message(t('Plan @plan terminated!', ['@plan' => $subscription->plan->name]));
+        drupal_set_message($this->t('Plan @plan terminated!', ['@plan' => $subscription->plan->name]));
         $form_state->setRedirect('recurly.subscription_list', ['entity' => $entity->id()]);
       }
       catch (\Recurly_Error $e) {
-        drupal_set_message(t('The plan could not be terminated because the billing service encountered an error: "@message"', ['@message' => $e->getMessage()]), 'error');
+        drupal_set_message($this->t('The plan could not be terminated because the billing service encountered an error: "@message"', ['@message' => $e->getMessage()]), 'error');
         return;
       }
     }

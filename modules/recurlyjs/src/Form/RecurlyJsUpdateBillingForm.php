@@ -45,7 +45,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       $form['error'] = [
-        '#markup' => t('Could not initialize the Recurly client.'),
+        '#markup' => $this->t('Could not initialize the Recurly client.'),
       ];
       return $form;
     }
@@ -74,7 +74,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
     }
     catch (Recurly_NotFoundError $e) {
       \Drupal::logger('recurlyjs')->notice('Unable to retrieve billing information. Received the following error: @error', ['@error' => $e->getMessage()]);
-      drupal_set_message(t('Unable to retrieve billing information.'), 'error');
+      drupal_set_message($this->t('Unable to retrieve billing information.'), 'error');
       return $form;
     }
 
@@ -94,7 +94,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
     ];
     $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => t('Update'),
+      '#value' => $this->t('Update'),
       '#submit' => ['::submitForm'],
     ];
 
@@ -121,7 +121,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
         $billing_info->update();
       }
       catch (\Recurly_NotFoundError $e) {
-        drupal_set_message(t('Could not find account or token is invalid or expired.'), 'error');
+        drupal_set_message($this->t('Could not find account or token is invalid or expired.'), 'error');
       }
     }
   }

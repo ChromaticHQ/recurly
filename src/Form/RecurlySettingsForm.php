@@ -38,7 +38,7 @@ class RecurlySettingsForm extends ConfigFormBase {
     $plan_options = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
 
     if (empty($plan_options) && \Drupal::config('recurly.settings')->get('recurly_private_api_key') && \Drupal::config('recurly.settings')->get('recurly_pages')) {
-      drupal_set_message(t('Recurly built-in pages are enabled, but no plans have yet been enabled. Enable plans on the <a href="!url">Subscription Plans page</a>.', [
+      drupal_set_message($this->t('Recurly built-in pages are enabled, but no plans have yet been enabled. Enable plans on the <a href="!url">Subscription Plans page</a>.', [
         '!url' => Url::fromRoute('recurly.subscription_plans_overview')->toString(),
       ]), 'warning', FALSE);
     }
@@ -46,32 +46,32 @@ class RecurlySettingsForm extends ConfigFormBase {
     // Add form elements to collect default account information.
     $form['account'] = [
       '#type' => 'details',
-      '#title' => t('Default account settings'),
-      '#description' => t('Configure this information based on the "API Credentials" section within the Recurly administration interface.'),
+      '#title' => $this->t('Default account settings'),
+      '#description' => $this->t('Configure this information based on the "API Credentials" section within the Recurly administration interface.'),
       '#open' => TRUE,
     ];
     $form['account']['recurly_private_api_key'] = [
       '#type' => 'textfield',
-      '#title' => t('Private API Key'),
+      '#title' => $this->t('Private API Key'),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_private_api_key'),
     ];
     $form['account']['recurly_public_key'] = [
       '#type' => 'textfield',
-      '#title' => t('Public Key'),
-      '#description' => t('Enter this if needed for Recurly.js. Note that this version of the Recurly module only supports Recurly.js v3, which uses the "public key" and not the "transparent post key" used by Recurly.js v2.'),
+      '#title' => $this->t('Public Key'),
+      '#description' => $this->t('Enter this if needed for Recurly.js. Note that this version of the Recurly module only supports Recurly.js v3, which uses the "public key" and not the "transparent post key" used by Recurly.js v2.'),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_public_key'),
     ];
     $form['account']['recurly_subdomain'] = [
       '#type' => 'textfield',
-      '#title' => t('Subdomain'),
-      '#description' => t("The subdomain of your account."),
+      '#title' => $this->t('Subdomain'),
+      '#description' => $this->t("The subdomain of your account."),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subdomain'),
     ];
     $recurly_url_manager = \Drupal::service('recurly.url_manager');
     $form['account']['recurly_default_currency'] = [
       '#type' => 'textfield',
-      '#title' => t('Default currency'),
-      '#description' => t('Enter the 3-character currency code for the currency you would like to use by default. You can find a list of supported currencies in your <a href="!url">Recurly account currencies page</a>.', [
+      '#title' => $this->t('Default currency'),
+      '#description' => $this->t('Enter the 3-character currency code for the currency you would like to use by default. You can find a list of supported currencies in your <a href="!url">Recurly account currencies page</a>.', [
         '!url' => $recurly_url_manager->hostedUrl('configuration/currencies'),
       ]),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
@@ -82,14 +82,14 @@ class RecurlySettingsForm extends ConfigFormBase {
     // Add form elements to configure default push notification settings.
     $form['push'] = [
       '#type' => 'details',
-      '#title' => t('Push notification settings'),
-      '#description' => t('If you have supplied an HTTP authentication username and password in your Push Notifications settings at Recurly, your web server must be configured to validate these credentials at your listener URL.'),
+      '#title' => $this->t('Push notification settings'),
+      '#description' => $this->t('If you have supplied an HTTP authentication username and password in your Push Notifications settings at Recurly, your web server must be configured to validate these credentials at your listener URL.'),
       '#open' => TRUE,
     ];
     $form['push']['recurly_listener_key'] = [
       '#type' => 'textfield',
-      '#title' => t('Listener URL key'),
-      '#description' => t('Customizing the listener URL gives you protection against fraudulent push notifications.') . '<br />' . t('Based on your current key, you should set @url as your Push Notification URL at Recurly.',
+      '#title' => $this->t('Listener URL key'),
+      '#description' => $this->t('Customizing the listener URL gives you protection against fraudulent push notifications.') . '<br />' . $this->t('Based on your current key, you should set @url as your Push Notification URL at Recurly.',
         [
           '@url' => Url::fromRoute('recurly.process_push_notification', [
             'key' => \Drupal::config('recurly.settings')->get('recurly_listener_key'),
@@ -105,7 +105,7 @@ class RecurlySettingsForm extends ConfigFormBase {
 
     $form['push']['recurly_push_logging'] = [
       '#type' => 'checkbox',
-      '#title' => t('Log authenticated incoming push notifications. (Primarily used for debugging purposes.)'),
+      '#title' => $this->t('Log authenticated incoming push notifications. (Primarily used for debugging purposes.)'),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_push_logging'),
     ];
 
@@ -138,12 +138,12 @@ class RecurlySettingsForm extends ConfigFormBase {
 
     $form['sync'] = [
       '#type' => 'details',
-      '#title' => t('Recurly account syncing'),
+      '#title' => $this->t('Recurly account syncing'),
       '#open' => !empty($recurly_entity_type),
-      '#description' => t("Each time a particular object type (User, Node, Group, etc.) is updated, you may have information sent to Recurly to keep the contact information kept up-to-date. It is extremely important to maintain updated contact information in Recurly, as when an account enters the dunning process, the e-mail account in Recurly is the primary contact address."),
+      '#description' => $this->t("Each time a particular object type (User, Node, Group, etc.) is updated, you may have information sent to Recurly to keep the contact information kept up-to-date. It is extremely important to maintain updated contact information in Recurly, as when an account enters the dunning process, the e-mail account in Recurly is the primary contact address."),
     ];
     $form['sync']['recurly_entity_type'] = [
-      '#title' => t('Send Recurly account updates for each'),
+      '#title' => $this->t('Send Recurly account updates for each'),
       '#type' => 'select',
       '#options' => [
         '' => 'Nothing (disabled)',
@@ -153,7 +153,7 @@ class RecurlySettingsForm extends ConfigFormBase {
     if (!empty($entity_options)) {
       foreach ($entity_type_options as $entity_name => $bundles) {
         $form['sync']['recurly_bundles']['recurly_bundle_' . $entity_name] = [
-          '#title' => t('Specifically the following @entity type', ['@entity' => $entity_name]),
+          '#title' => $this->t('Specifically the following @entity type', ['@entity' => $entity_name]),
           '#type' => 'select',
           '#options' => $bundles,
           '#default_value' => \Drupal::config('recurly.settings')->get('recurly_bundle_' . $entity_name),
@@ -169,76 +169,76 @@ class RecurlySettingsForm extends ConfigFormBase {
     $recurly_token_manager = \Drupal::service('recurly.token_manager');
     $mapping = $recurly_token_manager->tokenMapping();
     $form['sync']['recurly_token_mapping'] = [
-      '#title' => t('Token mappings'),
+      '#title' => $this->t('Token mappings'),
       '#type' => 'details',
       '#open' => FALSE,
       '#tree' => TRUE,
       '#parents' => [
         'recurly_token_mapping',
       ],
-      '#description' => t('Each Recurly account field is displayed below, specify a token that will be used to update the Recurly account each time the object (node or user) is updated. The Recurly "username" field is automatically populated with the object name (for users) or title (for nodes).'),
+      '#description' => $this->t('Each Recurly account field is displayed below, specify a token that will be used to update the Recurly account each time the object (node or user) is updated. The Recurly "username" field is automatically populated with the object name (for users) or title (for nodes).'),
     ];
     $form['sync']['recurly_token_mapping']['email'] = [
-      '#title' => t('Email'),
+      '#title' => $this->t('Email'),
       '#type' => 'textfield',
       '#default_value' => $mapping['email'],
-      '#description' => t('i.e. [user:mail] or [node:author:mail]'),
+      '#description' => $this->t('i.e. [user:mail] or [node:author:mail]'),
     ];
     $form['sync']['recurly_token_mapping']['username'] = [
-      '#title' => t('Username'),
+      '#title' => $this->t('Username'),
       '#type' => 'textfield',
       '#default_value' => $mapping['username'],
-      '#description' => t('i.e. [user:name] or [node:title]'),
+      '#description' => $this->t('i.e. [user:name] or [node:title]'),
     ];
     $form['sync']['recurly_token_mapping']['first_name'] = [
-      '#title' => t('First name'),
+      '#title' => $this->t('First name'),
       '#type' => 'textfield',
       '#default_value' => $mapping['first_name'],
     ];
     $form['sync']['recurly_token_mapping']['last_name'] = [
-      '#title' => t('Last name'),
+      '#title' => $this->t('Last name'),
       '#type' => 'textfield',
       '#default_value' => $mapping['last_name'],
     ];
     $form['sync']['recurly_token_mapping']['company_name'] = [
-      '#title' => t('Company'),
+      '#title' => $this->t('Company'),
       '#type' => 'textfield',
       '#default_value' => $mapping['company_name'],
     ];
     $form['sync']['recurly_token_mapping']['address1'] = [
-      '#title' => t('Address line 1'),
+      '#title' => $this->t('Address line 1'),
       '#type' => 'textfield',
       '#default_value' => $mapping['address1'],
     ];
     $form['sync']['recurly_token_mapping']['address2'] = [
-      '#title' => t('Address line 2'),
+      '#title' => $this->t('Address line 2'),
       '#type' => 'textfield',
       '#default_value' => $mapping['address2'],
     ];
     $form['sync']['recurly_token_mapping']['city'] = [
-      '#title' => t('City'),
+      '#title' => $this->t('City'),
       '#type' => 'textfield',
       '#default_value' => $mapping['city'],
     ];
     $form['sync']['recurly_token_mapping']['state'] = [
-      '#title' => t('State'),
+      '#title' => $this->t('State'),
       '#type' => 'textfield',
       '#default_value' => $mapping['state'],
-      '#description' => t('Values sent to Recurly must be two-letter abbreviations.'),
+      '#description' => $this->t('Values sent to Recurly must be two-letter abbreviations.'),
     ];
     $form['sync']['recurly_token_mapping']['zip'] = [
-      '#title' => t('Zip code'),
+      '#title' => $this->t('Zip code'),
       '#type' => 'textfield',
       '#default_value' => $mapping['zip'],
     ];
     $form['sync']['recurly_token_mapping']['country'] = [
-      '#title' => t('Country'),
+      '#title' => $this->t('Country'),
       '#type' => 'textfield',
       '#default_value' => $mapping['country'],
-      '#description' => t('Values sent to Recurly must be two-letter abbreviations.'),
+      '#description' => $this->t('Values sent to Recurly must be two-letter abbreviations.'),
     ];
     $form['sync']['recurly_token_mapping']['phone'] = [
-      '#title' => t('Phone number'),
+      '#title' => $this->t('Phone number'),
       '#type' => 'textfield',
       '#default_value' => $mapping['phone'],
     ];
@@ -249,9 +249,9 @@ class RecurlySettingsForm extends ConfigFormBase {
     ];
     $form['pages'] = [
       '#type' => 'details',
-      '#title' => t('Built-in subscription/invoice pages'),
+      '#title' => $this->t('Built-in subscription/invoice pages'),
       '#open' => \Drupal::config('recurly.settings')->get('recurly_pages'),
-      '#description' => t('The Recurly module provides built-in pages for letting users view their own recent invoices on the site instead of needing to go to the Recurly site. If a companion module is enabled such as the Recurly Hosted Pages or Recurly.js module (both included with this project), appropriate links to update billing information or subscribe will also be displayed on these pages.'),
+      '#description' => $this->t('The Recurly module provides built-in pages for letting users view their own recent invoices on the site instead of needing to go to the Recurly site. If a companion module is enabled such as the Recurly Hosted Pages or Recurly.js module (both included with this project), appropriate links to update billing information or subscribe will also be displayed on these pages.'),
       '#states' => [
         'visible' => [
           'select[name="recurly_entity_type"]' => [
@@ -261,10 +261,10 @@ class RecurlySettingsForm extends ConfigFormBase {
       ],
     ];
     $form['pages']['recurly_pages'] = [
-      '#title' => t('Enable built-in pages'),
+      '#title' => $this->t('Enable built-in pages'),
       '#type' => 'checkbox',
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_pages'),
-      '#description' => t('Hosted pages will be enabled on the same object type as the "Account Syncing" option above.'),
+      '#description' => $this->t('Hosted pages will be enabled on the same object type as the "Account Syncing" option above.'),
     ];
 
     // All the settings below are dependent upon the pages option being enabled.
@@ -276,70 +276,70 @@ class RecurlySettingsForm extends ConfigFormBase {
       ],
     ];
     $form['pages']['recurly_coupon_page'] = [
-      '#title' => t('Enable coupon redemption page'),
+      '#title' => $this->t('Enable coupon redemption page'),
       '#type' => 'checkbox',
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_coupon_page') ?: 1,
-      '#description' => t('Show the "Redeem coupon" tab underneath the subscription page.'),
+      '#description' => $this->t('Show the "Redeem coupon" tab underneath the subscription page.'),
       '#states' => $pages_enabled,
     ];
     $form['pages']['recurly_subscription_display'] = [
-      '#title' => t('List subscriptions'),
+      '#title' => $this->t('List subscriptions'),
       '#type' => 'radios',
       // @TODO: Convert these array keys to class constants.
       '#options' => [
-        'live' => t('Live subscriptions (active, trials, canceled, and past due)'),
-        'all' => t('All (includes expired subscriptions)'),
+        'live' => $this->t('Live subscriptions (active, trials, canceled, and past due)'),
+        'all' => $this->t('All (includes expired subscriptions)'),
       ],
-      '#description' => t('Users may subscribe or switch between any of the enabled plans by visiting the Subscription tab.'),
+      '#description' => $this->t('Users may subscribe or switch between any of the enabled plans by visiting the Subscription tab.'),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subscription_display') ?: 'live',
       '#states' => $pages_enabled,
     ];
     $form['pages']['recurly_subscription_max'] = [
-      '#title' => t('Multiple plans'),
+      '#title' => $this->t('Multiple plans'),
       '#type' => 'radios',
       // Allows the number of plans to be some arbitrary amount in the future.
       '#options' => [
-        '1' => t('Single-plan mode'),
-        '0' => t('Multiple-plan mode'),
+        '1' => $this->t('Single-plan mode'),
+        '0' => $this->t('Multiple-plan mode'),
       ],
-      '#description' => t('Single-plan mode allows users are only one subscription at a time, preventing them from having multiple plans active at the same time. If users are allowed to sign up for more than one subscription, use Multiple-plan mode.'),
+      '#description' => $this->t('Single-plan mode allows users are only one subscription at a time, preventing them from having multiple plans active at the same time. If users are allowed to sign up for more than one subscription, use Multiple-plan mode.'),
       '#access' => count($plan_options),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subscription_max'),
       '#states' => $pages_enabled,
     ];
     $form['pages']['recurly_subscription_upgrade_timeframe'] = [
-      '#title' => t('Upgrade plan behavior'),
+      '#title' => $this->t('Upgrade plan behavior'),
       '#type' => 'radios',
       '#options' => [
-        'now' => t('Upgrade immediately (pro-rating billing period usage)'),
-        'renewal' => t('On next renewal'),
+        'now' => $this->t('Upgrade immediately (pro-rating billing period usage)'),
+        'renewal' => $this->t('On next renewal'),
       ],
       '#access' => count($plan_options) > 1,
-      '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission. An upgrade is considered moving to any plan that costs more than the current plan (regardless of billing cycle).'),
+      '#description' => $this->t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission. An upgrade is considered moving to any plan that costs more than the current plan (regardless of billing cycle).'),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subscription_upgrade_timeframe') ?: 'now',
       '#states' => $pages_enabled,
     ];
     $form['pages']['recurly_subscription_downgrade_timeframe'] = [
-      '#title' => t('Downgrade plan behavior'),
+      '#title' => $this->t('Downgrade plan behavior'),
       '#type' => 'radios',
       '#options' => [
-        'now' => t('Downgrade immediately (pro-rating billing period usage)'),
-        'renewal' => t('On next renewal'),
+        'now' => $this->t('Downgrade immediately (pro-rating billing period usage)'),
+        'renewal' => $this->t('On next renewal'),
       ],
       '#access' => count($plan_options) > 1,
-      '#description' => t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission. A downgrade is considered moving to any plan that costs less than the current plan (regardless of billing cycle).'),
+      '#description' => $this->t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission. A downgrade is considered moving to any plan that costs less than the current plan (regardless of billing cycle).'),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subscription_downgrade_timeframe') ?: 'renewal',
       '#states' => $pages_enabled,
     ];
     $form['pages']['recurly_subscription_cancel_behavior'] = [
-      '#title' => t('Cancel plan behavior'),
+      '#title' => $this->t('Cancel plan behavior'),
       '#type' => 'radios',
       '#options' => [
-        'cancel' => t('Cancel at renewal (leave active until end of period)'),
-        'terminate_prorated' => t('Terminate immediately (prorated refund)'),
-        'terminate_full' => t('Terminate immediately (full refund)'),
+        'cancel' => $this->t('Cancel at renewal (leave active until end of period)'),
+        'terminate_prorated' => $this->t('Terminate immediately (prorated refund)'),
+        'terminate_full' => $this->t('Terminate immediately (full refund)'),
       ],
-      '#description' => t('Affects users canceling their own subscription plans. Overriddable when canceling plans as users with "Administer Recurly" permission. Note that this behavior is also used when content associated with a Recurly account is deleted, or when users associated with an account are canceled.'),
+      '#description' => $this->t('Affects users canceling their own subscription plans. Overriddable when canceling plans as users with "Administer Recurly" permission. Note that this behavior is also used when content associated with a Recurly account is deleted, or when users associated with an account are canceled.'),
       '#enabled' => count($plan_options) > 1,
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subscription_cancel_behavior') ?: 'cancel',
       '#states' => $pages_enabled,
@@ -380,7 +380,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       }
 
       catch (Recurly_UnauthorizedError $e) {
-        $form_state->setErrorByName('recurly_private_api_key', t('Your API Key is not authorized to connect to Recurly.'));
+        $form_state->setErrorByName('recurly_private_api_key', $this->t('Your API Key is not authorized to connect to Recurly.'));
       }
     }
   }
