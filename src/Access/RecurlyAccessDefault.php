@@ -1,44 +1,41 @@
 <?php
 /**
  * @file
- * Contains \Drupal\recurly\Access\RecurlyAccessCheck.
+ * Contains \Drupal\recurly\Access\RecurlyAccessOperation.
+ */
+
+/**
+ * This class holds logic for all operations except "list".
+ *
+ * The "list" operation has already been separated out into a new class.
+ *
+ * Eventually each operation in this class will be put into its own class and
+ * the routes will be updated to check services that interface with each of
+ * these classes.
  */
 
 namespace Drupal\recurly\Access;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\Routing\Route;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Checks access for displaying configuration translation page.
+ * Checks access for displaying a given operation.
  */
-class RecurlyAccessCheck implements AccessInterface {
+class RecurlyAccessDefault extends RecurlyAccess {
 
   /**
    * {@inheritdoc}
    */
   public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity, $operation) {
-    $entity_type = $entity->getEntityType()->getLowercaseLabel();
-
-    // If subscriptions are attached to users, only allow users to view their
-    // own subscriptions.
-    if ($entity_type == 'user') {
-      if (\Drupal::currentUser()->id() != $entity->id()) {
-        return AccessResult::forbidden();
-      }
-    }
-
+    $subscription_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
+    $recurly_subscription_max = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
+    $local_account = recurly_account_load(['entity_type' => $this->entityType, 'entity_id' => $entity->id()], TRUE);
     // If the operation is anything but subscribe, do not allow access to the
     // page because it does not make logical sense to show invoices/billing/etc.
     // for an object that does not have a subscription at all.
-    $local_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()), TRUE);
-    $subscription_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
-    $recurly_subscription_max = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
-
     if ($operation == 'main' && ($local_account || $subscription_plans)) {
       return AccessResult::allowed();
     }
@@ -87,9 +84,9 @@ class RecurlyAccessCheck implements AccessInterface {
       // @FIXME: $_POST has been removed.
       // @see https://www.drupal.org/node/2150267
       elseif ($operation === 'signup') {
-        // POST is included here to allow the signup form to finish processing, in
-        // the event that the push notification comes so fast it finishes before
-        // Drupal processes the form that contained a Recurly.js element.
+        // POST is included here to allow the signup form to finish processing,
+        // in the event that the push notification comes so fast it finishes
+        // before Drupal processes the form that contained a Recurly.js element.
         // return empty($local_account) || empty($active_subscriptions) || !empty($_POST);
         if (isset($local_account) || isset($active_subscriptions)) {
           return AccessResult::allowed();

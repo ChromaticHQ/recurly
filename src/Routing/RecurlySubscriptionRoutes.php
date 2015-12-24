@@ -35,7 +35,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_list' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -48,7 +49,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_default' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -62,7 +64,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_default' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -78,7 +81,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_default' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -91,7 +95,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_default' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -107,7 +112,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_default' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -120,7 +126,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_default' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -134,7 +141,8 @@ class RecurlySubscriptionRoutes {
         'operation' => 'invoices',
       ],
       // @FIXME: Add permission check for access to the specified entity.
-      ['_access_check_recurly' => 'TRUE'],
+      ['_access_check_recurly_user' => 'TRUE'],
+      ['_access_check_recurly_default' => 'TRUE'],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
     $routes['recurly.subscription_invoice'] = new Route(
@@ -145,7 +153,8 @@ class RecurlySubscriptionRoutes {
         'operation' => 'invoices',
       ],
       // @FIXME: Add permission check for access to the specified entity.
-      ['_access_check_recurly' => 'TRUE'],
+      ['_access_check_recurly_user' => 'TRUE'],
+      ['_access_check_recurly_default' => 'TRUE'],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
     $routes['recurly.subscription_invoice_pdf'] = new Route(
@@ -156,7 +165,8 @@ class RecurlySubscriptionRoutes {
         'operation' => 'invoices',
       ],
       // @FIXME: Add permission check for access to the specified entity.
-      ['_access_check_recurly' => 'TRUE'],
+      ['_access_check_recurly_user' => 'TRUE'],
+      ['_access_check_recurly_default' => 'TRUE'],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
 
@@ -170,7 +180,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_default' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -183,7 +194,8 @@ class RecurlySubscriptionRoutes {
       ],
       [
         '_entity_access' => 'entity.update',
-        '_access_check_recurly' => 'TRUE',
+        '_access_check_recurly_user' => 'TRUE',
+        '_access_check_recurly_default' => 'TRUE',
       ],
       ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
     );
@@ -198,7 +210,8 @@ class RecurlySubscriptionRoutes {
         ],
         [
           '_entity_access' => 'entity.update',
-          '_access_check_recurly' => 'TRUE',
+          '_access_check_recurly_user' => 'TRUE',
+          '_access_check_recurly_default' => 'TRUE',
         ],
         ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
       );
