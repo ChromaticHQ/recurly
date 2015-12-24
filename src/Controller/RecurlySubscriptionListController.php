@@ -32,8 +32,7 @@ class RecurlySubscriptionListController extends ControllerBase {
     if (!recurly_client_initialize()) {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
-    // Load the account information. This should already be cached by the access
-    // check to this page by recurly_subscription_page_access().
+
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
     // If the user does not have an account yet, send them to the signup page.

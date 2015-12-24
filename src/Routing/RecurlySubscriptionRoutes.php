@@ -30,8 +30,7 @@ class RecurlySubscriptionRoutes {
       "/$entity_type/{entity}/subscription",
       [
         '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionListController::subscriptionList',
-        '_title' => 'Subscription Information',
-        'operation' => 'list',
+        '_title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') == 1 ? 'Subscription Summary' : 'Subscription List',
       ],
       [
         '_entity_access' => 'entity.update',
@@ -44,7 +43,7 @@ class RecurlySubscriptionRoutes {
       "/$entity_type/{entity}/subscription/signup",
       [
         '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionSelectPlanController::planSelect',
-        '_title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1' ? 'Signup' : 'Add plan',
+        '_title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') == 1 ? 'Signup' : 'Add plan',
         'operation' => 'select_plan',
       ],
       [
