@@ -39,7 +39,7 @@ class RecurlyPagerManager {
     // Populate $page_results with the current page.
     $total = $pager_object->count();
     $page_end = min($start + $per_page, $total);
-    $page_results = array();
+    $page_results = [];
     for ($n = $start; $n < $page_end; $n++) {
       $item = $pager_object->current();
       $page_results[$item->uuid] = $item;

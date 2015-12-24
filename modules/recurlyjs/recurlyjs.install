@@ -9,16 +9,16 @@
  * Implements hook_requirements().
  */
 function recurlyjs_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'runtime') {
     // Verify that recurly_hosted isn't enabled at the same time.
     if (\Drupal::moduleHandler()->moduleExists('recurly_hosted')) {
-      $requirements['recurlyjs_conflict'] = array(
+      $requirements['recurlyjs_conflict'] = [
         'title' => t('Recurly.js'),
         'title' => t('Recurly.js module conflict.'),
         'value' => t('The "Recurly hosted pages" module should not be enabled at the same time as Recurly.js module. Disable Recurly hosted pages module to prevent conflicts.'),
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;

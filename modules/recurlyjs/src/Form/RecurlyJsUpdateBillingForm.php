@@ -82,7 +82,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
     $form['#entity'] = $entity;
 
     $form = parent::buildForm($form, $form_state);
-    $excluded_fields = array('month', 'year');
+    $excluded_fields = ['month', 'year'];
     foreach (\Drupal\Core\Render\Element::children($form) as $form_element_name) {
       if (!in_array($form_element_name, $excluded_fields)) {
         $form[$form_element_name]['#default_value'] = ($form_element_name != 'postal_code') ? $billing_info->$form_element_name : $billing_info->zip;

@@ -61,7 +61,8 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
       '#access' => $admin_access || $cancel_behavior === 'cancel',
     ];
     $form['cancel']['description'] = [
-      '#markup' => '<p>' . $this->t('Canceling a subscription will cause it not to renew. If you cancel the subscription, it will continue until <strong>@date</strong>. On that date, the subscription will expire and not be invoiced again. The subscription can be reactivated before it expires.', array('@date' => recurly_format_date($subscription->current_period_ends_at))) . '</p>',
+      '#markup' => '<p>' . $this->t('Canceling a subscription will cause it not to renew. If you cancel the subscription, it will continue until <strong>@date</strong>. On that date, the subscription will expire and not be invoiced again. The subscription can be reactivated before it expires.',
+        ['@date' => recurly_format_date($subscription->current_period_ends_at)]) . '</p>',
     ];
     $form['cancel']['actions'] = [
       '#type' => 'actions',

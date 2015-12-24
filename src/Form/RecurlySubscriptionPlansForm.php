@@ -35,19 +35,19 @@ class RecurlySubscriptionPlansForm extends FormBase {
       $plans = recurly_subscription_plans();
     }
     catch (\Recurly_Error $e) {
-      return $this->t('No plans could be retrieved from Recurly. Recurly reported the following error: "@error"', array('@error' => $e->getMessage()));
+      return $this->t('No plans could be retrieved from Recurly. Recurly reported the following error: "@error"', ['@error' => $e->getMessage()]);
     }
     $form['weights']['#tree'] = TRUE;
 
-    $plan_options = array();
+    $plan_options = [];
     $count = 0;
     foreach ($plans as $plan) {
       $plan_options[$plan->plan_code] = $plan->name;
-      $form['#plans'][$plan->plan_code] = array(
+      $form['#plans'][$plan->plan_code] = [
         'plan' => $plan,
-        'unit_amounts' => array(),
-        'setup_amounts' => array(),
-      );
+        'unit_amounts' => [],
+        'setup_amounts' => [],
+      ];
 
       // TODO: Remove reset() calls once Recurly_CurrencyList implements
       // Iterator.
@@ -56,70 +56,70 @@ class RecurlySubscriptionPlansForm extends FormBase {
       $setup_fees = in_array('IteratorAggregate', class_implements($plan->setup_fee_in_cents)) ? $plan->setup_fee_in_cents : reset($plan->setup_fee_in_cents);
       foreach ($unit_amounts as $unit_amount) {
         $form['#plans'][$plan->plan_code]['unit_amounts'][$unit_amount->currencyCode] = $this->t('@unit_price every @interval_length @interval_unit',
-          array(
+          [
             '@unit_price' => recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode),
             '@interval_length' => $plan->plan_interval_length,
             '@interval_unit' => $plan->plan_interval_unit,
-          ));
+          ]);
       }
       foreach ($setup_fees as $setup_fee) {
         $form['#plans'][$plan->plan_code]['setup_amounts'][$unit_amount->currencyCode] = recurly_format_currency($setup_fee->amount_in_cents, $setup_fee->currencyCode);
       }
-      $form['weights'][$plan->plan_code] = array(
+      $form['weights'][$plan->plan_code] = [
         '#type' => 'hidden',
         '#default_value' => $count,
-        '#attributes' => array('class' => array('weight')),
-      );
+        '#attributes' => ['class' => ['weight']],
+      ];
       $count++;
     }
 
     // Order our plans based on any existing value.
-    $existing_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: array();
-    $plan_list = array();
+    $existing_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
+    $plan_list = [];
     foreach ($existing_plans as $plan_code => $enabled) {
       if (isset($form['#plans'][$plan_code])) {
         $plan_list[$plan_code] = $form['#plans'][$plan_code];
       }
     }
     // Then add any new plans to the end.
-    $plan_list += is_array($form['#plans']) ? $form['#plans'] : array();
+    $plan_list += is_array($form['#plans']) ? $form['#plans'] : [];
     $form['#plans'] = $plan_list;
 
     foreach ($form['#plans'] as $plan_id => $details) {
-      $operations = array();
+      $operations = [];
 
       // Add an edit link if available for the current user.
-      $operations['edit'] = array(
+      $operations['edit'] = [
         'title' => $this->t('edit'),
         'url' => recurly_subscription_plan_edit_url($details['plan']),
-      );
+      ];
 
       // Add a purchase link if Hosted Payment Pages are enabled.
       if (\Drupal::moduleHandler()->moduleExists('recurly_hosted')) {
-        $operations['purchase'] = array(
+        $operations['purchase'] = [
           'title' => $this->t('purchase'),
           'url' => recurly_hosted_subscription_plan_purchase_url($details['plan']->plan_code),
-        );
+        ];
       }
 
-      $form['#plans'][$plan_id]['operations'] = array(
+      $form['#plans'][$plan_id]['operations'] = [
         '#theme' => 'links',
         '#links' => $operations,
-        '#attributes' => array(
-          'class' => array('links', 'inline'),
-        ),
-      );
+        '#attributes' => [
+          'class' => ['links', 'inline'],
+        ],
+      ];
     }
 
-    $header = array(
-      'plan_title' => array('data' => $this->t('Subscription plan'), 'colspan' => 1),
+    $header = [
+      'plan_title' => ['data' => $this->t('Subscription plan'), 'colspan' => 1],
       'price' => $this->t('Price'),
       'setup_fee' => $this->t('Setup fee'),
       'trial' => $this->t('Trial'),
       'operations' => $this->t('Operations'),
-    );
+    ];
 
-    $options = array();
+    $options = [];
     foreach ($form['#plans'] as $plan_code => $plan_details) {
       $plan = $plan_details['plan'];
 
@@ -130,34 +130,34 @@ class RecurlySubscriptionPlansForm extends FormBase {
       }
 
       $form['recurly_subscription_plans'][$plan_code]['#title_display'] = 'none';
-      $options[$plan_code] = array(
+      $options[$plan_code] = [
         'plan_title' => SafeMarkup::checkPlain($plan->name) . ' <small>(' . SafeMarkup::checkPlain($plan_code) . ')</small>' . $description,
         'price' => implode('<br />', $plan_details['unit_amounts']),
         'setup_fee' => implode('<br />', $plan_details['setup_amounts']),
-        'trial' => $plan->trial_interval_length ? $this->t('@trial_length @trial_unit', array('@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit)) : $this->t('No trial'),
+        'trial' => $plan->trial_interval_length ? $this->t('@trial_length @trial_unit', ['@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit]) : $this->t('No trial'),
         'operations' => drupal_render($plan_details['operations']),
-      );
+      ];
     }
 
     $recurly_url_manager = \Drupal::service('recurly.url_manager');
     // @TODO: Implement draggable table.
-    $form['recurly_subscription_plans'] = array(
+    $form['recurly_subscription_plans'] = [
       '#type' => 'tableselect',
       '#header' => $header,
       '#options' => $options,
-      '#empty' => $this->t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', array(':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? $recurly_url_manager->hostedUrl('plans') : 'http://app.recurly.com')),
+      '#empty' => $this->t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', [':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? $recurly_url_manager->hostedUrl('plans') : 'http://app.recurly.com']),
       '#js_select' => FALSE,
       '#default_value' => $existing_plans,
       '#multiple' => TRUE,
-    );
+    ];
 
-    $form['actions'] = array(
+    $form['actions'] = [
       '#type' => 'actions',
-    );
-    $form['actions']['submit'] = array(
+    ];
+    $form['actions']['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Update plans'),
-    );
+    ];
 
     return $form;
   }
@@ -168,7 +168,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Order our variable based on the form order.
     $form_state_plans = $form_state->getValue('recurly_subscription_plans');
-    $recurly_subscription_plans = array();
+    $recurly_subscription_plans = [];
     foreach ($form_state->getUserInput()['weights'] as $plan_code => $weight) {
       if (isset($form_state_plans[$plan_code])) {
         $recurly_subscription_plans[$plan_code] = $form_state_plans[$plan_code];
