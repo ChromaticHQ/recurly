@@ -494,7 +494,7 @@ function recurly_account_delete($recurly_account, $cancelation_method = NULL) {
  *   active subscriptions are located.
  */
 function recurly_account_has_active_subscriptions($account_code) {
-  return count(recurly_account_get_subscriptions($account_code, 'active'));
+  return count(recurly_account_get_subscriptions($account_code, 'active')) > 0 ? TRUE : FALSE;
 }
 
 /**

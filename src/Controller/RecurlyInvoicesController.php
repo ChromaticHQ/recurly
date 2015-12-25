@@ -28,8 +28,6 @@ class RecurlyInvoicesController extends ControllerBase {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
-    // Load the account information. This should already be cached by the access
-    // check to this page by recurly_subscription_page_access().
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()));
 
@@ -67,8 +65,6 @@ class RecurlyInvoicesController extends ControllerBase {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
-    // Load the account information. This should already be cached by the access
-    // check to this page by recurly_subscription_page_access().
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
 
@@ -136,8 +132,6 @@ class RecurlyInvoicesController extends ControllerBase {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];
     }
 
-    // Load the account information. This should already be cached by the access
-    // check to this page by recurly_subscription_page_access().
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
 

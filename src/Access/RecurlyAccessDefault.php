@@ -1,14 +1,10 @@
 <?php
 /**
  * @file
- * Contains \Drupal\recurly\Access\RecurlyAccessOperation.
+ * Contains \Drupal\recurly\Access\RecurlyAccessDefault.
  */
 
 /**
- * This class holds logic for all operations except "list".
- *
- * The "list" operation has already been separated out into a new class.
- *
  * Eventually each operation in this class will be put into its own class and
  * the routes will be updated to check services that interface with each of
  * these classes.
@@ -29,34 +25,17 @@ class RecurlyAccessDefault extends RecurlyAccess {
   /**
    * {@inheritdoc}
    */
-  public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity, $operation) {
+  public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity, $operation= NULL) {
     $subscription_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
     $recurly_subscription_max = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
-    $local_account = recurly_account_load(['entity_type' => $this->entityType, 'entity_id' => $entity->id()], TRUE);
-    // If the operation is anything but subscribe, do not allow access to the
-    // page because it does not make logical sense to show invoices/billing/etc.
-    // for an object that does not have a subscription at all.
-    if ($operation == 'main' && ($local_account || $subscription_plans)) {
-      return AccessResult::allowed();
-    }
-    elseif ($operation == 'select_plan') {
+    $local_account = recurly_account_load(['entity_type' => $entity->getEntityType()->getLowercaseLabel(), 'entity_id' => $entity->id()], TRUE);
+
+    if ($operation == 'select_plan') {
       // This tab is only visible when visited directly or if multiple plans are
       // allowed.
       if (!empty($subscription_plans) && $this->pathIsSignup($route) || $recurly_subscription_max != 1) {
         return AccessResult::allowed();
       }
-    }
-    elseif ($operation == 'list') {
-      // This is a hack to make it so that the list of subscriptions does not
-      // show up as a sub-tab when showing the signup page.
-      $access = !empty($local_account) && $this->pathIsSignup($route);
-      if ($recurly_subscription_max != 1) {
-        $access = $access || (!empty($local_account) && recurly_account_has_active_subscriptions($local_account->account_code));
-      }
-      if ($access) {
-        return AccessResult::allowed();
-      }
-      return AccessResult::forbidden();
     }
     // These pages are only accessible if using the single-page mode. This
     // requires loading the latest active account for an entity.
@@ -109,22 +88,6 @@ class RecurlyAccessDefault extends RecurlyAccess {
       return AccessResult::allowed();
     }
     return AccessResult::forbidden();
-  }
-
-  /**
-   * Determine if this is a signup path.
-   *
-   * @param Symfony\Component\Routing\Route $route
-   *   A Route object.
-   *
-   * @return bool
-   *   TRUE if the path contains 'signup', else FALSE.
-   */
-  protected function pathIsSignup(Route $route) {
-    if (strpos($route->getPath(), 'signup') !== FALSE) {
-      return TRUE;
-    }
-    return FALSE;
   }
 
 }

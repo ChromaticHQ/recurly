@@ -4,9 +4,6 @@
  * Contains \Drupal\recurly\Access\RecurlyAccess.
  */
 
-/**
- * Create a new recurly access check abstract class for shared functionality.
- */
 
 namespace Drupal\recurly\Access;
 
@@ -17,14 +14,14 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\Routing\Route;
 
 /**
- * Checks access for various operations.
+ * Recurly access check abstract class for shared functionality.
  */
 abstract class RecurlyAccess implements AccessInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity, $operation) {
+  public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity) {
   }
 
   /**
