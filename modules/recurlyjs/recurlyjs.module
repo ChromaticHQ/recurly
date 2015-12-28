@@ -69,8 +69,8 @@ function recurlyjs_element_info() {
 
     // Global options:
     // See http://docs.recurly.com/api/recurlyjs/reference#js-config
-    '#country' => 'US',
-    '#currency' => 'USD',
+    '#country' => variable_get('site_default_country', ''),
+    '#currency' => variable_get('recurly_default_currency', ''),
     '#subdomain' => variable_get('recurly_subdomain', ''),
     '#vatpercent' => NULL,
     '#locale' => NULL,
