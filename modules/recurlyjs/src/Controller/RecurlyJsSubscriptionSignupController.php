@@ -46,7 +46,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
       if ((\Drupal::config('recurly.settings')->get('recurly_subscription_max') ?: '1') === '1' && count($current_subscriptions) && empty($_POST)) {
         $current_subscription = reset($current_subscriptions);
         drupal_set_message($this->t('This account already has a @plan plan!', ['@plan' => $current_subscription->plan->name]));
-        if ($url = recurly_url('select_plan', array('entity_type' => $entity_type, 'entity' => $entity))) {
+        if ($url = recurly_url('select_plan', ['entity_type' => $entity_type, 'entity' => $entity])) {
           return $this->redirect($url->getRouteName(), $url->getRouteParameters());
         }
       }

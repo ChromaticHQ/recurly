@@ -40,7 +40,7 @@ class RecurlyAccessDefault extends RecurlyAccess {
     // These pages are only accessible if using the single-page mode. This
     // requires loading the latest active account for an entity.
     elseif ($recurly_subscription_max == 1) {
-      $active_subscriptions = $local_account ? recurly_account_get_subscriptions($local_account->account_code, 'active') : array();
+      $active_subscriptions = $local_account ? recurly_account_get_subscriptions($local_account->account_code, 'active') : [];
       $active_subscription = reset($active_subscriptions);
       if ($operation === 'change_plan_latest') {
         if (!empty($local_account) && count($subscription_plans) && !empty($active_subscription)) {

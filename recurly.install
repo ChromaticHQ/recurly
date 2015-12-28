@@ -9,11 +9,11 @@
  * Implements hook_requirements().
  */
 function recurly_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'runtime') {
-    $requirements['recurly'] = array(
+    $requirements['recurly'] = [
       'title' => t('Recurly'),
-    );
+    ];
 
     // Verify that the recurly PHP library is present.
     $library = libraries_detect('recurly');
@@ -25,11 +25,11 @@ function recurly_requirements($phase) {
     }
     else {
       $requirements['recurly']['value'] = t('Not found');
-      $requirements['recurly']['description'] = t('@error Download the <a href=":recurly_link">Recurly PHP library</a>, extract the archive and place the directory at %path on your server.', array(
+      $requirements['recurly']['description'] = t('@error Download the <a href=":recurly_link">Recurly PHP library</a>, extract the archive and place the directory at %path on your server.', [
           '@error' => $error_message,
           ':recurly_link' => $library['download url'],
           '%path' => 'libraries/recurly',
-        )
+        ]
       );
       $requirements['recurly']['severity'] = REQUIREMENT_ERROR;
     }
@@ -37,11 +37,11 @@ function recurly_requirements($phase) {
 
   // Ensure cURL exists if SimpleTest hasn't checked it already.
   if (!\Drupal::moduleHandler()->moduleExists('simpletest') && !function_exists('curl_init')) {
-    $requirements['recurly_curl'] = array(
+    $requirements['recurly_curl'] = [
       'title' => t('cURL'),
       'severity' => REQUIREMENT_ERROR,
       'description' => t('Recurly module requires the <a href="http://php.net/manual/en/curl.setup.php">PHP cURL library</a>.'),
-    );
+    ];
   }
 
   return $requirements;
@@ -51,50 +51,50 @@ function recurly_requirements($phase) {
  * Implements hook_schema().
  */
 function recurly_schema() {
-  $schema = array();
+  $schema = [];
 
-  $schema['recurly_account'] = array(
+  $schema['recurly_account'] = [
     'description' => 'Recurly account information mapped to Drupal entities.',
-    'fields' => array(
-      'account_code' => array(
+    'fields' => [
+      'account_code' => [
         'description' => 'The unique identifier of the account in Recurly.',
         'type' => 'varchar',
         'length' => 100,
         'not null' => TRUE,
         'default' => '',
-      ),
-      'status' => array(
+      ],
+      'status' => [
         'description' => 'Whether the account is closed or active.',
         'type' => 'varchar',
         'length' => 100,
         'not null' => TRUE,
         'default' => '',
-      ),
-      'entity_type' => array(
+      ],
+      'entity_type' => [
         'description' => 'The Drupal entity type this account is associated with, typical "user" or "node".',
         'type' => 'varchar',
         'length' => 100,
         'not null' => TRUE,
         'default' => '',
-      ),
-      'entity_id' => array(
+      ],
+      'entity_id' => [
         'description' => 'The Drupal entity ID that maps to this account.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-      ),
-      'updated' => array(
+      ],
+      'updated' => [
         'description' => 'The Unix timestamp when the account information was last updated.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-      ),
-    ),
-    'primary key' => array('account_code'),
-    'indexes' => array(
-      'entity_type_entity_id' => array('entity_type', 'entity_id'),
-    ),
-  );
+      ],
+    ],
+    'primary key' => ['account_code'),
+    'indexes' => [
+      'entity_type_entity_id' => ['entity_type', 'entity_id'],
+    ],
+  ];
 
   return $schema;
 }

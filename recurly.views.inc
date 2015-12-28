@@ -9,70 +9,70 @@
  * Implements hook_views_data().
  */
 function recurly_views_data() {
-  $data = array();
-  $data['recurly_account'] = array(
-    'table' => array(
+  $data = [];
+  $data['recurly_account'] = [
+    'table' => [
       'group' => t('Recurly account'),
-      'base' => array(
+      'base' => [
         'field' => 'account_code',
         'title' => t('Recurly account'),
         'help' => t('Contains Recurly accounts associated with entities.'),
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
 
   $recurly_account = &$data['recurly_account'];
 
-  $recurly_account['account_code'] = array(
+  $recurly_account['account_code'] = [
     'title' => t('Account code'),
     'help' => t('The unique Recurly account code.'),
-    'field' => array(
+    'field' => [
       'id' => 'recurly_account_code',
       'click sortable' => TRUE,
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'id' => 'standard',
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'id' => 'string',
-    ),
-    'argument' => array(
+    ],
+    'argument' => [
       'id' => 'string',
-    ),
-  );
+    ],
+  ];
 
-  $recurly_account['status'] = array(
+  $recurly_account['status'] = [
     'title' => t('Account status'),
     'help' => t('The Recurly account status.'),
-    'field' => array(
+    'field' => [
       'id' => 'standard',
       'click sortable' => TRUE,
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'id' => 'standard',
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'id' => 'string',
-    ),
-    'argument' => array(
+    ],
+    'argument' => [
       'id' => 'string',
-    ),
-  );
+    ],
+  ];
 
-  $recurly_account['updated'] = array(
+  $recurly_account['updated'] = [
     'title' => t('Updated'),
     'help' => t('The time the account was last updated.'),
-    'field' => array(
+    'field' => [
       'id' => 'date',
       'click sortable' => TRUE,
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'date',
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'date',
-    ),
-  );
+    ],
+  ];
 
   // Join from recurly_account to all entity types, using the entity_type and
   // entity_id columns.
@@ -93,19 +93,19 @@ function recurly_views_data_alter(&$data) {
   $entity_info = \Drupal::entityTypeManager()->getDefinitions();
   foreach ($entity_info as $entity_type => $info) {
     $base_table = $info->getBaseTable();
-    $description = t('@base-entity from @join-entity', array('@join-entity' => $info->getLabel()->render(), '@base-entity' => 'Recurly Account'));
+    $description = t('@base-entity from @join-entity', ['@join-entity' => $info->getLabel()->render(), '@base-entity' => 'Recurly Account']);
     if ($base_table) {
-      $data[$base_table][$entity_type] = array(
+      $data[$base_table][$entity_type] = [
         'title' => t('Recurly Account'),
-        'help' => t('The Recurly Account of this @entity-type.', array('@entity-type' => $entity_type)),
-        'relationship' => array(
+        'help' => t('The Recurly Account of this @entity-type.', ['@entity-type' => $entity_type]),
+        'relationship' => [
           'base' => 'recurly_account',
           'base field' => 'entity_id',
           'field' => $info->getKeys()['id'],
           'id' => 'recurly_entity_owner_reverse',
           'label' => $description,
-        ),
-      );
+        ],
+      ];
     }
   }
 }
@@ -124,14 +124,14 @@ function recurly_views_data_alter(&$data) {
  */
 function _recurly_entity_relationship_data($label, $join_entity_type) {
   $join_entity_info = \Drupal::entityTypeManager()->getDefinition($join_entity_type);
-  $description = t('@join-entity from @base-entity', array('@join-entity' => $join_entity_info->getLabel()->render(), '@base-entity' => $label));
+  $description = t('@join-entity from @base-entity', ['@join-entity' => $join_entity_info->getLabel()->render(), '@base-entity' => $label]);
 
   // 'entity type' is a key not from Views directly, but used to determine
   // what entity type need to filter on in our relationship handler.
-  return array(
+  return [
     'title' => $join_entity_info->getLabel()->render(),
-    'help' => t('The @entity-type owner of this @label.', array('@entity-type' => $join_entity_type, '@label' => $label)),
-    'relationship' => array(
+    'help' => t('The @entity-type owner of this @label.', ['@entity-type' => $join_entity_type, '@label' => $label]),
+    'relationship' => [
       'entity type' => $join_entity_type,
       'base' => $join_entity_info->getBaseTable(),
       'base field' => $join_entity_info->getKeys()['id'],
@@ -139,6 +139,6 @@ function _recurly_entity_relationship_data($label, $join_entity_type) {
       'id' => 'recurly_entity_owner',
       'label' => $description,
       'title' => $description,
-    ),
-  );
+    ],
+  ];
 }

@@ -13,8 +13,8 @@ class RecurlyTokenManager {
    * Get the token mapping for Recurly variables with defaults populated.
    */
   function tokenMapping() {
-    $mapping = \Drupal::config('recurly.settings')->get('recurly_token_mapping') ?: array();
-    $mapping += array(
+    $mapping = \Drupal::config('recurly.settings')->get('recurly_token_mapping') ?: [];
+    $mapping += [
       'email' => '[user:mail]',
       'username' => '[user:name]',
       'first_name' => '',
@@ -27,7 +27,7 @@ class RecurlyTokenManager {
       'zip' => '',
       'country' => '',
       'phone' => '',
-    );
+    ];
     return $mapping;
   }
 }

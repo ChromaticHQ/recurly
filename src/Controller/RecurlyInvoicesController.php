@@ -29,10 +29,10 @@ class RecurlyInvoicesController extends ControllerBase {
     }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
-    $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $entity->id()));
+    $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
 
     $per_page = 20;
-    $invoice_list = \Recurly_InvoiceList::getForAccount($account->account_code, array('per_page' => $per_page));
+    $invoice_list = \Recurly_InvoiceList::getForAccount($account->account_code, ['per_page' => $per_page]);
     $recurly_pager_manager = \Drupal::service('recurly.pager_manager');
     $invoices = $recurly_pager_manager->pagerResults($invoice_list, $per_page);
 
