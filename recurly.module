@@ -1194,7 +1194,7 @@ function recurly_format_state($state) {
 /**
  * Format a price for display.
  */
-function recurly_format_currency($price_in_cents, $currency, $html = FALSE) {
+function recurly_format_currency($price_in_cents, $currency, $html = FALSE, $include_suffix = TRUE) {
   $currencies = recurly_currency_list();
   $currency_info = isset($currencies[$currency]) ? $currencies[$currency] : array('', ' ' . $currency);
   $prefix = $currency_info[0] ? $currency_info[0] : '';
@@ -1219,7 +1219,10 @@ function recurly_format_currency($price_in_cents, $currency, $html = FALSE) {
     }
 
     // Format the number.
-    $formatted = $prefix . number_format($float, $decimals, $decimal_separator, $thousands_separator) . $suffix;
+    $formatted = $prefix . number_format($float, $decimals, $decimal_separator, $thousands_separator);
+    if ($include_suffix) {
+      $formatted .= $suffix;
+    }
   }
 
   // Wrap each part in HTML if requested.
