@@ -238,6 +238,9 @@ function recurly_subscription_state_message($state, $context) {
  *   A Recurly subscription object.
  * @param object $account
  *   A Recurly account object.
+ *
+ * @return array
+ *   List of all states in which a subscription exists currently.
  */
 function recurly_subscription_get_states($subscription, $account) {
   static $past_due = array();
@@ -295,6 +298,10 @@ function recurly_subscription_get_states($subscription, $account) {
  * @param int $subscription_id
  *   The UUID of the current subscription if changing the plan on an existing
  *   subscription.
+ *
+ * @return string
+ *   If fail to initialize specified account settings returns error message,
+ *   else return the list of available plans.
  */
 function recurly_subscription_plan_select($entity_type, $entity, $currency = NULL, $subscription_id = NULL) {
   // Initialize the Recurly client with the site-wide settings.
@@ -1178,6 +1185,9 @@ function recurly_invoice_pdf($entity_type, $entity, $invoice_number) {
  * @param int $page_num
  *   The desired page number to display. Usually automatically determined from
  *   the URL.
+ *
+ * @return array
+ *   Specific page of results from a Recurly_Pager.
  */
 function recurly_pager_results($pager_object, $per_page, $page_num = NULL) {
   if (!isset($page_num)) {
