@@ -28,8 +28,8 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
     $account_code = $notification->account->account_code;
     if ($local_account = recurly_account_load(['account_code' => $account_code), TRUE]) {
       // These notifications are SimpleXML objects rather than Recurly objects.
-      $next_reset = new DateTime($notification->subscription->current_period_ends_at[0]);
-      $next_reset->setTimezone(new DateTimeZone('UTC'));
+      $next_reset = new \DateTime($notification->subscription->current_period_ends_at[0]);
+      $next_reset->setTimezone(new \DateTimeZone('UTC'));
       $next_reset = $next_reset->format('U');
       mymodule_reset_billing_limits($local_account->entity_id, $next_reset);
     }
