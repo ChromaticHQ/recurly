@@ -459,12 +459,13 @@ function template_preprocess_recurly_subscription_plan_select(&$variables) {
     }
   }
 
-  // Check if this is an account that is creating a new subscription.
-  $variables['expired_subscriptions'] = FALSE;
+  // Check if this is an account that is creating a new subscription, either
+  // because there are no subscriptions yet, or only expired subscriptions.
+  $variables['no_active_subscriptions'] = FALSE;
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
   if ($account) {
-    $variables['expired_subscriptions'] = empty($subscriptions);
+    $variables['no_active_subscriptions'] = empty($subscriptions);
   }
 }
 
