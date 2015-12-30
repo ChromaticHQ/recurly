@@ -90,7 +90,7 @@ function recurly_schema() {
         'default' => 0,
       ],
     ],
-    'primary key' => ['account_code'),
+    'primary key' => ['account_code'],
     'indexes' => [
       'entity_type_entity_id' => ['entity_type', 'entity_id'],
     ],
