@@ -126,12 +126,12 @@ class RecurlySubscriptionPlansForm extends FormBase {
       $description = '';
       // Prepare the description string if one is given for the plan.
       if (!empty($plan->description)) {
-        $description = '<div class="description">' . nl2br(SafeMarkup::checkPlain($plan->description)) . '</div>';
+        $description = $this->t('<div class="description">@description</div>', ['@description' => $plan->description]);
       }
 
       $form['recurly_subscription_plans'][$plan_code]['#title_display'] = 'none';
       $options[$plan_code] = [
-        'plan_title' => SafeMarkup::checkPlain($plan->name) . ' <small>(' . SafeMarkup::checkPlain($plan_code) . ')</small>' . $description,
+        'plan_title' => $this->t('@planname <small>(@plancode)</small> @description', ['@planname' => $plan->name, '@plancode' => $plan_code, '@description' => $description]),
         'price' => implode('<br />', $plan_details['unit_amounts']),
         'setup_fee' => implode('<br />', $plan_details['setup_amounts']),
         'trial' => $plan->trial_interval_length ? $this->t('@trial_length @trial_unit', ['@trial_length' => $plan->trial_interval_length, '@trial_unit' => $plan->trial_interval_unit]) : $this->t('No trial'),
