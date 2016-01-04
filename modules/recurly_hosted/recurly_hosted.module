@@ -9,34 +9,6 @@
  */
 
 /**
- * Implements hook_menu().
- */
-function recurly_hosted_menu() {
-  $items = array();
-
-  // Configure built-in pages if enabled.
-  $entity_type = variable_get('recurly_entity_type', 'user');
-  if ($entity_type && variable_get('recurly_pages', '1')) {
-    $entity_info = entity_get_info();
-    $bundle = variable_get('recurly_bundle_' . $entity_type, NULL);
-    $bundle = empty($bundle) ? $entity_type : $bundle;
-
-    $entity_path = $entity_type . '/%' . $entity_type;
-    $items[$entity_path . '/subscription/billing'] = array(
-      'title' => 'Update billing information',
-      'page callback' => 'recurly_hosted_account_redirect',
-      'page arguments' => array($entity_type, 1),
-      'access callback' => 'recurly_subscription_page_access',
-      'access arguments' => array($entity_type, 1, 'update_billing'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 2,
-    );
-  }
-
-  return $items;
-}
-
-/**
  * Implements hook_recurly_url_info().
  */
 function recurly_hosted_recurly_url_info($operation, $context) {
@@ -47,69 +19,49 @@ function recurly_hosted_recurly_url_info($operation, $context) {
     case 'subscribe':
       $entity = $context['entity'];
       $entity_type = $context['entity_type'];
-      list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-      $account_code = $entity_type . '-' . $id;
-      $username = entity_label($entity_type, $entity);
-      return recurly_hosted_subscription_plan_purchase_url($context['plan_code'], $account_code, $username);
+      $account_code = $entity_type . '-' . $entity->id();
+      return recurly_hosted_subscription_plan_purchase_url($context['plan_code'], $account_code, $entity->label());
   }
 }
 
 /**
- * Menu callback; Redirect an entity to Recurly.com for management.
- *
- * Note that because this function logs the user into the Recurly front-end
- * interface without a password, it should only be called if the user has
- * already passed the recurly_subscription_page_access() check.
- */
-function recurly_hosted_account_redirect($entity_type, $entity) {
-  global $user;
-  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  $recurly_account = recurly_account_load(array('entity_type' => $entity_type, 'entity_id' => $id));
-  if ($recurly_account) {
-    drupal_goto(recurly_hosted_account_manage_url($recurly_account, TRUE));
-  }
-  else {
-    return MENU_NOT_FOUND;
-  }
-}
-
-/**
- * Returns an edit URL for a Recurly account.
+ * Returns an edit Url for a Recurly account.
  *
  * @param array $recurly_account
  *   The recurly account values array returned by recurly_account_load.
  *
- * @return string
- *   The URL for the plan's edit page at Recurly.
+ * @return \Drupal\Core\Url
+ *   A Drupal Url object for the plan's edit page at Recurly.
  */
 function recurly_hosted_account_edit_url($recurly_account) {
-  return recurly_hosted_url('accounts/' . $recurly_account->account_code);
+  $recurly_url_manager = \Drupal::service('recurly.url_manager');
+  return $recurly_url_manager->hostedUrl('accounts/' . $recurly_account->account_code);
 }
 
 /**
- * Returns a front end management URL for a Recurly account.
+ * Returns a front end management Url for a Recurly account.
  *
  * @param array $recurly_account
  *   The recurly account values array returned by recurly_account_load.
  * @param bool $hosted_login_token
- *   Boolean indicating whether or not to use the hosted login token in the URL
+ *   Boolean indicating whether or not to use the hosted login token in the Url
  *   if it's available in the account object; defaults to FALSE.
  *
- * @return string
- *   The URL for the account's front end management page at Recurly; uses the
- *   hosted login token if specified and it's available.
+ * @return \Drupal\Core\Url
+ *   A Drupal Url object for the account's front end management page at Recurly;
+ *   uses the hosted login token if specified and it's available.
  */
 function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token = FALSE) {
-  // Return a URL using the hosted login token if available.
+  $recurly_url_manager = \Drupal::service('recurly.url_manager');
+  // Return a Url using the hosted login token if available.
   if ($hosted_login_token && !empty($recurly_account->hosted_login_token)) {
-    return recurly_hosted_url('account/' . $recurly_account->hosted_login_token);
+    return $recurly_url_manager->hostedUrl('account/' . $recurly_account->hosted_login_token);
   }
-
-  return recurly_hosted_url('account');
+  return $recurly_url_manager->hostedUrl('account');
 }
 
 /**
- * Returns a Hosted Payment Page URL for the given subscription plan.
+ * Returns a Hosted Payment Page Url for the given subscription plan.
  *
  * @param int $plan_code
  *   The subscription plan code.
@@ -121,12 +73,12 @@ function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token
  *   Usually just used for reference.
  * @param array $settings
  *   An optional array of settings used to pre-populate the payment form.
- *   - first_name: the customer's first name
- *   - last_name: the customer's last name
- *   - email: the customer's e-mail address
+ *   - first_name: the customer's first name.
+ *   - last_name: the customer's last name.
+ *   - email: the customer's e-mail address.
  *
- * @return string
- *   The URL for the plan's Hosted Payment Page at Recurly.
+ * @return \Drupal\Core\Url
+ *   A Drupal Url object for the plan's Hosted Payment Page at Recurly.
  */
 function recurly_hosted_subscription_plan_purchase_url($plan_code, $account_code = NULL, $username = NULL, $settings = NULL) {
   $url = 'subscribe/' . $plan_code;
@@ -138,8 +90,9 @@ function recurly_hosted_subscription_plan_purchase_url($plan_code, $account_code
   }
 
   if (!empty($settings)) {
-    $url .= '?' . drupal_http_build_query($settings);
+    $url .= '?' . \Drupal\Component\Utility\UrlHelper::buildQuery($settings);
   }
 
-  return recurly_hosted_url($url);
+  $recurly_url_manager = \Drupal::service('recurly.url_manager');
+  return $recurly_url_manager->hostedUrl($url);
 }
