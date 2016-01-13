@@ -6,16 +6,15 @@ at http://drupal.org/project/recurly.
 
 Requirements
 ------------
-Drupal 7.x
+Drupal 8.x
 Libraries API
 
 Installation
 ------------
 
 - Download the Recurly PHP library from
-  https://github.com/recurly/recurly-client-php and place it in
-  sites/all/libraries so that "recurly.php" is located at
-  sites/all/libraries/recurly/lib/recurly.php.
+  https://github.com/recurly/recurly-client-php and place it in libraries/ so
+  that "recurly.php" is located at libraries/recurly/lib/recurly.php.
 
 - If you want to enable billing forms on your site, enable the recurlyjs module.
 
