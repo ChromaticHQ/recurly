@@ -29,9 +29,13 @@ class RecurlyJsRoutes {
         [
           '_form' => '\Drupal\recurlyjs\Form\RecurlyJsUpdateBillingForm',
           '_title' => 'Update billing information',
+          'operation' => 'update_billing',
         ],
-        // @FIXME: Add permission check for access to the specified entity.
-        ['_permission' => 'administer recurly'],
+        [
+          '_entity_access' => 'entity.update',
+          '_access_check_recurly_user' => 'TRUE',
+          '_access_check_recurly_default' => 'TRUE',
+        ],
         ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
       );
 
@@ -42,8 +46,11 @@ class RecurlyJsRoutes {
           '_title' => 'Signup',
           'operation' => 'signup',
         ],
-        // @FIXME: Add permission check for access to the specified entity.
-        ['_access_check_recurly' => 'TRUE'],
+        [
+          '_entity_access' => 'entity.update',
+          '_access_check_recurly_user' => 'TRUE',
+          '_access_check_recurly_default' => 'TRUE',
+        ],
         ['parameters' => ['entity' => ['type' => 'entity:' . $entity_type]]]
       );
     }
