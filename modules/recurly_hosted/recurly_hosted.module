@@ -50,7 +50,15 @@ function recurly_hosted_recurly_url_info($operation, $context) {
       list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
       $account_code = $entity_type . '-' . $id;
       $username = entity_label($entity_type, $entity);
-      return recurly_hosted_subscription_plan_purchase_url($context['plan_code'], $account_code, $username);
+
+      $settings = array();
+      $mapping = recurly_token_mapping();
+      foreach ($mapping as $recurly_field => $token) {
+        if (!empty($token)) {
+          $settings[$recurly_field] = token_replace($token, array($entity_type => $entity), array('clear' => TRUE, 'sanitize' => FALSE));
+        }
+      }
+      return recurly_hosted_subscription_plan_purchase_url($context['plan_code'], $account_code, $username, $settings);
   }
 }
 
