@@ -5,16 +5,12 @@
  * user/x/subscriptions/invoice/[invoice-uuid]
  */
 drupal_add_css(drupal_get_path('module', 'recurly') . '/css/recurly-invoice.css');
-if ($invoice->state !== 'collected'):
-  $url = recurly_url('update_billing', array('account' => $invoice_account));
-  if ($url):
-    $error_message = t('This invoice is past due! Please <a href="!url">update your billing information</a>.', array('!url' => $url));
-  }
-  else:
-    $error_message = t('This invoice is past due! Please contact an administrator to update your billing information.');
-  endif;
-endif;
 ?>
+
+<?php if ($error_message): ?>
+  <?php print $error_message; ?>
+<?php endif; ?>
+
 <div class="invoice">
   <div class="invoice-pdf"><?php print l(t('View PDF'), $pdf_path); ?></div>
   <?php if (isset($error_message)): ?>

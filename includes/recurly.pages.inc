@@ -1124,6 +1124,15 @@ function template_preprocess_recurly_invoice(&$variables) {
   }
   $variables['transactions_total'] = recurly_format_currency($transaction_total, $invoice->currency);
 
+  if ($invoice->state !== 'collected') {
+    $url = recurly_url('update_billing', array('account' => $invoice_account));
+    if ($url) {
+      $variables['error_message'] = t('This invoice is past due! Please <a href="!url">update your billing information</a>.', array('!url' => $url));
+    }
+    else {
+      $variables['error_message'] = t('This invoice is past due! Please contact an administrator to update your billing information.');
+    }
+  }
 }
 
 /**
