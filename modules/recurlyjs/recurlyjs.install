@@ -31,6 +31,7 @@ function recurlyjs_uninstall() {
   variable_del('recurlyjs_address_requirement');
   variable_del('recurlyjs_enable_add_ons');
   variable_del('recurlyjs_enable_coupons');
+  variable_del('recurlyjs_hide_vat_number');
 }
 
 

@@ -40,6 +40,12 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
     '#default_value' => variable_get('recurlyjs_enable_coupons', 0),
     '#description' => t('Display the <em>Coupon Code</em> field on Recurly.js subscription forms.'),
   );
+  $form['recurlyjs']['recurlyjs_hide_vat_number'] = array(
+    '#title' => t('Hide VAT number input box from checkout page.'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('recurlyjs_hide_vat_number', 0),
+    '#description' => t('VAT numbers are mostly used in the EU and not often in the US.'),
+  );
   $form['recurlyjs']['recurlyjs_accept_paypal'] = array(
     '#title' => t('Enable PayPal'),
     '#type' => 'checkbox',
@@ -141,7 +147,9 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
       '#weight' => -250,
     );
   }
-
+  if (variable_get('recurlyjs_hide_vat_number')) {
+    $form['vat_number']['#access'] = FALSE;
+  }
   $form['actions'] = array(
     '#type' => 'actions',
   );
