@@ -7,10 +7,6 @@ drupal_add_css(drupal_get_path('module', 'recurly') . '/css/recurly.css');
 drupal_add_js(drupal_get_path('module', 'recurly') . '/js/recurly.js');
 ?>
 <div class="recurly-signup">
-  <?php if ($expired_subscriptions): ?>
-    <div class="messages warning"><?php print t('Your previously active plans have expired. Choose a plan to get started!'); ?></div>
-  <?php endif; ?>
-
   <div class="recurly-plan-list clearfix">
     <?php foreach ($filtered_plans as $plan): ?>
       <div class="plan plan-<?php print $plan['plan_code']; ?><?php print ($mode == 'change' && $plan['selected']) ? ' plan-selected' : '' ?>">
