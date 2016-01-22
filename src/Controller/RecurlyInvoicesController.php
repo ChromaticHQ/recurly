@@ -7,8 +7,14 @@
 
 namespace Drupal\recurly\Controller;
 
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -19,10 +25,16 @@ class RecurlyInvoicesController extends ControllerBase {
   /**
    * Retreive all invoices for the specified entity.
    *
-   * @param EntityInterface $entity
-   *   The entity associated with Recurly subscriptions; most typically a user.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   A RouteMatch object.
+   *   Contains information about the route and the entity being acted on.
+   *
+   * @return array
+   *   Returns a render array for a list of invoices.
    */
-  public function invoicesList(EntityInterface $entity) {
+  public function invoicesList(RouteMatchInterface $route_match) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];
@@ -54,12 +66,18 @@ class RecurlyInvoicesController extends ControllerBase {
   /**
    * Retrieve a single specified entity.
    *
-   * @param EntityInterface $entity
-   *   The entity associated with Recurly subscriptions; most typically a user.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   A RouteMatch object.
+   *   Contains information about the route and the entity being acted on.
    * @param string $invoice_number
    *   A Recurly invoice UUID.
+   *
+   * @return array
+   *   Returns a render array for an invoice.
    */
-  public function getInvoice(EntityInterface $entity, $invoice_number) {
+  public function getInvoice(RouteMatchInterface $route_match, $invoice_number) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];
@@ -121,12 +139,15 @@ class RecurlyInvoicesController extends ControllerBase {
   /**
    * Deliver an invoice PDF file from Recurly.com.
    *
-   * @param EntityInterface $entity
-   *   The entity associated with Recurly subscriptions; most typically a user.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   A RouteMatch object.
+   *   Contains information about the route and the entity being acted on.
    * @param string $invoice_number
    *   A Recurly invoice UUID.
    */
-  public function getInvoicePdf(EntityInterface $entity, $invoice_number) {
+  public function getInvoicePdf(RouteMatchInterface $route_match, $invoice_number) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];

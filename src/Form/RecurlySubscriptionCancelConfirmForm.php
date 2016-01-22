@@ -9,6 +9,8 @@ namespace Drupal\recurly\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 /**
  * Recurly subscription cancel form controller.
@@ -128,7 +130,7 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('recurly.subscription_list', ['entity' => $entity->id()]),
+      '#url' => \Drupal\Core\Url::fromRoute("entity.$entity_type.recurly_subscriptionlist", [$entity_type => $entity->id()]),
     ];
 
     return $form;
@@ -150,7 +152,7 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
           '@plan' => $subscription->plan->name,
           '@date' => recurly_format_date($subscription->current_period_ends_at),
         ]));
-        return $this->redirect('recurly.subscription_list', ['entity' => $entity->id()]);
+        $form_state->setRedirect("entity.$entity_type.recurly_subscriptionlist", [$entity_type => $entity->id()]);
       }
       catch (\Recurly_Error $e) {
         drupal_set_message($this->t('The plan could not be canceled because the billing service encountered an error.'), 'error');
@@ -173,7 +175,7 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
             break;
         }
         drupal_set_message($this->t('Plan @plan terminated!', ['@plan' => $subscription->plan->name]));
-        $form_state->setRedirect('recurly.subscription_list', ['entity' => $entity->id()]);
+        $form_state->setRedirect("entity.$entity_type.recurly_subscriptionlist", [$entity_type => $entity->id()]);
       }
       catch (\Recurly_Error $e) {
         drupal_set_message($this->t('The plan could not be terminated because the billing service encountered an error: "@message"', ['@message' => $e->getMessage()]), 'error');

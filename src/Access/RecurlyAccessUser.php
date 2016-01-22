@@ -19,7 +19,9 @@ class RecurlyAccessUser extends RecurlyAccess {
   /**
    * {@inheritdoc}
    */
-  public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity) {
+  public function access(Route $route, RouteMatchInterface $route_match) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     // If subscriptions are attached to users, only allow users to view their
     // own subscriptions.

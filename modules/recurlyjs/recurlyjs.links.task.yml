@@ -1,0 +1,3 @@
+recurlyjs.entities:
+  class: \Drupal\Core\Menu\LocalTaskDefault
+  deriver: \Drupal\recurlyjs\Plugin\Derivative\RecurlyJsLocalTask

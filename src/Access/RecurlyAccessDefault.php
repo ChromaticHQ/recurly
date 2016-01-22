@@ -25,7 +25,9 @@ class RecurlyAccessDefault extends RecurlyAccess {
   /**
    * {@inheritdoc}
    */
-  public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity, $operation= NULL) {
+  public function access(Route $route, RouteMatchInterface $route_match, $operation = NULL) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     $subscription_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
     $recurly_subscription_max = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
     $local_account = recurly_account_load(['entity_type' => $entity->getEntityType()->getLowercaseLabel(), 'entity_id' => $entity->id()], TRUE);

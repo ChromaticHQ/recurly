@@ -7,9 +7,15 @@
 
 namespace Drupal\recurlyjs\Controller;
 
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Drupal\Core\Field;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Returns responses for Recurly Subscription List.
@@ -29,7 +35,11 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
    * @return array
    *   A Drupal render array.
    */
-  public function subscribe(EntityInterface $entity, $plan_code, $currency = NULL) {
+  public function subscribe(RouteMatchInterface $route_match) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
+    $plan_code = $route_match->getParameter('plan_code');
+    $currency = $route_match->getParameter('currency');
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];

@@ -1,0 +1,6 @@
+services:
+  recurlyjs.route_subscriber:
+    class: Drupal\recurlyjs\Routing\RecurlyJsRouteSubscriber
+    arguments: ['@entity.manager']
+    tags:
+      - { name: event_subscriber }

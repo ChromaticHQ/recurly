@@ -91,7 +91,7 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute('recurly.subscription_change', ['entity' => $entity->id()]),
+      '#url' => \Drupal\Core\Url::fromRoute("entity.$entity_type.recurly_change", [$entity_type => $entity->id()]),
     ];
     return $form;
   }
@@ -126,7 +126,7 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
       $message .= ' ' . $this->t('Changes will become active starting <strong>@date</strong>.', ['@date' => recurly_format_date($subscription->current_period_ends_at)]);
     }
     drupal_set_message($message);
-    $form_state->setRedirect('recurly.subscription_list', ['entity' => $entity->id()]);
+    $form_state->setRedirect("entity.$entity_type.recurly_subscriptionlist", [$entity_type => $entity->id()]);
   }
 
 }

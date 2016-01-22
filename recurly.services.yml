@@ -20,3 +20,8 @@ services:
     class: Drupal\recurly\RecurlyTokenManager
   recurly.url_manager:
     class: Drupal\recurly\RecurlyUrlManager
+  recurly.route_subscriber:
+    class: Drupal\recurly\Routing\RecurlyRouteSubscriber
+    arguments: ['@entity.manager']
+    tags:
+      - { name: event_subscriber }

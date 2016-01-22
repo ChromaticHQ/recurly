@@ -10,6 +10,11 @@ namespace Drupal\recurly\Controller;
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -20,13 +25,16 @@ class RecurlySubscriptionListController extends ControllerBase {
   /**
    * Route title callback.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity whose subscriptons should be listed.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   A RouteMatch object.
+   *   Contains information about the route and the entity being acted on.
    *
    * @return array
    *   Recurly subscription details or a no-results message as a render array.
    */
-  public function subscriptionList(EntityInterface $entity) {
+  public function subscriptionList(RouteMatchInterface $route_match) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     $subscriptions = [];
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
@@ -142,7 +150,7 @@ class RecurlySubscriptionListController extends ControllerBase {
 
     // If the user doesn't have any active subscriptions, redirect to signup.
     if (count(\Drupal\Core\Render\Element::children($subscriptions['subscriptions'])) === 0) {
-      return $this->redirect('recurly.subscription_signup', ['entity' => $entity->id()]);
+      return $this->redirect('recurly_signup', ['entity' => $entity->id()]);
     }
 
     return $subscriptions;

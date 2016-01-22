@@ -9,6 +9,8 @@ namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -17,17 +19,20 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class RecurlySubscriptionChangeController extends ControllerBase {
 
   /**
-   * Change the existing to the specified subscription
+   * Change the existing to the specified subscription.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity whose subscription is being changed.
-   * @param string $subscription_id
-   *   The UUID of the current subscription if changing the plan on an existing
-   *   subscription.
-   * @param string $new_plan_code
-   *   The plan code for the plan the user is changing to.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   A RouteMatch object.
+   *   Contains information about the route and the entity being acted on.
+   *
+   * @return mixed
+   *   Returns \Drupal\Core\Form\FormBuilderInterface or a string.
    */
-  public function changePlan(EntityInterface $entity, $subscription_id, $new_plan_code) {
+  public function changePlan(RouteMatchInterface $route_match) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
+    $subscription_id = $route_match->getParameter('subscription_id');
+    $new_plan_code = $route_match->getParameter('new_plan_code');
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];

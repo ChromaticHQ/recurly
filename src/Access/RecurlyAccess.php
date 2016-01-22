@@ -21,7 +21,7 @@ abstract class RecurlyAccess implements AccessInterface {
   /**
    * {@inheritdoc}
    */
-  public function access(Route $route, RouteMatchInterface $route_match, EntityInterface $entity) {
+  public function access(Route $route, RouteMatchInterface $route_match) {
   }
 
   /**

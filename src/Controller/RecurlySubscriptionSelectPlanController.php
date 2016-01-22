@@ -7,8 +7,15 @@
 
 namespace Drupal\recurly\Controller;
 
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Recurly select plan controller.
@@ -25,15 +32,18 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
    * This method is used both for new subscriptions and for updating existing
    * subscriptions.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity whose subscription is being changed.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   A RouteMatch object.
+   *   Contains the route and the entity subscription is being changed.
    * @param string $currency
    *   If this is a new subscription, the currency to be used.
    * @param string $subscription_id
    *   The UUID of the current subscription if changing the plan on an existing
    *   subscription.
    */
-  public function planSelect(EntityInterface $entity, $currency = NULL, $subscription_id = NULL) {
+  public function planSelect(RouteMatchInterface $route_match, $currency = NULL, $subscription_id = NULL) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $content = $entity ? $entity->label() : $this->t('No corresponding entity loaded!');
 

@@ -9,6 +9,7 @@ namespace Drupal\recurly\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
  * Recurly redeem coupon form.
@@ -25,7 +26,9 @@ class RecurlyRedeemCouponForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $entity = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, RouteMatchInterface $route_match = NULL) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $form['#entity_type'] = $entity_type;
     $form['#entity'] = $entity;

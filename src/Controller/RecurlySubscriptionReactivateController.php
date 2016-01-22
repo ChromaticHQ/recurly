@@ -9,6 +9,8 @@ namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -24,7 +26,9 @@ class RecurlySubscriptionReactivateController extends ControllerBase {
    * @param string $subscription_id
    *   The UUID of the subscription to reactivate.
    */
-  public function reactivateSubscription(EntityInterface $entity, $subscription_id = 'latest') {
+  public function reactivateSubscription(RouteMatchInterface $route_match, $subscription_id = 'latest') {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       return ['#markup' => $this->t('Could not initialize the Recurly client.')];
@@ -59,7 +63,7 @@ class RecurlySubscriptionReactivateController extends ControllerBase {
       return;
     }
 
-    return $this->redirect('recurly.subscription_list', ['entity' => $account->entity_id]);
+    return $this->redirect("entity.$entity_type.recurly_subscriptionlist", [$entity_type_id => $entity->id()]);
   }
 
 }

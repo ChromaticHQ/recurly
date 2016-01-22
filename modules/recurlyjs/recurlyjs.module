@@ -12,17 +12,18 @@ use Drupal\Core\Url;
  * Implements hook_recurly_url_info().
  */
 function recurlyjs_recurly_url_info($operation, $context) {
+  $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
   switch ($operation) {
     case 'update_billing':
       $entity_info = recurly_account_load(['account_code' => $context['account']->account_code], TRUE);
-      return Url::fromRoute('recurlyjs.update_billing', ['entity' => $context['entity']->id()]);
+      return Url::fromRoute("entity.$entity_type_id.recurlyjs_billing", [$entity_type_id => $context['entity']->id()]);
 
     case 'subscribe':
       $default_currency = \Drupal::config('recurly.settings')->get('recurly_default_currency') ?: 'USD';
       $currency_string = !isset($context['currency']) || $context['currency'] == $default_currency ? '' : '/' . $context['currency'];
       \Drupal::logger('recurly')->notice('subscribe', []);
-      return Url::fromRoute('recurlyjs.subscription_signup', [
-        'entity' => $context['entity']->id(),
+      return Url::fromRoute("entity.$entity_type_id.recurlyjs_signup", [
+        $entity_type_id => $context['entity']->id(),
         'plan_code' => $context['plan_code'],
         'currency' => $currency_string,
       ]);
@@ -120,4 +121,20 @@ function recurlyjs_settings_form_submit(array &$form, FormStateInterface $form_s
     ->set('recurlyjs_enable_coupons', $form_state->getValue('recurlyjs_enable_coupons'))
     ->set('recurlyjs_accept_paypal', $form_state->getValue('recurlyjs_accept_paypal'))
     ->save();
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function recurlyjs_entity_type_alter(array &$entity_types) {
+  $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+  $entity_type = $entity_types[$recurly_entity_type];
+  // Set up our link templates to be used in our routes.
+  // See alterRoutes in Drupal\recurlyjs\Routing\RecurlyJsRouteSubscriber.
+  if ($entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical')) {
+    $entity_type->setLinkTemplate('recurlyjs-signup', $entity_type->getLinkTemplate('canonical') . '/subscription/signup/{plan_code}');
+    $entity_type->setLinkTemplate('recurlyjs-billing', $entity_type->getLinkTemplate('canonical') . '/subscription/billing');
+  }
+
+
 }

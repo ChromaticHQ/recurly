@@ -7,9 +7,12 @@
 
 namespace Drupal\recurlyjs\Form;
 
+
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
 
 /**
  * RecurlyJS update billing form.
@@ -41,7 +44,9 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, EntityInterface $entity = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, RouteMatchInterface $route_match = NULL) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
       $form['error'] = [
