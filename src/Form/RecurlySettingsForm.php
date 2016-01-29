@@ -72,7 +72,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Default currency'),
       '#description' => $this->t('Enter the 3-character currency code for the currency you would like to use by default. You can find a list of supported currencies in your <a href="!url">Recurly account currencies page</a>.', [
-        '!url' => $recurly_url_manager->hostedUrl('configuration/currencies'),
+        '!url' => $recurly_url_manager->hostedUrl('configuration/currencies')->getUri(),
       ]),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
       '#size' => 3,

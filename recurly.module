@@ -573,7 +573,7 @@ function recurly_subscription_plans($reset_cache = FALSE) {
  */
 function recurly_subscription_plan_edit_url($plan) {
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
-  return $recurly_url_manager->hostedUrl('company/plans/' . $plan->plan_code);
+  return $recurly_url_manager->hostedUrl('company/plans/' . $plan->plan_code)->getUri();
 }
 
 /**

@@ -23,7 +23,7 @@ class RecurlyUrlManagerTest extends UnitTestCase {
    */
   public function testHostedUrl() {
     $recurly_url_manager = new RecurlyUrlManager();
-    $hosted_url = $recurly_url_manager->hostedUrl('configuration/currencies', 'sub-domain');
+    $hosted_url = $recurly_url_manager->hostedUrl('configuration/currencies', 'sub-domain')->getUri();
     $this->assertEquals($hosted_url, 'https://sub-domain.recurly.com/configuration/currencies');
   }
 }

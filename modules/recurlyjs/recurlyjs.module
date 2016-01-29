@@ -65,7 +65,8 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, FormStateInterface 
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   $recurly_account_link_text = t('your Recurly account');
   if (\Drupal::config('recurly.settings')->get('recurly_subdomain')) {
-    $recurly_account_link = '<a href="' . Url::fromUri($recurly_url_manager->hostedUrl('configuration/edit'))->toString() . '">' . $recurly_account_link_text . '</a>';
+    $url = Url::fromUri($recurly_url_manager->hostedUrl('configuration/edit')->getUri())->toString();
+    $recurly_account_link = '<a href="' . Url::fromUri($recurly_url_manager->hostedUrl('configuration/edit')->getUri())->toString() . '">' . $recurly_account_link_text . '</a>';
   }
   else {
     $recurly_account_link = $recurly_account_link_text;

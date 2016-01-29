@@ -145,7 +145,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
       '#type' => 'tableselect',
       '#header' => $header,
       '#options' => $options,
-      '#empty' => $this->t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', [':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? $recurly_url_manager->hostedUrl('plans') : 'http://app.recurly.com']),
+      '#empty' => $this->t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', [':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ? $recurly_url_manager->hostedUrl('plans')->getUri() : 'http://app.recurly.com']),
       '#js_select' => FALSE,
       '#default_value' => $existing_plans,
       '#multiple' => TRUE,

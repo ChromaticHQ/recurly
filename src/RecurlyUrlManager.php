@@ -17,14 +17,14 @@ class RecurlyUrlManager {
    * @param $subdomain $string
    *   A subdomain string.
    *
-   * @return string
-   *   The Recurly URL for the current account w/optional path appended.
+   * @return \Drupal\Core\Url
+   *   Returns a \Drupal\Core\Url object.
    */
   public function hostedUrl($path = '', $subdomain = NULL) {
     if (!$subdomain) {
       $subdomain = \Drupal::config('recurly.settings')->get('recurly_subdomain');
     }
 
-    return \Drupal\Core\Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path)->getUri();
+    return \Drupal\Core\Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path);
   }
 }

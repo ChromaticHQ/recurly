@@ -35,7 +35,7 @@ function recurly_hosted_recurly_url_info($operation, $context) {
  */
 function recurly_hosted_account_edit_url($recurly_account) {
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
-  return $recurly_url_manager->hostedUrl('accounts/' . $recurly_account->account_code);
+  return $recurly_url_manager->hostedUrl('accounts/' . $recurly_account->account_code)->getUri();
 }
 
 /**
@@ -55,9 +55,9 @@ function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   // Return a Url using the hosted login token if available.
   if ($hosted_login_token && !empty($recurly_account->hosted_login_token)) {
-    return $recurly_url_manager->hostedUrl('account/' . $recurly_account->hosted_login_token);
+    return $recurly_url_manager->hostedUrl('account/' . $recurly_account->hosted_login_token)->getUri();
   }
-  return $recurly_url_manager->hostedUrl('account');
+  return $recurly_url_manager->hostedUrl('account')->getUri();
 }
 
 /**
@@ -94,5 +94,5 @@ function recurly_hosted_subscription_plan_purchase_url($plan_code, $account_code
   }
 
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
-  return $recurly_url_manager->hostedUrl($url);
+  return $recurly_url_manager->hostedUrl($url)->getUri();
 }
