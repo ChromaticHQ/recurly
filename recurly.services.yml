@@ -1,19 +1,44 @@
 services:
-  access_check.recurly.default:
-    class: Drupal\recurly\Access\RecurlyAccessDefault
+  access_check.recurly.local.account:
+    class: Drupal\recurly\Access\RecurlyAccessLocalAccount
     tags:
-      - { name: access_check, applies_to: _access_check_recurly_default }
-    arguments: ['@entity.manager']
+      - { name: access_check, applies_to: _access_check_recurly_local_account }
+    arguments: ['@current_route_match']
   access_check.recurly.user.self:
     class: Drupal\recurly\Access\RecurlyAccessUser
     tags:
       - { name: access_check, applies_to: _access_check_recurly_user }
-    arguments: ['@entity.manager']
+    arguments: ['@current_route_match']
   access_check.recurly.list:
     class: Drupal\recurly\Access\RecurlyAccessList
     tags:
       - { name: access_check, applies_to: _access_check_recurly_list }
-    arguments: ['@entity.manager']
+    arguments: ['@current_route_match']
+  access_check.recurly.select:
+    class: Drupal\recurly\Access\RecurlyAccessSelectPlan
+    tags:
+      - { name: access_check, applies_to: _access_check_recurly_select_plan }
+    arguments: ['@current_route_match']
+  access_check.recurly.reactivate:
+    class: Drupal\recurly\Access\RecurlyAccessReactivateLatest
+    tags:
+      - { name: access_check, applies_to: _access_check_recurly_reactivate }
+    arguments: ['@current_route_match']
+  access_check.recurly.cancel:
+    class: Drupal\recurly\Access\RecurlyAccessCancelLatest
+    tags:
+      - { name: access_check, applies_to: _access_check_recurly_cancel }
+    arguments: ['@current_route_match']
+  access_check.recurly.change:
+    class: Drupal\recurly\Access\RecurlyAccessChangePlanLatest
+    tags:
+      - { name: access_check, applies_to: _access_check_recurly_change_plan }
+    arguments: ['@current_route_match']
+  access_check.recurly.change:
+    class: Drupal\recurly\Access\RecurlyAccessSignUp
+    tags:
+      - { name: access_check, applies_to: _access_check_recurly_signup }
+    arguments: ['@current_route_match']
   recurly.pager_manager:
     class: Drupal\recurly\RecurlyPagerManager
   recurly.token_manager:

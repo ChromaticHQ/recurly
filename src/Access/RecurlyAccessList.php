@@ -7,11 +7,6 @@
 namespace Drupal\recurly\Access;
 
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Routing\Access\AccessInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
-use Symfony\Component\Routing\Route;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Checks if the list operation should be accessible.
@@ -21,13 +16,9 @@ class RecurlyAccessList extends RecurlyAccess {
   /**
    * {@inheritdoc}
    */
-  public function access(Route $route, RouteMatchInterface $route_match) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
-    $entity = $route_match->getParameter($entity_type_id);
-    $entity_type = $entity->getEntityType()->getLowercaseLabel();
-    $subscription_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
-    $local_account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()], TRUE);
-    if ($local_account || $subscription_plans) {
+  public function access() {
+    $this->setLocalAccount();
+    if ($this->localAccount || $this->subscriptionPlans) {
       return AccessResult::allowed();
     }
     return AccessResult::forbidden();
