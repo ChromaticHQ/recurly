@@ -10,11 +10,39 @@ namespace Drupal\recurly\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\SafeMarkup;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\recurly\RecurlyFormatManager;
 
 /**
  * Recurly subscription plans form.
  */
 class RecurlySubscriptionPlansForm extends FormBase {
+
+  /**
+   * The formatting service.
+   *
+   * @var \Drupal\recurly\RecurlyFormatManager
+   */
+  protected $recurly_formatter;
+
+  /**
+   * Constructs a \Drupal\recurly\Form\RecurlySubscriptionPlansForm object.
+   *
+   * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
+   *   The Recurly formatter to be used for formatting.
+   */
+  public function __construct(RecurlyFormatManager $recurly_formatter) {
+    $this->recurly_formatter = $recurly_formatter;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('recurly.format_manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -57,13 +85,13 @@ class RecurlySubscriptionPlansForm extends FormBase {
       foreach ($unit_amounts as $unit_amount) {
         $form['#plans'][$plan->plan_code]['unit_amounts'][$unit_amount->currencyCode] = $this->t('@unit_price every @interval_length @interval_unit',
           [
-            '@unit_price' => recurly_format_currency($unit_amount->amount_in_cents, $unit_amount->currencyCode),
+            '@unit_price' => $this->recurly_formatter->formatCurrency($unit_amount->amount_in_cents, $unit_amount->currencyCode),
             '@interval_length' => $plan->plan_interval_length,
             '@interval_unit' => $plan->plan_interval_unit,
           ]);
       }
       foreach ($setup_fees as $setup_fee) {
-        $form['#plans'][$plan->plan_code]['setup_amounts'][$unit_amount->currencyCode] = recurly_format_currency($setup_fee->amount_in_cents, $setup_fee->currencyCode);
+        $form['#plans'][$plan->plan_code]['setup_amounts'][$unit_amount->currencyCode] = $this->recurly_formatter->formatCurrency($setup_fee->amount_in_cents, $setup_fee->currencyCode);
       }
       $form['weights'][$plan->plan_code] = [
         '#type' => 'hidden',

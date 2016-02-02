@@ -9,11 +9,39 @@ namespace Drupal\recurly\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\recurly\RecurlyFormatManager;
 
 /**
  * Recurly subscription change form.
  */
 class RecurlySubscriptionChangeConfirmForm extends FormBase {
+
+  /**
+   * The formatting service.
+   *
+   * @var \Drupal\recurly\RecurlyFormatManager
+   */
+  protected $recurly_formatter;
+
+  /**
+   * Constructs a \Drupal\recurly\Form\RecurlySubscriptionChangeConfirmForm object.
+   *
+   * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
+   *   The Recurly formatter to be used for formatting.
+   */
+  public function __construct(RecurlyFormatManager $recurly_formatter) {
+    $this->recurly_formatter = $recurly_formatter;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('recurly.format_manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -123,7 +151,7 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
 
     $message = $this->t('Plan changed to @plan!', ['@plan' => $new_plan->name]);
     if ($timeframe !== 'now') {
-      $message .= ' ' . $this->t('Changes will become active starting <strong>@date</strong>.', ['@date' => recurly_format_date($subscription->current_period_ends_at)]);
+      $message .= ' ' . $this->t('Changes will become active starting <strong>@date</strong>.', ['@date' => $this->recurly_formatter->formatDate($subscription->current_period_ends_at)]);
     }
     drupal_set_message($message);
     $form_state->setRedirect("entity.$entity_type.recurly_subscriptionlist", [$entity_type => $entity->id()]);

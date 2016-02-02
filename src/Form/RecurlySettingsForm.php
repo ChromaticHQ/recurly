@@ -33,7 +33,7 @@ class RecurlySettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) {
     // Recommend setting some subscription plans if not enabled.
     $plan_options = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
 
@@ -352,7 +352,7 @@ class RecurlySettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state) {
     $keys = [
       'recurly_private_api_key',
       'recurly_public_key',
@@ -414,7 +414,7 @@ class RecurlySettingsForm extends ConfigFormBase {
     parent::submitForm($form, $form_state);
   }
 
-  public function _submitForm(array &$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  public function _submitForm(array &$form, FormStateInterface $form_state) {
     // Rebuild the menu system if any of the built-in page options change.
     foreach ($form_state->get(['pages_previous_values']) as $variable_name => $previous_value) {
       if (!$form_state->getValue([$variable_name]) && $form_state->getValue([$variable_name]) !== $previous_value) {
