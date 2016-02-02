@@ -832,31 +832,31 @@ function recurly_format_price_interval($amount, $count, $unit, $html = FALSE) {
   }
 
   $replacements = [
-    '!count' => $html ? '<span class="plan-count">' . SafeMarkup::checkPlain($count) . '<span>' : SafeMarkup::checkPlain($count),
-    '!amount' => $html ? '<span class="plan-amount">' . $amount . '</span>' : $amount,
+    'TTcount' => $html ? '<span class="plan-count">' . SafeMarkup::checkPlain($count) . '<span>' : SafeMarkup::checkPlain($count),
+    'TTamount' => $html ? '<span class="plan-amount">' . $amount . '</span>' : $amount,
   ];
   if ($count == 1) {
     switch ($unit) {
       case 'days':
-        return t('!amount per day', $replacements);
+        return t('TTamount per day', $replacements);
 
       case 'months':
-        return t('!amount per month', $replacements);
+        return t('TTamount per month', $replacements);
     }
   }
   elseif ($count == 7 && $unit == 'days') {
-    return t('!amount per week', $replacements);
+    return t('TTamount per week', $replacements);
   }
   elseif ($count == 12 && $unit == 'months') {
-    return t('!amount per year', $replacements);
+    return t('TTamount per year', $replacements);
   }
   else {
     switch ($unit) {
       case 'days':
-        return t('!amount every !count days', $replacements);
+        return t('TTamount every TTcount days', $replacements);
 
       case 'months':
-        return t('!amount every !count months', $replacements);
+        return t('TTamount every TTcount months', $replacements);
     }
   }
 }

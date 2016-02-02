@@ -38,8 +38,8 @@ class RecurlySettingsForm extends ConfigFormBase {
     $plan_options = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
 
     if (empty($plan_options) && \Drupal::config('recurly.settings')->get('recurly_private_api_key') && \Drupal::config('recurly.settings')->get('recurly_pages')) {
-      drupal_set_message($this->t('Recurly built-in pages are enabled, but no plans have yet been enabled. Enable plans on the <a href="!url">Subscription Plans page</a>.', [
-        '!url' => Url::fromRoute('recurly.subscription_plans_overview')->toString(),
+      drupal_set_message($this->t('Recurly built-in pages are enabled, but no plans have yet been enabled. Enable plans on the <a href="TTurl">Subscription Plans page</a>.', [
+        'TTurl' => Url::fromRoute('recurly.subscription_plans_overview')->toString(),
       ]), 'warning', FALSE);
     }
 
@@ -72,7 +72,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Default currency'),
       '#description' => $this->t('Enter the 3-character currency code for the currency you would like to use by default. You can find a list of supported currencies in your <a href="!url">Recurly account currencies page</a>.', [
-        '!url' => $recurly_url_manager->hostedUrl('configuration/currencies')->getUri(),
+        'TTurl' => $recurly_url_manager->hostedUrl('configuration/currencies')->getUri(),
       ]),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
       '#size' => 3,
@@ -255,7 +255,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#states' => [
         'visible' => [
           'select[name="recurly_entity_type"]' => [
-            '!value' => '',
+            'TTvalue' => '',
           ],
         ],
       ],
