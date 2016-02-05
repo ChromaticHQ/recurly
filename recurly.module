@@ -138,7 +138,9 @@ function recurly_entity_update(\Drupal\Core\Entity\EntityInterface $entity) {
   }
 
   // Check if any of the mapping tokens have changed.
-  $original_entity = \Drupal::entityManager()->getStorage($entity_type)->load($entity->getOriginalId());
+  if (!$original_entity = \Drupal::entityManager()->getStorage($entity_type)->load($entity->getOriginalId())) {
+    return;
+  }
   $original_values = [];
   $updated_values = [];
 
