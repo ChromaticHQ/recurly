@@ -59,7 +59,7 @@ class RecurlyFormatManager {
   function formatDate($date) {
     $format = \Drupal::config('recurly.settings')->get('recurly_date_format');
     if (is_object($date)) {
-      $date->setTimezone(new DateTimeZone('UTC'));
+      $date->setTimezone(new \DateTimeZone('UTC'));
       $timestamp = $date->format('U');
     }
     else {
