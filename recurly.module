@@ -565,20 +565,6 @@ function recurly_subscription_plans($reset_cache = FALSE) {
 }
 
 /**
- * Returns an edit URL for a subscription plan.
- *
- * @param object $plan
- *   The subscription plan object returned by the Recurly client.
- *
- * @return string
- *   The URL for the plan's edit page at Recurly.
- */
-function recurly_subscription_plan_edit_url($plan) {
-  $recurly_url_manager = \Drupal::service('recurly.url_manager');
-  return $recurly_url_manager->hostedUrl('company/plans/' . $plan->plan_code)->getUri();
-}
-
-/**
  * Determine if a Recurly subscription object is currently in a trial.
  */
 function recurly_subscription_in_trial($subscription) {

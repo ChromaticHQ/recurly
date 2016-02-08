@@ -27,4 +27,17 @@ class RecurlyUrlManager {
 
     return \Drupal\Core\Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path);
   }
+
+  /**
+   * Returns an edit URL for a subscription plan.
+   *
+   * @param object $plan
+   *   The subscription plan object returned by the Recurly client.
+   *
+   * @return \Drupal\Core\Url
+   *   Returns a \Drupal\Core\Url object.
+   */
+  function planEditUrl($plan) {
+    return $this->hostedUrl('company/plans/' . $plan->plan_code);
+  }
 }

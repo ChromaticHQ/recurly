@@ -94,5 +94,5 @@ function recurly_hosted_subscription_plan_purchase_url($plan_code, $account_code
   }
 
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
-  return $recurly_url_manager->hostedUrl($url)->getUri();
+  return $recurly_url_manager->hostedUrl($url);
 }
