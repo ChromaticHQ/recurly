@@ -10,7 +10,7 @@ Drupal.behaviors.recurlyJSSubscribeForm = {
   attach: function (context, settings) {
     // Attaches submission handling to the subscribe form.
     $('#recurlyjs-subscribe-form').once('recurlyjs-subscribe-form', function () {
-      $(this).on('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
+      $(this).bind('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
     });
   }
 };
@@ -18,7 +18,7 @@ Drupal.behaviors.recurlyJSSubscribeForm = {
 Drupal.behaviors.recurlyJSUpdateBillingForm = {
   attach: function (context, settings) {
     $('#recurlyjs-update-billing-form').once('recurlyjs-update-billing-form', function () {
-      $(this).on('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
+      $(this).bind('submit', Drupal.recurly.recurlyJSTokenFormSubmit);
     });
   }
 };
@@ -34,7 +34,7 @@ Drupal.recurly.recurlyJSTokenFormSubmit = function(event) {
   $('input').removeClass('error');
 
   // Disable the submit button
-  $('button').prop('disabled', true);
+  $('button').attr('disabled', true);
 
   var form = this;
   recurly.token(form, function (err, token) {
@@ -51,7 +51,7 @@ Drupal.recurly.recurlyJSTokenFormSubmit = function(event) {
  * Handles form errors.
  */
 Drupal.recurly.recurlyJSFormError = function(err) {
-  $('button').prop('disabled', false);
+  $('button').attr('disabled', false);
 
   // Add the error class to all form elements that returned an error.
   if (typeof err.fields !== 'undefined') {
@@ -77,7 +77,7 @@ Drupal.recurly.recurlyJSFormError = function(err) {
     'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'HR'
   ];
 
-  country.on('change init', function (event) {
+  country.bind('change init', function (event) {
     if (~euCountries.indexOf(this.value)) {
       vatNumber.show();
     } else {
