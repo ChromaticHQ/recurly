@@ -52,6 +52,9 @@ services:
       - { name: event_subscriber }
   recurly.format_manager:
     class: Drupal\recurly\RecurlyFormatManager
+  recurly.entity_type:
+    class: Drupal\recurly\RecurlyEntityTypeInfo
+    arguments: ['@string_translation', '@entity_type.manager']
   recurly.entity_operations:
     class: Drupal\recurly\RecurlyEntityOperations
     arguments: ['@entity_type.manager']
