@@ -9,6 +9,7 @@ namespace Drupal\recurly;
 
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Defines a class for reacting to entity events.
