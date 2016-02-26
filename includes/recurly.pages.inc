@@ -685,6 +685,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
       'terminate_none' => t('@amount - None', array('@amount' => recurly_format_currency(0, $subscription->currency))),
     ),
     '#default_value' => $cancel_behavior === 'cancel' ? NULL : $cancel_behavior,
+    '#required' => TRUE,
     '#weight' => 1,
     '#access' => $admin_access,
   );
