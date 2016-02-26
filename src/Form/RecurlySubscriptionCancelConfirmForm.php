@@ -112,6 +112,7 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
         self::TERMINATE_NONE => $this->t('@amount - None', ['@amount' => $this->recurly_formatter->formatCurrency(0, $subscription->currency)]),
       ],
       '#default_value' => $cancel_behavior === 'cancel' ? NULL : $cancel_behavior,
+      '#required' => TRUE,
       '#weight' => 1,
       '#access' => $admin_access,
     ];
@@ -124,7 +125,6 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
     }
 
     $form['terminate']['admin_description'] = [
-      '#type' => 'markup',
       '#markup' => '<p>' . $this->t('If you would like the subscription to end immediately, you may terminate the subscription now. Optionally, you may also issue a refund for the time remaining (prorated) or for the full amount. New subscriptions to this account will need to sign up for a new plan.') . '</p>',
       '#access' => $admin_access,
     ];
@@ -141,7 +141,6 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
       $friendly_description .= ' ' . $this->t('A refund of @amount will be credited to your account.', ['@amount' => $this->recurly_formatter->formatCurrency($full_amount, $subscription->currency)]);
     }
     $form['terminate']['user_description'] = [
-      '#type' => 'markup',
       '#markup' => '<p>' . $friendly_description . '</p>',
       '#access' => !$admin_access,
     ];
