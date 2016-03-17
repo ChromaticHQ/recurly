@@ -95,7 +95,7 @@ function recurly_views_data_alter(&$data) {
     $base_table = $info->getBaseTable();
     $description = t('@base-entity from @join-entity', ['@join-entity' => $info->getLabel()->render(), '@base-entity' => 'Recurly Account']);
     if ($base_table) {
-      $data[$base_table][$entity_type] = [
+      $data[$base_table]['recurly_' . $entity_type] = [
         'title' => t('Recurly Account'),
         'help' => t('The Recurly Account of this @entity-type.', ['@entity-type' => $entity_type]),
         'relationship' => [
