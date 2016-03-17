@@ -61,19 +61,22 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#description' => $this->t('Enter this if needed for Recurly.js. Note that this version of the Recurly module only supports Recurly.js v3, which uses the "public key" and not the "transparent post key" used by Recurly.js v2.'),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_public_key'),
     ];
+    $recurly_subdomain = \Drupal::config('recurly.settings')->get('recurly_subdomain');
     $form['account']['recurly_subdomain'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Subdomain'),
       '#description' => $this->t("The subdomain of your account."),
-      '#default_value' => \Drupal::config('recurly.settings')->get('recurly_subdomain'),
+      '#default_value' => $recurly_subdomain,
     ];
     $recurly_url_manager = \Drupal::service('recurly.url_manager');
+    // If subdomain isn't empty, then set currency suggestion and link, otherwise leave blank
+    $currency_suggestion = !empty($recurly_subdomain) ? t(' You can find a list of supported currencies in your <a href=":url">Recurly account currencies page</a>.', [
+      ':url' => $recurly_url_manager->hostedUrl('configuration/currencies')->getUri(),
+    ]) : '';
     $form['account']['recurly_default_currency'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Default currency'),
-      '#description' => $this->t('Enter the 3-character currency code for the currency you would like to use by default. You can find a list of supported currencies in your <a href="!url">Recurly account currencies page</a>.', [
-        'TTurl' => $recurly_url_manager->hostedUrl('configuration/currencies')->getUri(),
-      ]),
+      '#description' => $this->t('Enter the 3-character currency code for the currency you would like to use by default.' . $currency_suggestion),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
       '#size' => 3,
       '#maxlength' => 3,
