@@ -82,6 +82,10 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       $recurly_account->account_code = $entity_type . '-' . $entity->id();
       $recurly_account->billing_info = new \Recurly_BillingInfo();
       $recurly_account->billing_info->token_id = $recurly_token;
+      if ($entity_type == 'user') {
+        $recurly_account->email = $entity->mail;
+        $recurly_account->username = $entity->name;
+      }
       $recurly_account->create();
     }
     try {
