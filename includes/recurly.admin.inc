@@ -190,11 +190,13 @@ function recurly_settings_form($form, &$form_state) {
     '#type' => 'textfield',
     '#default_value' => $mapping['zip'],
   );
+  // country_get_list() requires includes/locale.inc
+  module_load_include('inc', 'content', 'includes/locale');
   $form['sync']['recurly_token_mapping']['country'] = array(
     '#title' => t('Country'),
-    '#type' => 'textfield',
+    '#type' => 'select',
     '#default_value' => $mapping['country'],
-    '#description' => t('Values sent to Recurly must be two-letter abbreviations.'),
+    '#options' => country_get_list(),
   );
   $form['sync']['recurly_token_mapping']['phone'] = array(
     '#title' => t('Phone number'),
