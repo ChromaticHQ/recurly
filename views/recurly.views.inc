@@ -93,7 +93,7 @@ function recurly_views_data_alter(&$data) {
   foreach ($entity_info as $entity_type => $info) {
     $base_table = $info['base table'];
     $description = t('@base-entity from @join-entity', array('@join-entity' => $info['label'], '@base-entity' => 'Recurly Account'));
-    $data[$base_table][$entity_type] = array(
+    $data[$base_table]['recurly_' . $entity_type] = array(
       'title' => t('Recurly Account'),
       'help' => t('The Recurly Account of this @entity-type.', array('@entity-type' => $entity_type)),
       'relationship' => array(
