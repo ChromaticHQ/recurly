@@ -234,11 +234,12 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#default_value' => $mapping['zip'],
     ];
+    $countries = \Drupal::service('country_manager')->getList();
     $form['sync']['recurly_token_mapping']['country'] = [
       '#title' => $this->t('Country'),
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#default_value' => $mapping['country'],
-      '#description' => $this->t('Values sent to Recurly must be two-letter abbreviations.'),
+      '#options' => $countries,
     ];
     $form['sync']['recurly_token_mapping']['phone'] = [
       '#title' => $this->t('Phone number'),
