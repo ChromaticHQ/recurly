@@ -413,6 +413,15 @@ function _recurlyjs_append_billing_fields(&$form) {
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
     '#weight' => -60,
   );
+  $form['cvv'] = array(
+    '#type' => 'textfield',
+    '#title' => t('CVV'),
+    '#attributes' => array(
+      'data-recurly' => 'cvv',
+    ),
+    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#weight' => -55,
+  );
   $form['month'] = array(
     '#type' => 'textfield',
     '#title' => t('MM'),
