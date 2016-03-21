@@ -386,14 +386,17 @@ function _recurlyjs_append_billing_fields(&$form) {
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
     '#weight' => -90,
   );
+  // country_get_list() requires includes/locale.inc.
+  module_load_include('inc', 'content', 'includes/locale');
   $form['country'] = array(
-    '#type' => 'textfield',
+    '#type' => 'select',
     '#title' => t('Country'),
     '#attributes' => array(
       'data-recurly' => 'country',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
     '#weight' => -80,
+    '#options' => country_get_list(),
   );
   $form['vat_number'] = array(
     '#type' => 'textfield',
