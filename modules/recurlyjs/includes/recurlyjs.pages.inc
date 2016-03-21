@@ -23,10 +23,10 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, &$form_state) {
       'none' => t('None'),
     ),
     '#default_value' => variable_get('recurlyjs_address_requirement', 'full'),
-    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".',
-      array(
-        '!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'),
-        recurly_hosted_url('configuration/edit')) : t('your Recurly account'))),
+    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on !link in "Site Settings".', array(
+      '!link' => variable_get('recurly_subdomain', '') ? l(t('your Recurly account'),
+      recurly_hosted_url('configuration/edit')) : t('your Recurly account'),
+    )),
   );
   $form['recurlyjs']['recurlyjs_enable_add_ons'] = array(
     '#title' => t('Enable Add-ons'),
@@ -462,7 +462,7 @@ function _recurlyjs_append_billing_fields(&$form) {
 /**
  * Element after_build callback to remove the input #name attribute.
  *
- * https://docs.recurly.com/js/#build-a-card-form
+ * @see https://docs.recurly.com/js/#build-a-card-form
  */
 function _recurlyjs_form_remove_element_name($element, $form_state) {
   unset($element['#name']);
