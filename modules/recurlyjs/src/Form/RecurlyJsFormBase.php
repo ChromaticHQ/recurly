@@ -117,14 +117,16 @@ abstract class RecurlyJsFormBase extends FormBase {
       '#after_build' => ['::removeElementName'],
       '#weight' => -90,
     ];
+    $countries = \Drupal::service('country_manager')->getList();
     $form['country'] = [
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => $this->t('Country'),
       '#attributes' => [
         'data-recurly' => 'country',
       ],
       '#after_build' => ['::removeElementName'],
       '#weight' => -80,
+      '#options' => $countries,
     ];
     $form['vat_number'] = [
       '#type' => 'textfield',
