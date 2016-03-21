@@ -146,6 +146,15 @@ abstract class RecurlyJsFormBase extends FormBase {
       '#after_build' => ['::removeElementName'],
       '#weight' => -60,
     ];
+    $form['cvv'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('CVV'),
+      '#attributes' => [
+        'data-recurly' => 'cvv',
+      ],
+      '#after_build' => ['::removeElementName'],
+      '#weight' => -55,
+    ];
     $form['month'] = [
       '#type' => 'textfield',
       '#title' => $this->t('MM'),
