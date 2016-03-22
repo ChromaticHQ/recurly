@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Contains Drupal\recurly\RecurlyEntityTypeInfo.
  */
 
@@ -22,7 +23,7 @@ class RecurlyEntityTypeInfo {
    * @param EntityTypeInterface[] $entity_types
    *   The master entity type list to alter.
    *
-   * @see hook_entity_type_alter().
+   * @see hook_entity_type_alter()
    */
   public function entityTypeAlter(array &$entity_types) {
     $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';

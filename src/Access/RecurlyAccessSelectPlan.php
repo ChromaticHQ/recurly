@@ -7,7 +7,6 @@
 namespace Drupal\recurly\Access;
 
 use Drupal\Core\Access\AccessResult;
-use Symfony\Component\Routing\Route;
 
 /**
  * Checks if the select operation should be accessible.

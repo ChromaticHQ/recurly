@@ -6,7 +6,6 @@
 
 namespace Drupal\recurly\Access;
 
-use Drupal\Core\Access\AccessResult;
 
 /**
  * Checks if the reactivate latest operation should be accessible.

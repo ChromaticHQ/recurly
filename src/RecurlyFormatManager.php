@@ -19,12 +19,15 @@ const RECURLY_STATE_IN_TRIAL = 'in_trial';
 const RECURLY_STATE_LIVE = 'live';
 const RECURLY_STATE_PAST_DUE = 'past_due';
 
+/**
+ * RecurlyFormatManager.
+ */
 class RecurlyFormatManager {
 
   /**
    * Format a Recurly subscription state.
    */
-  function formatState($state) {
+  public function formatState($state) {
     switch ($state) {
       case RECURLY_STATE_ACTIVE:
         return t('Active');
@@ -56,7 +59,7 @@ class RecurlyFormatManager {
   /**
    * Format a date for use in invoices.
    */
-  function formatDate($date) {
+  public function formatDate($date) {
     $format = \Drupal::config('recurly.settings')->get('recurly_date_format');
     if (is_object($date)) {
       $date->setTimezone(new \DateTimeZone('UTC'));
@@ -73,7 +76,7 @@ class RecurlyFormatManager {
   /**
    * Format a price for display.
    */
-  function formatCurrency($price_in_cents, $currency, $html = FALSE) {
+  public function formatCurrency($price_in_cents, $currency, $html = FALSE) {
     $currencies = recurly_currency_list();
     $currency_info = isset($currencies[$currency]) ? $currencies[$currency] : ['', ' ' . $currency];
     $prefix = $currency_info[0] ? $currency_info[0] : '';
@@ -128,7 +131,7 @@ class RecurlyFormatManager {
   /**
    * Format an interval of time in a human-readable way.
    */
-  function formatPriceInterval($amount, $count, $unit, $html = FALSE) {
+  public function formatPriceInterval($amount, $count, $unit, $html = FALSE) {
     if ($amount === NULL) {
       if ($unit == 'days') {
         return \Drupal::translation()->formatPlural($count, '1 day trial', '@count day trial');
@@ -172,7 +175,7 @@ class RecurlyFormatManager {
   /**
    * Simple function to print out human-readable transaction status.
    */
-  function formatTransactionStatus($status) {
+  public function formatTransactionStatus($status) {
     switch ($status) {
       case 'success':
         return t('Successful payment');
@@ -205,7 +208,7 @@ class RecurlyFormatManager {
    * @return string
    *   The formatted string ready for printing.
    */
-  function formatCoupon(\Recurly_Coupon $coupon, $currency, $html = FALSE) {
+  public function formatCoupon(\Recurly_Coupon $coupon, $currency, $html = FALSE) {
     // @todo. I am not sure about Recurly_Coupon. I do not think that class exists.
     if ($coupon->discount_type === 'percent') {
       $amount = SafeMarkup::checkPlain($coupon->discount_percent) . '%';
@@ -215,6 +218,7 @@ class RecurlyFormatManager {
       $amount = $this->formatCurrency($coupon_currency->amount_in_cents, $currency, $html);
     }
 
-    return SafeMarkup::checkPlain($coupon->name) . ' (' . t('@amount discount', ['@amount' => $amount]) . ')';
+    return SafeMarkup::checkPlain($coupon->name) . t('@space(@amount discount)', ['@amount' => ' ', '@amount' => $amount]);
   }
+
 }

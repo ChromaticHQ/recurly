@@ -56,9 +56,9 @@ class RecurlyLocalTask extends DeriverBase implements ContainerDeriverInterface 
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     // We are creating our local menu tasks here.
-    // $base_plugin_definition contains our base class(\Drupal\Core\Menu\LocalTaskDefault),
-    // the deriver class(this), provider(recurly) and id(recurly.entities).
-    // See recurly.links.task.yml.
+    // $base_plugin_definition contains our base class
+    // (\Drupal\Core\Menu\LocalTaskDefault), the deriver class (this),
+    // provider (recurly) and id (recurly.entities). See recurly.links.task.yml.
     $this->derivatives = array();
     // Get the entity type associated with recurly.
     $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';

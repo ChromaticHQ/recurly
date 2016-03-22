@@ -69,14 +69,16 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#default_value' => $recurly_subdomain,
     ];
     $recurly_url_manager = \Drupal::service('recurly.url_manager');
-    // If subdomain isn't empty, then set currency suggestion and link, otherwise leave blank
-    $currency_suggestion = !empty($recurly_subdomain) ? t(' You can find a list of supported currencies in your <a href=":url">Recurly account currencies page</a>.', [
+    // If subdomain isn't empty, then set currency suggestion and link,
+    // otherwise leave blank.
+    $currency_suggestion = !empty($recurly_subdomain) ? t('@spaceYou can find a list of supported currencies in your <a href=":url">Recurly account currencies page</a>.', [
+      '@space' => ' ',
       ':url' => $recurly_url_manager->hostedUrl('configuration/currencies')->getUri(),
     ]) : '';
     $form['account']['recurly_default_currency'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Default currency'),
-      '#description' => $this->t('Enter the 3-character currency code for the currency you would like to use by default.' . $currency_suggestion),
+      '#description' => $this->t('Enter the 3-character currency code for the currency you would like to use by default.TTcurrency_suggestion', ['TTcurrency_suggestion' => $currency_suggestion]),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
       '#size' => 3,
       '#maxlength' => 3,
@@ -411,20 +413,14 @@ class RecurlySettingsForm extends ConfigFormBase {
       ->set('recurly_subscription_cancel_behavior', $form_state->getValue('recurly_subscription_cancel_behavior'))
       ->save();
 
-    if (method_exists($this, '_submitForm')) {
-      $this->_submitForm($form, $form_state);
-    }
-
-    parent::submitForm($form, $form_state);
-  }
-
-  public function _submitForm(array &$form, FormStateInterface $form_state) {
     // Rebuild the menu system if any of the built-in page options change.
     foreach ($form_state->get(['pages_previous_values']) as $variable_name => $previous_value) {
       if (!$form_state->getValue([$variable_name]) && $form_state->getValue([$variable_name]) !== $previous_value) {
         menu_rebuild();
       }
     }
+
+    parent::submitForm($form, $form_state);
   }
 
 }

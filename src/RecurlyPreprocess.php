@@ -16,9 +16,6 @@ class RecurlyPreprocess {
 
   /**
    * Implements hook_preprocess_recurly_subscription_plan_select().
-   *
-   * @param array $variables
-   *   Theme variables to preprocess.
    */
   public function preprocessRecurlySubscriptionPlanSelect(array &$variables) {
     $plans = $variables['plans'];
@@ -108,9 +105,6 @@ class RecurlyPreprocess {
 
   /**
    * Implements hook_preprocess_recurly_subscription_cancel_confirm().
-   *
-   * @param array $variables
-   *   Theme variables to preprocess.
    */
   public function preprocessRecurlySubscriptionCancelConfirm(array &$variables) {
     $variables['subscription'] = $variables['form']['#subscription'];
@@ -120,9 +114,6 @@ class RecurlyPreprocess {
 
   /**
    * Implements hook_preprocess_recurly_invoice_list().
-   *
-   * @param array $variables
-   *   Theme variables to preprocess.
    */
   public function preprocessRecurlyInvoiceList(array &$variables) {
     $invoices = $variables['invoices'];
@@ -132,12 +123,12 @@ class RecurlyPreprocess {
     $header = [t('Number'), t('Date'), t('Total')];
     $rows = [];
     foreach ($invoices as $invoice) {
-      $status = '';
+      $status = ' ';
       if ($invoice->state === 'past_due') {
-        $status = ' (' . t('Past due') . ')';
+        $status .= t('(Past due)');
       }
       elseif ($invoice->state === 'failed') {
-        $status = ' (' . t('Failed') . ')';
+        $status .= t('(Failed)');
       }
 
       $row = [];
@@ -165,9 +156,6 @@ class RecurlyPreprocess {
 
   /**
    * Implements hook_preprocess_recurly_invoice().
-   *
-   * @param array $variables
-   *   Theme variables to preprocess.
    */
   public function preprocessRecurlyInvoice(array &$variables) {
     $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';

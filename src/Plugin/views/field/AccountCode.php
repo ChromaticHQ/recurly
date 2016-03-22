@@ -2,14 +2,13 @@
 
 /**
  * @file
- * Contains \Drupal\recurly\Plugin\views\field\AccountCode
+ * Contains \Drupal\recurly\Plugin\views\field\AccountCode.
  */
 
 namespace Drupal\recurly\Plugin\views\field;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\ResultRow;
-use Drupal\views\ViewExecutable;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 
 /**

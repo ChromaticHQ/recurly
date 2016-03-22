@@ -7,7 +7,6 @@
 
 namespace Drupal\recurly;
 
-use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
@@ -17,6 +16,8 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 class RecurlyEntityOperations {
 
   /**
+   * EntityTypeManagerInterface.
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
@@ -91,7 +92,7 @@ class RecurlyEntityOperations {
               // https://github.com/recurly/recurly-client-php/pull/80 is merged
               // in.
               //
-              // $recurly_account->address->{$field} = $value;
+              // $recurly_account->address->{$field} = $value;.
               $adr = $recurly_account->address;
               $adr->{$field} = $value;
               $recurly_account->address = $adr;

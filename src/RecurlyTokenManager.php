@@ -7,12 +7,15 @@
 
 namespace Drupal\recurly;
 
+/**
+ * RecurlyTokenManager.
+ */
 class RecurlyTokenManager {
 
   /**
    * Get the token mapping for Recurly variables with defaults populated.
    */
-  function tokenMapping() {
+  public function tokenMapping() {
     $mapping = \Drupal::config('recurly.settings')->get('recurly_token_mapping') ?: [];
     $mapping += [
       'email' => '[user:mail]',
@@ -30,4 +33,5 @@ class RecurlyTokenManager {
     ];
     return $mapping;
   }
+
 }

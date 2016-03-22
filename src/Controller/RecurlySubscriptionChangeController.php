@@ -8,10 +8,7 @@
 namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Recurly change subscription controller.

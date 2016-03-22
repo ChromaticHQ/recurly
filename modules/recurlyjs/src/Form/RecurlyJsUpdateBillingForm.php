@@ -9,10 +9,8 @@ namespace Drupal\recurlyjs\Form;
 
 
 use Drupal\Component\Utility\SafeMarkup;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
 
 /**
  * RecurlyJS update billing form.

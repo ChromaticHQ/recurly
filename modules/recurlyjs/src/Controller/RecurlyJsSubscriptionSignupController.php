@@ -7,15 +7,9 @@
 
 namespace Drupal\recurlyjs\Controller;
 
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Drupal\Core\Field;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
 
 /**
  * Returns responses for Recurly Subscription List.
@@ -25,12 +19,8 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
   /**
    * Controller callback to trigger a user subscription.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity.
-   * @param string $plan_code
-   *   A Recurly plan code.
-   * @param string $currency
-   *   The designated currency to use when subscribing.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   A RouteMatchInterface object.
    *
    * @return array
    *   A Drupal render array.

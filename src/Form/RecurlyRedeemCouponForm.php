@@ -23,7 +23,7 @@ class RecurlyRedeemCouponForm extends FormBase {
    *
    * @var \Drupal\recurly\RecurlyFormatManager
    */
-  protected $recurly_formatter;
+  protected $recurlyFormatter;
 
   /**
    * Constructs a \Drupal\recurly\Form\RecurlyRedeemCouponForm object.
@@ -32,7 +32,7 @@ class RecurlyRedeemCouponForm extends FormBase {
    *   The Recurly formatter to be used for formatting.
    */
   public function __construct(RecurlyFormatManager $recurly_formatter) {
-    $this->recurly_formatter = $recurly_formatter;
+    $this->recurlyFormatter = $recurly_formatter;
   }
 
   /**
@@ -73,8 +73,8 @@ class RecurlyRedeemCouponForm extends FormBase {
       $form_state->set('confirmed', TRUE);
       $help = '<p>' . $this->t('Your account already has a coupon that will be applied to your next invoice. Are you sure you want to replace your existing coupon ":old_coupon" with ":new_coupon"? You may not be able to use your previous coupon again.',
         [
-          ':old_coupon' => $this->recurly_formatter->formatCoupon($form_state->get('existing_coupon'), $form_state->get('existing_redemption')->currency),
-          ':new_coupon' => $this->recurly_formatter->formatCoupon($form_state->get('coupon'), $form_state->getValue('coupon_currency')),
+          ':old_coupon' => $this->recurlyFormatter->formatCoupon($form_state->get('existing_coupon'), $form_state->get('existing_redemption')->currency),
+          ':new_coupon' => $this->recurlyFormatter->formatCoupon($form_state->get('coupon'), $form_state->getValue('coupon_currency')),
         ]) . '</p>';
     }
     elseif ($account->redemption) {
@@ -82,7 +82,7 @@ class RecurlyRedeemCouponForm extends FormBase {
       $form_state->set('existing_redemption', $existing_coupon_redemption);
       $form_state->set('existing_coupon', $existing_coupon_redemption->coupon->get());
 
-      $help = '<p>' . $this->t('Your next invoice will have the following coupon applied:') . ' <strong>' . $this->recurly_formatter->formatCoupon($form_state->get('existing_coupon'), $form_state->get('existing_redemption')->currency) . '</strong></p>';
+      $help = '<p>' . $this->t('Your next invoice will have the following coupon applied:') . ' <strong>' . $this->recurlyFormatter->formatCoupon($form_state->get('existing_coupon'), $form_state->get('existing_redemption')->currency) . '</strong></p>';
       $help .= '<p>' . $this->t('Please note that only one coupon can be redeemed per invoice.') . '</p>';
     }
     else {
@@ -196,7 +196,7 @@ class RecurlyRedeemCouponForm extends FormBase {
     }
     else {
       drupal_set_message($this->t('The coupon !coupon has been applied to your account and will be redeemed the next time your subscription renews.', [
-        '!coupon' => $this->recurly_formatter->formatCoupon($coupon, $form_state->getValue(['coupon_currency'])),
+        '!coupon' => $this->recurlyFormatter->formatCoupon($coupon, $form_state->getValue(['coupon_currency'])),
       ]));
     }
   }

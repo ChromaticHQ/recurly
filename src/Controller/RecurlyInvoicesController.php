@@ -7,14 +7,8 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Field;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -104,13 +98,12 @@ class RecurlyInvoicesController extends ControllerBase {
     }
 
     // @TODO
-    // drupal_set_title() has been removed. There are now a few ways to set the title
-    // dynamically, depending on the situation.
-    //
+    // drupal_set_title() has been removed. There are now a few ways to set the
+    // title dynamically, depending on the situation.
     //
     // @see https://www.drupal.org/node/2067859
-    // drupal_set_title(t('Invoice #@number', array('@number' => $invoice->invoice_number)));
-
+    // drupal_set_title(t('Invoice #@number', [
+    // '@number' => $invoice->invoice_number]));
     if ($invoice->state != 'collected') {
       $url = recurly_url('update_billing', ['entity' => $entity]);
       if ($url) {
@@ -186,7 +179,7 @@ class RecurlyInvoicesController extends ControllerBase {
 
       // I guess below is not necessary plus filesize was not working anyway?!
       // $response->headers->set('Content-Transfer-Encoding', 'binary', TRUE);
-      // $response->headers->set('Content-Length', filesize($pdf), TRUE);
+      // $response->headers->set('Content-Length', filesize($pdf), TRUE);.
       print $pdf;
       drupal_exit();
     }

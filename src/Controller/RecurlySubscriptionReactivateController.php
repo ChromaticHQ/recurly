@@ -8,9 +8,7 @@
 namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\recurly\RecurlyFormatManager;
@@ -25,16 +23,16 @@ class RecurlySubscriptionReactivateController extends ControllerBase {
    *
    * @var \Drupal\recurly\RecurlyFormatManager
    */
-  protected $recurly_formatter;
+  protected $recurlyFormatter;
 
   /**
-   * Constructs a \Drupal\recurly\Controller\RecurlySubscriptionReactivateController object.
+   * Constructor.
    *
    * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
    *   The Recurly formatter to be used for formatting.
    */
   public function __construct(RecurlyFormatManager $recurly_formatter) {
-    $this->recurly_formatter = $recurly_formatter;
+    $this->recurlyFormatter = $recurly_formatter;
   }
 
   /**
@@ -49,8 +47,8 @@ class RecurlySubscriptionReactivateController extends ControllerBase {
   /**
    * Reactivate the specified subscription.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity whose subscription is being reactivated.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   A RouteMatchInterface object.
    * @param string $subscription_id
    *   The UUID of the subscription to reactivate.
    */
@@ -83,7 +81,7 @@ class RecurlySubscriptionReactivateController extends ControllerBase {
       $subscription->reactivate();
       drupal_set_message($this->t('Plan @plan reactivated! Normal billing will resume on @date.', [
         '@plan' => $subscription->plan->name,
-        '@date' => $this->recurly_formatter->formatDate($subscription->current_period_ends_at),
+        '@date' => $this->recurlyFormatter->formatDate($subscription->current_period_ends_at),
       ]));
     }
     catch (Recurly_Error $e) {

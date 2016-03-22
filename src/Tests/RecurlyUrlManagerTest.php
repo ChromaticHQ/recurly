@@ -14,6 +14,7 @@ use Drupal\recurly\RecurlyUrlManager;
  * Test the Recurly Url Manager.
  *
  * @ingroup recurly
+ *
  * @group recurly
  */
 class RecurlyUrlManagerTest extends UnitTestCase {
@@ -26,4 +27,5 @@ class RecurlyUrlManagerTest extends UnitTestCase {
     $hosted_url = $recurly_url_manager->hostedUrl('configuration/currencies', 'sub-domain')->getUri();
     $this->assertEquals($hosted_url, 'https://sub-domain.recurly.com/configuration/currencies');
   }
+
 }

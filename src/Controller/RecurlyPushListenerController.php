@@ -92,7 +92,7 @@ class RecurlyPushListenerController extends ControllerBase {
           if ($parts[0] === $entity_type) {
             if (isset($parts[1]) && is_numeric($parts[1]) && ($entity = \Drupal::entityManager()->getStorage($parts[0], [
               $parts[1],
-              ]))) {
+            ]))) {
               recurly_account_save($recurly_account, $entity_type, $parts[1]);
             }
           }

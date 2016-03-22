@@ -9,7 +9,6 @@ namespace Drupal\recurly\Plugin\views\relationship;
 
 use Drupal\views\Views;
 use Drupal\views\Plugin\views\relationship\RelationshipPluginBase;
-use Drupal\views\Plugin\views\join\JoinPluginBase;
 
 /**
  * Views Relationship handler to allow joins to an arbitrary entity.
@@ -61,4 +60,5 @@ class EntityOwner extends RelationshipPluginBase {
       $this->query->addTag($access_tag);
     }
   }
+
 }

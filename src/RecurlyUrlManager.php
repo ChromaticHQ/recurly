@@ -7,14 +7,17 @@
 
 namespace Drupal\recurly;
 
+/**
+ * RecurlyUrlManager.
+ */
 class RecurlyUrlManager {
 
   /**
    * Generate the subdomain to use for the current account.
    *
-   * @param $path string
+   * @param string $path
    *   A path string.
-   * @param $subdomain $string
+   * @param string $subdomain
    *   A subdomain string.
    *
    * @return \Drupal\Core\Url
@@ -37,7 +40,8 @@ class RecurlyUrlManager {
    * @return \Drupal\Core\Url
    *   Returns a \Drupal\Core\Url object.
    */
-  function planEditUrl($plan) {
+  public function planEditUrl($plan) {
     return $this->hostedUrl('company/plans/' . $plan->plan_code);
   }
+
 }

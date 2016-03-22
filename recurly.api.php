@@ -97,10 +97,10 @@ function hook_recurly_url_info($operation, $context) {
   // Only provide URLs for built-in page types.
   $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   if (empty($recurly_entity_type) || $recurly_entity_type !== $context['entity_type']) {
-    return;
+    return '';
   }
 
-    switch ($operation) {
+  switch ($operation) {
     case 'select_plan':
       return Url::fromRoute('recurly.subscription_signup', ['entity' => $context['entity']->id()]);
 

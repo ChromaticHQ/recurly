@@ -4,7 +4,6 @@
  * Contains \Drupal\recurly\Access\RecurlyAccess.
  */
 
-
 namespace Drupal\recurly\Access;
 
 use Drupal\Core\Access\AccessResult;

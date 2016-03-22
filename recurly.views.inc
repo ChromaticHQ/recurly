@@ -115,7 +115,7 @@ function recurly_views_data_alter(&$data) {
  *
  * @param string $label
  *   The label to use for the base table or entity type, such as
- *   "Recurly account."
+ *   "Recurly account".
  * @param string $join_entity_type
  *   The entity type being joined to, such as 'user'.
  *
