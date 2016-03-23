@@ -1,39 +1,37 @@
-Description
------------
+# Recurly
+[![Build Status](https://travis-ci.org/ChromaticHQ/recurly.svg?branch=8.x-1.x)](https://travis-ci.org/ChromaticHQ/recurly)
+
+## Description
 This module provides API integration with Recurly.com, a hosted subscription
 management service. For more information about the project, see the project page
 at http://drupal.org/project/recurly.
 
-Requirements
-------------
-Drupal 8.x
-Libraries API
+## Requirements
+* Drupal 8.x
+* Libraries API
 
-Installation
-------------
-
-- Download the Recurly PHP library from
+## Installation
+* Download the Recurly PHP library from
   https://github.com/recurly/recurly-client-php and place it in libraries/ so
   that "recurly.php" is located at libraries/recurly/lib/recurly.php.
-
-- If you want to enable billing forms on your site, enable the recurlyjs module.
+* If you want to enable billing forms on your site, enable the recurlyjs module.
 
   IMPORTANT: This version of the Recurly module is only compatible with
   Recurly.js API v3 and the Recurly v2 API.
 
-- Log into your Recurly.com account and visit the API Credentials page.
+* Log into your Recurly.com account and visit the API Credentials page.
   (developer/api_access) Copy the value for the Private API Key and subdomain
   (found in the address bar or configuration/edit) & paste them into the module
   configuration in Drupal under admin/config/services/recurly. If you are using
   recurlyjs, you will also need the Public Key.
 
-- While on the Recurly settings page in Drupal, copy the full URL from the
+* While on the Recurly settings page in Drupal, copy the full URL from the
   description of  the "Listener URL key" field. It should be something like:
   "https://example.com/recurly/listener/QVDtH2CR". Use an HTTPS URL if
   available. Take this full URL and paste it into the Recurly.com settings for
   "Webhook URL" - Developers > Webhooks (configuration/notifications/configure).
 
-- After you have set up the desired plans in Recurly, on your Drupal site visit
+* After you have set up the desired plans in Recurly, on your Drupal site visit
   admin/config/services/recurly/subscription-plans and enable the desired plans.
 
 By default, the Recurly module will provide built-in pages for managing
@@ -51,8 +49,7 @@ performing a response to an action requires custom coding through
 hook_recurly_process_push_notification(). See the recurly.api.php file for more
 information on that hook.
 
-Account Codes and Recurly E-mails
----------------------------------
+## Account Codes and Recurly E-mails
 When creating new accounts in Recurly.com, the Drupal Recurly module will use
 a pattern of [entity_type]-[entity_id] to generate Recurly account codes. That
 is a Drupal user account with UID #1 would be assigned the Recurly account code
@@ -68,8 +65,7 @@ would use a URL such as http://example.com/manage-subscription/{{account_code}}.
 The Recurly module will redirect the account from the account code to
 http://example.com/user/[uid]/subscription.
 
-Support
--------
+## Support
 Please use the issue queue for filing bugs with this module at
 http://drupal.org/project/issues/recurly?categories=All
 
