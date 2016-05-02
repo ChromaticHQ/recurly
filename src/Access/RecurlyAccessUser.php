@@ -19,10 +19,11 @@ class RecurlyAccessUser extends RecurlyAccess {
   public function access() {
     $entity = $this->routeMatch->getCurrentRouteMatch()->getParameter($this->entityType);
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
-    // If subscriptions are attached to users, only allow users to view their
-    // own subscriptions.
+    // If subscriptions are attached to users and the user does not have the
+    // 'administer recurly' permission, only allow them to view their own
+    // subscriptions.
     if ($entity_type == 'user') {
-      if (\Drupal::currentUser()->id() != $entity->id()) {
+      if (\Drupal::currentUser()->id() != $entity->id() && !\Drupal::currentUser()->hasPermission('administer recurly')) {
         return AccessResult::forbidden();
       }
     }

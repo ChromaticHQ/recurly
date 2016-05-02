@@ -1,6 +1,6 @@
 administer recurly:
   title: 'Administer Recurly'
-  description: 'Allows users to configure site-wide Recurly account settings and grants access to all integration activities.'
+  description: 'Allows users to configure site-wide Recurly account settings and grants access to all integration activities. If subscriptions are attached to users, they will also need the ''administer users'' permission.'
   restrict access: TRUE
 manage recurly subscription:
   title: 'Access Recurly subscription pages'

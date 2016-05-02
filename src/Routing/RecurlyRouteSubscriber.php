@@ -55,7 +55,6 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
       ];
 
       if ($recurly_subscriptionlist = $entity_type->getLinkTemplate('recurly-subscriptionlist')) {
-        // Create route.
         $route = new Route(
           $recurly_subscriptionlist,
           [
@@ -64,6 +63,8 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
           ],
           [
             '_permission' => 'manage recurly subscription',
+            // If the user does not have access to update this entity, they do
+            // not have the ability to update the subscription.
             '_entity_access' => "$entity_type_id.update",
             '_access_check_recurly_user' => 'TRUE',
             '_access_check_recurly_list' => 'TRUE',
