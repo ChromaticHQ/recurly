@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\recurly\Access\RecurlyAccessSignUp.
- */
 
 namespace Drupal\recurly\Access;
 

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurlyjs\Plugin\Derivative\RecurlyJsLocalTask.
- */
-
 namespace Drupal\recurlyjs\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Form\RecurlySubscriptionPlansForm.
- */
-
 namespace Drupal\recurly\Form;
 
 use Drupal\Core\Form\FormBase;

@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains Drupal\recurly\RecurlyPreprocess.
- */
 
 namespace Drupal\recurly;
 

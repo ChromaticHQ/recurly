@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Plugin\views\relationship\EntityOwner.
- */
-
 namespace Drupal\recurly\Plugin\views\relationship;
 
 use Drupal\views\Views;

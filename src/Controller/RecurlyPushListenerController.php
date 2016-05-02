@@ -1,11 +1,8 @@
 <?php
-/**
- * @file
- * Contains \Drupal\recurly\Controller\RecurlyPushListenerController.
- */
 
 namespace Drupal\recurly\Controller;
 
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\HtmlResponse;
 
@@ -52,7 +49,7 @@ class RecurlyPushListenerController extends ControllerBase {
       if (\Drupal::config('recurly.settings')->get('recurly_push_logging')) {
         \Drupal::logger('recurly')->notice('Incoming @type push notification: TTnotification', [
           '@type' => $notification->type,
-          'TTnotification' => '<pre>' . \Drupal\Component\Utility\SafeMarkup::checkPlain(print_r($notification, TRUE)) . '</pre>',
+          'TTnotification' => '<pre>' . SafeMarkup::checkPlain(print_r($notification, TRUE)) . '</pre>',
         ]);
       }
 

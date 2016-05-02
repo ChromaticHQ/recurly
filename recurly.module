@@ -9,6 +9,7 @@
  */
 
 use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
@@ -128,14 +129,14 @@ function recurly_entity_type_alter(array &$entity_types) {
 /**
  * Implements hook_entity_update().
  */
-function recurly_entity_update(\Drupal\Core\Entity\EntityInterface $entity) {
+function recurly_entity_update(EntityInterface $entity) {
   return \Drupal::service('recurly.entity_operations')->entityUpdate($entity);
 }
 
 /**
  * Implements hook_entity_delete().
  */
-function recurly_entity_delete(\Drupal\Core\Entity\EntityInterface $entity) {
+function recurly_entity_delete(EntityInterface $entity) {
   return \Drupal::service('recurly.entity_operations')->entityDelete($entity);
 }
 
@@ -511,12 +512,12 @@ function recurly_subscription_in_trial($subscription) {
  *
  * @param string $operation
  *   May be one of the following operations:
- *    - select_plan ($context contains account_code or entity_type/entity_id)
- *    - change_plan
- *    - cancel
- *    - update_billing ($context contains account_code)
- *    - subscribe ($context contains plan_code)
- *    - reactivate ($context contains account_code or entity_type/entity_id)
+ *    - select_plan ($context contains account_code or entity_type/entity_id).
+ *    - change_plan.
+ *    - cancel.
+ *    - update_billing ($context contains account_code).
+ *    - subscribe ($context contains plan_code).
+ *    - reactivate ($context contains account_code or entity_type/entity_id).
  * @param array $context
  *   An array of contextual information needed for generating the link.
  *

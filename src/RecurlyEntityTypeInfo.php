@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\recurly\RecurlyEntityTypeInfo.
- */
-
 namespace Drupal\recurly;
 
 /**

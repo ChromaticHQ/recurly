@@ -137,5 +137,4 @@ function recurlyjs_entity_type_alter(array &$entity_types) {
     $entity_type->setLinkTemplate('recurlyjs-billing', $entity_type->getLinkTemplate('canonical') . '/subscription/billing');
   }
 
-
 }

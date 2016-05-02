@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Controller\RecurlyInvoicesController.
- */
-
 namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -172,7 +168,7 @@ class RecurlyInvoicesController extends ControllerBase {
         die("Unable to stream pdf: headers already sent");
       }
 
-      $response = new \Symfony\Component\HttpFoundation\Response();
+      $response = new Response();
       $response->headers->set('Content-Type', 'application/pdf', TRUE);
       $response->headers->set('Content-Disposition', 'inline; filename="' . $invoice_number . '.pdf"', TRUE);
       $response->sendHeaders();

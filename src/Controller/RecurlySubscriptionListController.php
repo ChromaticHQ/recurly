@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Controller\RecurlySubscriptionListController.
- */
-
 namespace Drupal\recurly\Controller;
 
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -172,7 +168,7 @@ class RecurlySubscriptionListController extends ControllerBase {
     \Drupal::moduleHandler()->alter('recurly_subscription_list_page', $subscriptions);
 
     // If the user doesn't have any active subscriptions, redirect to signup.
-    if (count(\Drupal\Core\Render\Element::children($subscriptions['subscriptions'])) === 0) {
+    if (count(Element::children($subscriptions['subscriptions'])) === 0) {
       return $this->redirect('recurly_signup', ['entity' => $entity->id()]);
     }
 

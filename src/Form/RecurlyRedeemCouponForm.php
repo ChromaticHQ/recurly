@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Form\RecurlyRedeemCouponForm.
- */
-
 namespace Drupal\recurly\Form;
 
 use Drupal\Core\Form\FormBase;

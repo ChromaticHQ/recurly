@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly_hosted\Routing\RecurlyHostedRoutes.
- */
-
 namespace Drupal\recurly_hosted\Routing;
 
 use Symfony\Component\Routing\Route;

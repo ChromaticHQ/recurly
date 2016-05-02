@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\recurly\Controller\RecurlyManageSubscriptionController.
- */
 
 namespace Drupal\recurly\Controller;
 

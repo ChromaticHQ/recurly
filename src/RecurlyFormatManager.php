@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\RecurlyFormatManager.
- */
-
 namespace Drupal\recurly;
 
 /**
@@ -55,7 +50,6 @@ class RecurlyFormatManager {
     }
   }
 
-
   /**
    * Format a date for use in invoices.
    */
@@ -71,7 +65,6 @@ class RecurlyFormatManager {
 
     return is_numeric($timestamp) ? format_date($timestamp, $format) : NULL;
   }
-
 
   /**
    * Format a price for display.
@@ -127,7 +120,6 @@ class RecurlyFormatManager {
     return $formatted;
   }
 
-
   /**
    * Format an interval of time in a human-readable way.
    */
@@ -171,7 +163,6 @@ class RecurlyFormatManager {
     }
   }
 
-
   /**
    * Simple function to print out human-readable transaction status.
    */
@@ -193,7 +184,6 @@ class RecurlyFormatManager {
         return SafeMarkup::checkPlain($status);
     }
   }
-
 
   /**
    * Format a Recurly coupon in a human-readable string.

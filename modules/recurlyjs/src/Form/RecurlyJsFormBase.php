@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurlyjs\Form\RecurlyJsFormBase.
- */
-
 namespace Drupal\recurlyjs\Form;
 
 use Drupal\Core\Form\FormBase;

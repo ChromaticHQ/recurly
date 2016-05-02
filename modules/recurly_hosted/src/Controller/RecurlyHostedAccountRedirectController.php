@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly_hosted\Controller\RecurlyHostedAccountRedirectController.
- */
-
 namespace Drupal\recurly_hosted\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -26,7 +22,7 @@ class RecurlyHostedAccountRedirectController extends ControllerBase {
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     if ($recurly_account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()])) {
       if ($url = recurly_hosted_account_manage_url($recurly_account, TRUE)) {
-        return new \Drupal\Core\Routing\TrustedRedirectResponse($url);
+        return new TrustedRedirectResponse($url);
       }
     }
     throw new NotFoundHttpException();

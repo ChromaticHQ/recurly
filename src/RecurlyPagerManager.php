@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\RecurlyPagerManager.
- */
-
 namespace Drupal\recurly;
 
 /**

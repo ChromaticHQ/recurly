@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\RecurlyEntityOperations.
- */
-
 namespace Drupal\recurly;
 
 use Drupal\Core\Entity\EntityInterface;

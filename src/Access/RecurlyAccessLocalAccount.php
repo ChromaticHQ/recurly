@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\recurly\Access\RecurlyAccessLocalAccount.
- */
 
 namespace Drupal\recurly\Access;
 

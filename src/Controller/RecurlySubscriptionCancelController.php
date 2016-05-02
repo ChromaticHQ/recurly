@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Controller\RecurlySubscriptionCancelController.
- */
-
 namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;

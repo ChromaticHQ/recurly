@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Routing\RecurlyRouteSubscriber.
- */
-
 namespace Drupal\recurly\Routing;
 
 use Drupal\Core\Entity\EntityManagerInterface;

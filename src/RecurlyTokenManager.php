@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\RecurlyTokenManager.
- */
-
 namespace Drupal\recurly;
 
 /**

@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\recurly\Access\RecurlyAccessSelectPlan.
- */
 
 namespace Drupal\recurly\Access;
 

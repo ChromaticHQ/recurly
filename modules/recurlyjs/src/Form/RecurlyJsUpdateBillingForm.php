@@ -1,15 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurlyjs\Form\RecurlyJsUpdateBillingForm.
- */
-
 namespace Drupal\recurlyjs\Form;
-
 
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -86,7 +81,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
 
     $form = parent::buildForm($form, $form_state);
     $excluded_fields = ['month', 'year'];
-    foreach (\Drupal\Core\Render\Element::children($form) as $form_element_name) {
+    foreach (Element::children($form) as $form_element_name) {
       if (!in_array($form_element_name, $excluded_fields)) {
         $form[$form_element_name]['#default_value'] = ($form_element_name != 'postal_code') ? $billing_info->$form_element_name : $billing_info->zip;
       }

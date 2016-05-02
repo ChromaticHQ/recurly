@@ -1,14 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Form\RecurlySubscriptionCancelConfirmForm.
- */
-
 namespace Drupal\recurly\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\recurly\RecurlyFormatManager;
 
@@ -155,7 +151,7 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
     $form['actions']['cancel'] = [
       '#type' => 'link',
       '#title' => $this->t('Cancel'),
-      '#url' => \Drupal\Core\Url::fromRoute("entity.$entity_type.recurly_subscriptionlist", [$entity_type => $entity->id()]),
+      '#url' => Url::fromRoute("entity.$entity_type.recurly_subscriptionlist", [$entity_type => $entity->id()]),
     ];
 
     return $form;

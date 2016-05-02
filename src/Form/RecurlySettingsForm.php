@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Form\RecurlySettingsForm.
- */
-
 namespace Drupal\recurly\Form;
 
 use Drupal\Core\Form\ConfigFormBase;

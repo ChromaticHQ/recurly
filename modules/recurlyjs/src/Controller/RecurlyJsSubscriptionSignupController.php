@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurlyjs\Controller\RecurlyJsSubscriptionSignupController.
- */
-
 namespace Drupal\recurlyjs\Controller;
 
 use Drupal\Core\Controller\ControllerBase;

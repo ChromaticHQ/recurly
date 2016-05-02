@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\Tests\RecurlyUrlManager.
- */
-
 namespace Drupal\recurly\Tests;
 
 use Drupal\Tests\UnitTestCase;

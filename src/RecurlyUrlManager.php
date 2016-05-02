@@ -1,11 +1,8 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\recurly\RecurlyUrlManager.
- */
-
 namespace Drupal\recurly;
+
+use Drupal\Core\Url;
 
 /**
  * RecurlyUrlManager.
@@ -28,7 +25,7 @@ class RecurlyUrlManager {
       $subdomain = \Drupal::config('recurly.settings')->get('recurly_subdomain');
     }
 
-    return \Drupal\Core\Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path);
+    return Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path);
   }
 
   /**

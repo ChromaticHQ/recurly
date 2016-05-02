@@ -5,6 +5,8 @@
  * Install hooks for Recurly module.
  */
 
+use Drupal\Component\Utility\Crypt;
+
 /**
  * Implements hook_requirements().
  */
@@ -26,11 +28,10 @@ function recurly_requirements($phase) {
     else {
       $requirements['recurly']['value'] = t('Not found');
       $requirements['recurly']['description'] = t('@error Download the <a href=":recurly_link">Recurly PHP library</a>, extract the archive and place the directory at %path on your server.', [
-          '@error' => $error_message,
-          ':recurly_link' => $library['download url'],
-          '%path' => 'libraries/recurly',
-        ]
-      );
+        '@error' => $error_message,
+        ':recurly_link' => $library['download url'],
+        '%path' => 'libraries/recurly',
+      ]);
       $requirements['recurly']['severity'] = REQUIREMENT_ERROR;
     }
   }
@@ -104,7 +105,7 @@ function recurly_schema() {
  */
 function recurly_install() {
   // Initialize the Recurly listener key variable.
-  \Drupal::configFactory()->getEditable('recurly.settings')->set('recurly_listener_key', substr(\Drupal\Component\Utility\Crypt::hashBase64(REQUEST_TIME), 0, 8))->save();
+  \Drupal::configFactory()->getEditable('recurly.settings')->set('recurly_listener_key', substr(Crypt::hashBase64(REQUEST_TIME), 0, 8))->save();
 }
 
 /**

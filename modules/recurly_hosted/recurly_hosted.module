@@ -8,6 +8,8 @@
  * Recurly or other modules that provide local management of Recurly accounts.
  */
 
+use Drupal\Component\Utility\UrlHelper;
+
 /**
  * Implements hook_recurly_url_info().
  */
@@ -90,7 +92,7 @@ function recurly_hosted_subscription_plan_purchase_url($plan_code, $account_code
   }
 
   if (!empty($settings)) {
-    $url .= '?' . \Drupal\Component\Utility\UrlHelper::buildQuery($settings);
+    $url .= '?' . UrlHelper::buildQuery($settings);
   }
 
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
