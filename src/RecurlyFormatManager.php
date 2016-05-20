@@ -2,6 +2,8 @@
 
 namespace Drupal\recurly;
 
+use Drupal\Component\Utility\SafeMarkup;
+
 /**
  * Constants for "state" strings.
  */

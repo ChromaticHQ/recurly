@@ -11,6 +11,23 @@ use Drupal\Core\Link;
 class RecurlyPreprocess {
 
   /**
+   * The formatting service.
+   *
+   * @var \Drupal\recurly\RecurlyFormatManager
+   */
+  protected $recurlyFormatter;
+
+  /**
+   * Constructs a \Drupal\recurly\RecurlyPreprocess object.
+   *
+   * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
+   *   A Recurly formatter object.
+   */
+  public function __construct(RecurlyFormatManager $recurly_formatter) {
+    $this->recurlyFormatter = $recurly_formatter;
+  }
+
+  /**
    * Implements hook_preprocess_recurly_subscription_plan_select().
    */
   public function preprocessRecurlySubscriptionPlanSelect(array &$variables) {
@@ -41,14 +58,14 @@ class RecurlyPreprocess {
       $setup_fee_amount = NULL;
       foreach ($plan->setup_fee_in_cents as $setup_currency) {
         if ($setup_currency->currencyCode === $currency) {
-          $setup_fee_amount = recurly_format_currency($setup_currency->amount_in_cents, $setup_currency->currencyCode, TRUE);
+          $setup_fee_amount = $this->recurlyFormatter->formatCurrency($setup_currency->amount_in_cents, $setup_currency->currencyCode, TRUE);
           break;
         }
       }
       $unit_amount = NULL;
       foreach ($plan->unit_amount_in_cents as $unit_currency) {
         if ($unit_currency->currencyCode === $currency) {
-          $unit_amount = recurly_format_currency($unit_currency->amount_in_cents, $unit_currency->currencyCode, TRUE);
+          $unit_amount = $this->recurlyFormatter->formatCurrency($unit_currency->amount_in_cents, $unit_currency->currencyCode, TRUE);
           break;
         }
       }
@@ -58,8 +75,8 @@ class RecurlyPreprocess {
         'description' => SafeMarkup::checkPlain($plan->description),
         'setup_fee' => $setup_fee_amount,
         'amount' => $unit_amount,
-        'plan_interval' => recurly_format_price_interval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
-        'trial_interval' => $plan->trial_interval_length ? recurly_format_price_interval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
+        'plan_interval' => $this->recurlyFormatter->formatPriceInterval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
+        'trial_interval' => $plan->trial_interval_length ? $this->recurlyFormatter->formatPriceInterval(NULL, $plan->trial_interval_length, $plan->trial_interval_unit, TRUE) : NULL,
         'signup_url' => recurly_url('subscribe', [
           'entity_type' => $entity_type,
           'entity' => $entity,
@@ -133,8 +150,8 @@ class RecurlyPreprocess {
         'invoice_number' => $invoice->invoice_number,
       ]);
 
-      $row[] = recurly_format_date($invoice->created_at);
-      $row[] = recurly_format_currency($invoice->total_in_cents, $invoice->currency);
+      $row[] = $this->recurlyFormatter->formatDate($invoice->created_at);
+      $row[] = $this->recurlyFormatter->formatCurrency($invoice->total_in_cents, $invoice->currency);
       $rows[] = [
         'data' => $row,
         'class' => [SafeMarkup::checkPlain($invoice->state)],
@@ -163,15 +180,15 @@ class RecurlyPreprocess {
     $due_amount = $invoice->state !== 'collected' ? $invoice->total_in_cents : 0;
     $paid_amount = $invoice->state === 'collected' ? $invoice->total_in_cents : 0;
     $variables += [
-      'invoice_date' => recurly_format_date($invoice->created_at),
+      'invoice_date' => $this->recurlyFormatter->formatDate($invoice->created_at),
       'pdf_link' => Link::createFromRoute(t('View PDF'), "entity.$entity_type_id.recurly_invoicepdf", [
         $entity_type_id => $entity->id(),
         'invoice_number' => $invoice->invoice_number,
       ]),
-      'subtotal' => recurly_format_currency($invoice->subtotal_in_cents, $invoice->currency),
-      'total' => recurly_format_currency($invoice->total_in_cents, $invoice->currency),
-      'due' => recurly_format_currency($due_amount, $invoice->currency),
-      'paid' => recurly_format_currency($paid_amount, $invoice->currency),
+      'subtotal' => $this->recurlyFormatter->formatCurrency($invoice->subtotal_in_cents, $invoice->currency),
+      'total' => $this->recurlyFormatter->formatCurrency($invoice->total_in_cents, $invoice->currency),
+      'due' => $this->recurlyFormatter->formatCurrency($due_amount, $invoice->currency),
+      'paid' => $this->recurlyFormatter->formatCurrency($paid_amount, $invoice->currency),
       'billing_info' => isset($billing_info),
       'line_items' => [],
       'transactions' => [],
@@ -190,18 +207,18 @@ class RecurlyPreprocess {
     }
     foreach ($invoice->line_items as $line_item) {
       $variables['line_items'][$line_item->uuid] = [
-        'start_date' => recurly_format_date($line_item->start_date),
-        'end_date' => recurly_format_date($line_item->end_date),
+        'start_date' => $this->recurlyFormatter->formatDate($line_item->start_date),
+        'end_date' => $this->recurlyFormatter->formatDate($line_item->end_date),
         'description' => SafeMarkup::checkPlain($line_item->description),
-        'amount' => recurly_format_currency($line_item->total_in_cents, $line_item->currency),
+        'amount' => $this->recurlyFormatter->formatCurrency($line_item->total_in_cents, $line_item->currency),
       ];
     }
     $transaction_total = 0;
     foreach ($invoice->transactions as $transaction) {
       $variables['transactions'][$transaction->uuid] = [
-        'date' => recurly_format_date($transaction->created_at),
-        'description' => recurly_format_transaction_status($transaction->status),
-        'amount' => recurly_format_currency($transaction->amount_in_cents, $transaction->currency),
+        'date' => $this->recurlyFormatter->formatDate($transaction->created_at),
+        'description' => $this->recurlyFormatter->formatTransactionStatus($transaction->status),
+        'amount' => $this->recurlyFormatter->formatCurrency($transaction->amount_in_cents, $transaction->currency),
       ];
       if ($transaction->status == 'success') {
         $transaction_total += $transaction->amount_in_cents;
@@ -210,7 +227,7 @@ class RecurlyPreprocess {
         $variables['transactions'][$transaction->uuid]['amount'] = '(' . $variables['transactions'][$transaction->uuid]['amount'] . ')';
       }
     }
-    $variables['transactions_total'] = recurly_format_currency($transaction_total, $invoice->currency);
+    $variables['transactions_total'] = $this->recurlyFormatter->formatCurrency($transaction_total, $invoice->currency);
   }
 
 }

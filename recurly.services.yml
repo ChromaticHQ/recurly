@@ -60,3 +60,4 @@ services:
     arguments: ['@entity_type.manager']
   recurly.recurly_preprocess:
     class: Drupal\recurly\RecurlyPreprocess
+    arguments: ['@recurly.format_manager']

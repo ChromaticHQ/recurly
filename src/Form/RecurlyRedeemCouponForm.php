@@ -24,7 +24,7 @@ class RecurlyRedeemCouponForm extends FormBase {
    * Constructs a \Drupal\recurly\Form\RecurlyRedeemCouponForm object.
    *
    * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
-   *   The Recurly formatter to be used for formatting.
+   *   A Recurly formatter object.
    */
   public function __construct(RecurlyFormatManager $recurly_formatter) {
     $this->recurlyFormatter = $recurly_formatter;
