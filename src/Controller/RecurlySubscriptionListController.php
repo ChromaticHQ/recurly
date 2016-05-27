@@ -169,7 +169,7 @@ class RecurlySubscriptionListController extends ControllerBase {
 
     // If the user doesn't have any active subscriptions, redirect to signup.
     if (count(Element::children($subscriptions['subscriptions'])) === 0) {
-      return $this->redirect('recurly_signup', ['entity' => $entity->id()]);
+      return $this->redirect("entity.$entity_type_id.recurly_signup", [$entity_type_id => $entity->id()]);
     }
 
     return $subscriptions;
