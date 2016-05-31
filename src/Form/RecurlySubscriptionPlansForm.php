@@ -114,7 +114,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
       }
     }
     // Then add any new plans to the end.
-    $plan_list += is_array($form['#plans']) ? $form['#plans'] : [];
+    $plan_list += isset($form['#plans']) ? $form['#plans'] : [];
     $form['#plans'] = $plan_list;
 
     foreach ($form['#plans'] as $plan_id => $details) {
