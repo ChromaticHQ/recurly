@@ -5,15 +5,17 @@
 
 (function ($) {
 
+  'use strict';
+
   /**
    * Behavior to change the radio buttons on the change subscription form.
    */
   Drupal.behaviors.recurlyPlanSelect = {};
-  Drupal.behaviors.recurlyPlanSelect.attach = function(context, settings) {
-    $('.plan-signup a.plan-select', context).each(function() {
+  Drupal.behaviors.recurlyPlanSelect.attach = function (context, settings) {
+    $('.plan-signup a.plan-select', context).each(function () {
       var link = this;
       var $link = $(this);
-      $link.parents('.plan:first').click(function(e) {
+      $link.parents('.plan:first').click(function (e) {
         if (e.target !== link) {
           // Click on the link if it's a real URL and not just an anchor.
           if (!link.href.match(/#$/)) {
@@ -25,9 +27,9 @@
           }
         }
       });
-      $link.parents('.plan:first').hover(function() {
+      $link.parents('.plan:first').hover(function () {
         $(this).addClass('plan-hover');
-      }, function() {
+      }, function () {
         $(this).removeClass('plan-hover');
       });
     });

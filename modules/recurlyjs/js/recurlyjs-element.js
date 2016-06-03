@@ -5,6 +5,8 @@
 
 (function ($) {
 
+  'use strict';
+
   Drupal.recurly = Drupal.recurly || {};
 
   Drupal.behaviors.recurlyJSSubscribeForm = {
@@ -27,8 +29,10 @@
 
   /**
    * Handles submission of the subscribe form.
+   *
+   * @param {object} event A jQuery event object.
    */
-  Drupal.recurly.recurlyJSTokenFormSubmit = function(event) {
+  Drupal.recurly.recurlyJSTokenFormSubmit = function (event) {
     event.preventDefault();
 
     // Reset the errors display.
@@ -39,7 +43,7 @@
     $('button').prop('disabled', true);
 
     var form = this;
-    recurly.token(form, function (err, token) {
+    recurly.token(form, function (err, token) { // eslint-disable-line
       if (err) {
         Drupal.recurly.recurlyJSFormError(err);
       }
@@ -51,8 +55,10 @@
 
   /**
    * Handles form errors.
+   *
+   * @param {object} err An error object.
    */
-  Drupal.recurly.recurlyJSFormError = function(err) {
+  Drupal.recurly.recurlyJSFormError = function (err) {
     $('button').prop('disabled', false);
 
     // Add the error class to all form elements that returned an error.
@@ -74,9 +80,9 @@
     var country = $('#country');
     var vatNumber = $('#vat-number');
     var euCountries = [
-    'AT', 'BE', 'BG', 'CY', 'CZ', 'DK', 'EE', 'ES', 'FI', 'FR',
-    'DE', 'GB', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT',
-    'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'HR'
+      'AT', 'BE', 'BG', 'CY', 'CZ', 'DK', 'EE', 'ES', 'FI', 'FR',
+      'DE', 'GB', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT',
+      'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'HR'
     ];
 
     country.on('change init', function (event) {
