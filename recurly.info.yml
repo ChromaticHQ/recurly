@@ -5,3 +5,4 @@ dependencies:
 core: 8.x
 package: Recurly
 type: module
+configure: recurly.settings_form
