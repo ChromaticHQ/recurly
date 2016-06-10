@@ -70,13 +70,13 @@ class RecurlySettingsForm extends ConfigFormBase {
       '@space' => ' ',
       ':url' => $recurly_url_manager->hostedUrl('configuration/currencies')->getUri(),
     ]) : '';
+    $currencies = array_keys(recurly_currency_list());
     $form['account']['recurly_default_currency'] = [
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => $this->t('Default currency'),
-      '#description' => $this->t('Enter the 3-character currency code for the currency you would like to use by default.TTcurrency_suggestion', ['TTcurrency_suggestion' => $currency_suggestion]),
+      '#description' => $this->t('Select the 3-character currency code for the currency you would like to use by default.TTcurrency_suggestion', ['TTcurrency_suggestion' => $currency_suggestion]),
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
-      '#size' => 3,
-      '#maxlength' => 3,
+      '#options' => array_combine($currencies, $currencies),
     ];
 
     // Add form elements to configure default push notification settings.
