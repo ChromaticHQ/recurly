@@ -409,7 +409,8 @@ class RecurlySettingsForm extends ConfigFormBase {
       ->save();
 
     // Rebuild the menu system if any of the built-in page options change.
-    foreach ($form_state->get(['pages_previous_values']) as $variable_name => $previous_value) {
+    $previous_values = $form_state->get(['pages_previous_values']) ? $form_state->get(['pages_previous_values']) : [];
+    foreach ($previous_values as $variable_name => $previous_value) {
       if (!$form_state->getValue([$variable_name]) && $form_state->getValue([$variable_name]) !== $previous_value) {
         menu_rebuild();
       }
