@@ -195,6 +195,16 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
     ];
   }
 
+  // Ensure that the mandatory settings have been entered.
+  if (empty($settings['api_key'])) {
+    \Drupal::logger('recurly')->error('The Recurly private API key is not configured.');
+    return FALSE;
+  }
+  if (empty($settings['subdomain'])) {
+    \Drupal::logger('recurly')->error('The Recurly subdomain is not configured.');
+    return FALSE;
+  }
+
   // If we can find a path in the libraries directory to the Recurly PHP client
   // library...
   $path = libraries_get_path('recurly');
