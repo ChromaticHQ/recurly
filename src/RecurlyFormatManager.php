@@ -103,14 +103,15 @@ class RecurlyFormatManager {
     if ($html) {
       $amount_string = '';
       $amount_array = [];
-      preg_match('/([^0-9]*)?([0-9' . preg_quote($thousands_separator) . '])([0-9' . preg_quote($decimal_separator) . '])(.*)?/', $formatted, $amount_array);
+      preg_match('/^(' . preg_quote($prefix) . ')([0-9' . preg_quote($thousands_separator) . ']+)' . preg_quote($decimal_separator) . '([0-9]+)(' . preg_quote($suffix) . ')?$/', $formatted, $amount_array);
       if ($amount_array[1]) {
         $amount_string .= '<span class="currency-prefix">' . $amount_array[1] . '</span>';
       }
-      if ($amount_array[2]) {
+      if ($amount_array[2] !== '') {
         $amount_string .= '<span class="currency-dollars">' . $amount_array[2] . '</span>';
       }
-      if ($amount_array[3]) {
+      $amount_string .= $decimal_separator;
+      if ($amount_array[3] !== '') {
         $amount_string .= '<span class="currency-cents">' . $amount_array[3] . '</span>';
       }
       if ($amount_array[4]) {
