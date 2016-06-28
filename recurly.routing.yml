@@ -10,7 +10,7 @@ recurly.process_push_notification:
     subdomain: null
     _controller: '\Drupal\recurly\Controller\RecurlyPushListenerController::processPushNotification'
   requirements:
-    _access: 'true'
+    _access: 'TRUE'
 recurly.settings_form:
   path: '/admin/config/services/recurly'
   defaults:
