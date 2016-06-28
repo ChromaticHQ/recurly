@@ -139,3 +139,10 @@ function recurly_uninstall() {
     ->clear('recurly_push_logging')
     ->save();
 }
+
+/**
+ * Enable the Token module.
+ */
+function recurly_update_8002() {
+  \Drupal::service('module_installer')->install(['token']);
+}

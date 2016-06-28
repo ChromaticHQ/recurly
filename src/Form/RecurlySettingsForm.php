@@ -244,7 +244,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#default_value' => $mapping['phone'],
     ];
     $form['sync']['recurly_token_mapping']['help'] = [
-      '#theme' => 'token_tree',
+      '#theme' => 'token_tree_link',
       '#token_types' => array_keys($entity_options),
       '#global_types' => FALSE,
     ];
