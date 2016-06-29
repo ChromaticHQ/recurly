@@ -109,15 +109,16 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#default_value' => \Drupal::config('recurly.settings')->get('recurly_push_logging'),
     ];
 
+    // Get a list of entity types and their bundles.
     $entity_types = \Drupal::entityManager()->getAllBundleInfo();
     $entity_options = [];
-    // @FIXME: Entity types with bundles not rendering correctly.
-    foreach ($entity_types as $entity_name => $entity_bundle_info) {
-      $entity_options[$entity_name] = $entity_bundle_info[$entity_name]['label'];
-      $first_bundle_name = key($entity_bundle_info);
-      // Don't generate a list of bundles if this entity does not have types.
-      if (count($entity_bundle_info) > 1 && $first_bundle_name !== $entity_name) {
-        foreach ($entity_bundle_info as $bundle_name => $bundle_info) {
+    foreach ($entity_types as $entity_name => $bundles) {
+      $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_name);
+      $entity_options[$entity_name] = $entity_type->getLabel();
+      $first_bundle_name = key($bundles);
+      // Generate a list of bundles only if this entity type has them.
+      if (count($bundles) > 1 || $first_bundle_name !== $entity_name) {
+        foreach ($bundles as $bundle_name => $bundle_info) {
           $entity_type_options[$entity_name][$bundle_name] = $bundle_info['label'];
         }
       }
@@ -140,7 +141,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#type' => 'details',
       '#title' => $this->t('Recurly account syncing'),
       '#open' => !empty($recurly_entity_type),
-      '#description' => $this->t("Each time a particular object type (User, Node, Group, etc.) is updated, you may have information sent to Recurly to keep the contact information kept up-to-date. It is extremely important to maintain updated contact information in Recurly, as when an account enters the dunning process, the e-mail account in Recurly is the primary contact address."),
+      '#description' => $this->t("Each time a particular entity type is updated, you may have information sent to Recurly to keep the contact information kept up-to-date. This can be any entity within Drupal, such as User, Content (Node), Group, etc. It is extremely important to maintain updated contact information in Recurly, as when an account enters the dunning process, the e-mail account in Recurly is the primary contact address."),
     ];
     $form['sync']['recurly_entity_type'] = [
       '#title' => $this->t('Send Recurly account updates for each'),
