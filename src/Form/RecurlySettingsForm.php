@@ -150,7 +150,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       ] + $entity_options,
       '#default_value' => $recurly_entity_type,
     ];
-    if (!empty($entity_options)) {
+    if (!empty($entity_type_options)) {
       foreach ($entity_type_options as $entity_name => $bundles) {
         $form['sync']['recurly_bundles']['recurly_bundle_' . $entity_name] = [
           '#title' => $this->t('Specifically the following @entity type', ['@entity' => $entity_name]),
