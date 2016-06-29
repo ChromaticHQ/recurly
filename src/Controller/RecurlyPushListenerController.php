@@ -47,9 +47,9 @@ class RecurlyPushListenerController extends ControllerBase {
 
       // Log the incoming push notification if enabled.
       if (\Drupal::config('recurly.settings')->get('recurly_push_logging')) {
-        \Drupal::logger('recurly')->notice('Incoming @type push notification: TTnotification', [
-          '@type' => $notification->type,
-          'TTnotification' => '<pre>' . SafeMarkup::checkPlain(print_r($notification, TRUE)) . '</pre>',
+        \Drupal::logger('recurly')->notice('Incoming %type: <pre>@notification</pre>', [
+          '%type' => $notification->type,
+          '@notification' => print_r($notification, TRUE),
         ]);
       }
 
