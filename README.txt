@@ -20,7 +20,7 @@ Installation
 - If you want to enable billing forms on your site, enable the recurlyjs module.
 
   IMPORTANT: This version of the Recurly module is only compatible with
-  Recurly.js API v3 and the Recurly v2 API.
+  Recurly.js API v4 and the Recurly v2 API.
 
 - Log into your Recurly.com account and visit the API Credentials page.
   (developer/api_access) Copy the value for the Private API Key and subdomain

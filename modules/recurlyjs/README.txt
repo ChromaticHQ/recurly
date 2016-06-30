@@ -22,7 +22,7 @@ Libraries API
 The recurlyjs library is dynamically included as of 7.x-2.x and no longer needs
 to be downloaded.
 
-The README.txt for the Recurly module describes the installation and 
+The README.txt for the Recurly module describes the installation and
 configuration for this module.
 
 Support

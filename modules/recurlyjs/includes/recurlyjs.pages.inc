@@ -136,8 +136,9 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
   $form['#plan_code'] = $plan_code;
   $form['#currency'] = $currency ?: variable_get('recurly_default_currency', 'USD');
 
-  _recurlyjs_form_attach_js($form);
   _recurlyjs_append_billing_fields($form);
+  _recurlyjs_form_attach_js($form);
+
   if (variable_get('recurlyjs_enable_coupons')) {
     $form['coupon_code'] = array(
       '#type' => 'textfield',
@@ -228,6 +229,9 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
  *   The entity whose info is being updated.
  */
 function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity) {
+  // Includes iframe styling.
+  drupal_add_css(drupal_get_path('module', 'recurlyjs') . '/css/recurlyjs.css');
+
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
     $form['error'] = array(
@@ -262,8 +266,9 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
 
-  _recurlyjs_form_attach_js($form);
   _recurlyjs_append_billing_fields($form);
+  _recurlyjs_form_attach_js($form);
+
   // Populate #default_value with existing billing info.
   $excluded_fields = array('month', 'year');
   foreach (element_children($form) as $form_element_name) {
@@ -408,39 +413,23 @@ function _recurlyjs_append_billing_fields(&$form) {
     '#weight' => -70,
   );
   $form['number'] = array(
-    '#type' => 'textfield',
     '#title' => t('Card Number'),
-    '#attributes' => array(
-      'data-recurly' => 'number',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#markup' => '<div data-recurly="number"></div>',
     '#weight' => -60,
   );
   $form['cvv'] = array(
-    '#type' => 'textfield',
     '#title' => t('CVV'),
-    '#attributes' => array(
-      'data-recurly' => 'cvv',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#markup' => '<div data-recurly="cvv"></div>',
     '#weight' => -55,
   );
   $form['month'] = array(
-    '#type' => 'textfield',
     '#title' => t('MM'),
-    '#attributes' => array(
-      'data-recurly' => 'month',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#markup' => '<div data-recurly="month"></div>',
     '#weight' => -50,
   );
   $form['year'] = array(
-    '#type' => 'textfield',
     '#title' => t('YYYY'),
-    '#attributes' => array(
-      'data-recurly' => 'year',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    '#markup' => '<div data-recurly="year"></div>',
     '#weight' => -40,
   );
   $form['tax_code'] = array(
@@ -527,12 +516,11 @@ function _recurlyjs_coupon_valid_for_plan(Recurly_Coupon $recurly_coupon, $plan_
  */
 function _recurlyjs_form_attach_js(&$form) {
   $recurly_public_key = variable_get('recurly_public_key', '');
-
   // Add Recurly.js and the inline code to the page.
-  $form['#attached']['js'][] = 'https://js.recurly.com/v3/recurly.js';
+  $form['#attached']['js'][] = 'https://js.recurly.com/v4/recurly.js';
   $form['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
   $form['#attached']['js'][] = array(
-    'type' => 'inline',
-    'data' => "/* Configure recurly.js. */  recurly.configure('$recurly_public_key');",
+    'data' => array('public_key' => $recurly_public_key),
+    'type' => 'setting',
   );
 }

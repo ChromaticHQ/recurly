@@ -67,6 +67,31 @@ Drupal.recurly.recurlyJSFormError = function(err) {
   }
 };
 
+/**
+ * Configures form for recurly hosted fields.
+ */
+Drupal.behaviors.recurlyJSConfigureForm = {
+  attach: function (context, settings) {
+    recurly.configure({
+      publicKey: settings.public_key,
+      style: {
+        number: {
+          placeholder: 'Credit Card Number'
+        },
+        month: {
+          placeholder: 'Month (mm)'
+        },
+        year: {
+          placeholder: 'Year (yy)'
+        },
+        cvv: {
+          placeholder: 'Security Code',
+        }
+      }
+    });
+  }
+};
+
 // VAT is only needed for EU countries.
 (function () {
   var country = $('#country');

@@ -30,7 +30,7 @@ function recurly_settings_form($form, &$form_state) {
   $form['account']['recurly_public_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Public Key'),
-    '#description' => t('Enter this if needed for Recurly.js. Note that this version of the Recurly module only supports Recurly.js v3, which uses the "public key" and not the "transparent post key" used by Recurly.js v2.'),
+    '#description' => t('Enter this if needed for Recurly.js. Note that this version of the Recurly module only supports Recurly.js v4, which uses the "public key" and not the "transparent post key" used by Recurly.js v2.'),
     '#default_value' => variable_get('recurly_public_key', ''),
   );
   $form['account']['recurly_subdomain'] = array(
@@ -529,7 +529,8 @@ function theme_recurly_subscription_plans_form($variables) {
     $rows[] = array(
       array(
         'data' => t('No subscription plans found. You can start by creating one in <a href="!url">your Recurly account</a>.', array('!url' => variable_get('recurly_subdomain', '') ? recurly_hosted_url('plans') : 'http://app.recurly.com')),
-        'colspan' => 7),
+        'colspan' => 7,
+      ),
     );
   }
 
