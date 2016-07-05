@@ -3,6 +3,7 @@
 namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Render\HtmlResponse;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -177,7 +178,9 @@ class RecurlyInvoicesController extends ControllerBase {
       // $response->headers->set('Content-Transfer-Encoding', 'binary', TRUE);
       // $response->headers->set('Content-Length', filesize($pdf), TRUE);.
       print $pdf;
-      drupal_exit();
+
+      // Reply with the OK status code.
+      return new HtmlResponse();
     }
   }
 
