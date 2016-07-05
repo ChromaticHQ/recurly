@@ -413,7 +413,7 @@ class RecurlySettingsForm extends ConfigFormBase {
     $previous_values = $form_state->get(['pages_previous_values']) ? $form_state->get(['pages_previous_values']) : [];
     foreach ($previous_values as $variable_name => $previous_value) {
       if (!$form_state->getValue([$variable_name]) && $form_state->getValue([$variable_name]) !== $previous_value) {
-        menu_rebuild();
+        \Drupal::service('router.builder')->rebuild();
       }
     }
 
