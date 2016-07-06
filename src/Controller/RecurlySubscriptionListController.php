@@ -200,7 +200,7 @@ class RecurlySubscriptionListController extends ControllerBase {
         'external' => TRUE,
         'title' => $this->t('Cancel'),
         // Pass in the past_due flag to accurately calculate refunds.
-        'query' => in_array('past_due', $states) ? ['past_due' => '1'] : NULL,
+        'query' => in_array('past_due', $states) ? ['past_due' => '1'] : [],
       ];
     }
     elseif ($subscription->state === 'canceled') {
