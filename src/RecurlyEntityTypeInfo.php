@@ -33,7 +33,7 @@ class RecurlyEntityTypeInfo {
       $entity_type->setLinkTemplate('recurly-cancellatest', $entity_type->getLinkTemplate('canonical') . '/subscription/cancel');
       $entity_type->setLinkTemplate('recurly-cancel', $entity_type->getLinkTemplate('canonical') . '/subscription/id/{subscription_id}/cancel');
       $entity_type->setLinkTemplate('recurly-reactivatelatest', $entity_type->getLinkTemplate('canonical') . '/subscription/reactivate');
-      $entity_type->setLinkTemplate('recurly-reactivate', $entity_type->getLinkTemplate('canonical') . '/subscription/id/{subscription_id}/cancel');
+      $entity_type->setLinkTemplate('recurly-reactivate', $entity_type->getLinkTemplate('canonical') . '/subscription/id/{subscription_id}/reactivate');
       $entity_type->setLinkTemplate('recurly-invoices', $entity_type->getLinkTemplate('canonical') . '/subscription/invoices');
       $entity_type->setLinkTemplate('recurly-invoice', $entity_type->getLinkTemplate('canonical') . '/subscription/invoices/{invoice_number}');
       $entity_type->setLinkTemplate('recurly-invoicepdf', $entity_type->getLinkTemplate('canonical') . '/subscription/invoices/{invoice_number}/pdf');

@@ -152,7 +152,6 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
           [
             '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionCancelController::subscriptionCancel',
             '_title' => 'Cancel subscription',
-            'subscription_id' => 'latest',
           ],
           [
             '_entity_access' => "$entity_type_id.update",
@@ -198,7 +197,7 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
           $options
         );
 
-        $collection->add("entity.$entity_type_id.recurly_cancel", $route);
+        $collection->add("entity.$entity_type_id.recurly_reactivate", $route);
       }
 
       // Invoice routes.
