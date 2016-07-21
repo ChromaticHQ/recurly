@@ -45,6 +45,7 @@ function recurly_theme() {
       'message' => NULL,
       'subscription' => NULL,
       'account' => NULL,
+      'custom_properties' => [],
     ],
     'template' => 'recurly-subscription-summary',
   ];

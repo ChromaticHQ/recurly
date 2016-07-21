@@ -157,6 +157,8 @@ class RecurlySubscriptionListController extends ControllerBase {
         '#message' => $message,
         '#subscription' => $subscription,
         '#account' => $account,
+        // Add custom properties to each subscription via the alter hook below.
+        '#custom_properties' => [],
       ];
     }
 
@@ -165,6 +167,7 @@ class RecurlySubscriptionListController extends ControllerBase {
       '#access' => $subscription_list->count() > $per_page,
     ];
 
+    // Allow other modules to alter subscriptions.
     \Drupal::moduleHandler()->alter('recurly_subscription_list_page', $subscriptions);
 
     // If the user doesn't have any active subscriptions, redirect to signup.

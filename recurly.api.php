@@ -127,3 +127,38 @@ function hook_recurly_url_info($operation, $context) {
       return Url::fromRoute('recurly.redeem_coupon', ['entity' => $context['entity']->id()]);
   }
 }
+
+/**
+ * Alter subscriptions as they appear on the subscriptions page.
+ *
+ * Can be used for adding custom properties to subscriptions, for example.
+ *
+ * @param array $subscriptions
+ *   The list of subscriptions and their associated data.
+ *
+ * @see RecurlySubscriptionListController::subscriptionList()
+ */
+function hook_recurly_subscription_list_page_alter(&$subscriptions) {
+
+  // Fetch all subscription IDs.
+  $ids = Element::children($subscriptions['subscriptions']);
+
+  // Iterate through each to add custom properties.
+  foreach ($ids as $id) {
+    $details = &$subscriptions['subscriptions'][$id];
+
+    // Fetch the custom entity containing additional information.
+    $entities = \Drupal::entityQuery('node')
+        ->condition('type', 'recurly_custom_content_type')
+        ->condition('uid', \Drupal::currentUser()->id())
+        ->condition('field_subscription_id', $id)
+        ->execute();
+    $subscription = Node::load(array_values($entities)[0]);
+
+    // Add the name of the subscription to its properties.
+    $details['#custom_properties'][] = [
+      'label' => t('Name'),
+      'value' => Html::escape($subscription->getTitle()),
+    ];
+  }
+}

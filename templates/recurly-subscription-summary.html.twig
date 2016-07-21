@@ -27,6 +27,12 @@
         </th>
         <td>{{ end_date ?: current_period_ends_at }}</td>
       </tr>
+      {% for custom_property in custom_properties %}
+        <tr>
+          <th>{{ custom_property['label'] }}</th>
+          <td>{{ custom_property['value'] }}</td>
+        </tr>
+      {% endfor %}
     </table>
     <div class="line-items">
       <ul>
