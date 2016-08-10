@@ -191,7 +191,7 @@ function recurly_settings_form($form, &$form_state) {
     '#default_value' => $mapping['zip'],
   );
   // country_get_list() requires includes/locale.inc
-  module_load_include('inc', 'content', 'includes/locale');
+  require_once DRUPAL_ROOT . '/includes/locale.inc';
   $form['sync']['recurly_token_mapping']['country'] = array(
     '#title' => t('Country'),
     '#type' => 'select',

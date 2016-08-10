@@ -392,7 +392,7 @@ function _recurlyjs_append_billing_fields(&$form) {
     '#weight' => -90,
   );
   // country_get_list() requires includes/locale.inc.
-  module_load_include('inc', 'content', 'includes/locale');
+  require_once DRUPAL_ROOT . '/includes/locale.inc';
   $form['country'] = array(
     '#type' => 'select',
     '#title' => t('Country'),
