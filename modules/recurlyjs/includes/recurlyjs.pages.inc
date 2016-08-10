@@ -346,72 +346,88 @@ function _recurlyjs_append_billing_fields(&$form) {
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
     '#weight' => -140,
   );
-  $form['address1'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Address Line 1'),
-    '#attributes' => array(
-      'data-recurly' => 'address1',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -130,
-  );
-  $form['address2'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Address Line 2'),
-    '#attributes' => array(
-      'data-recurly' => 'address2',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -120,
-  );
-  $form['city'] = array(
-    '#type' => 'textfield',
-    '#title' => t('City'),
-    '#attributes' => array(
-      'data-recurly' => 'city',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -110,
-  );
-  $form['state'] = array(
-    '#type' => 'textfield',
-    '#title' => t('State'),
-    '#attributes' => array(
-      'data-recurly' => 'state',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -100,
-  );
-  $form['postal_code'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Postal Code'),
-    '#attributes' => array(
-      'data-recurly' => 'postal_code',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -90,
-  );
-  // country_get_list() requires includes/locale.inc.
-  require_once DRUPAL_ROOT . '/includes/locale.inc';
-  $form['country'] = array(
-    '#type' => 'select',
-    '#title' => t('Country'),
-    '#attributes' => array(
-      'data-recurly' => 'country',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -80,
-    '#options' => country_get_list(),
-  );
-  $form['vat_number'] = array(
-    '#type' => 'textfield',
-    '#title' => t('VAT Number'),
-    '#attributes' => array(
-      'data-recurly' => 'vat_number',
-    ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -70,
-  );
+
+  $address_requirement = variable_get('recurlyjs_address_requirement', 'full');
+  $hide_vat_number = variable_get('recurlyjs_hide_vat_number', 0);
+
+  if (in_array($address_requirement, array('zipstreet', 'full'))) {
+    $form['address1'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Address Line 1'),
+      '#attributes' => array(
+        'data-recurly' => 'address1',
+      ),
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+      '#weight' => -130,
+    );
+    $form['address2'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Address Line 2'),
+      '#attributes' => array(
+        'data-recurly' => 'address2',
+      ),
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+      '#weight' => -120,
+    );
+  }
+
+  if ($address_requirement == 'full') {
+    $form['city'] = array(
+      '#type' => 'textfield',
+      '#title' => t('City'),
+      '#attributes' => array(
+        'data-recurly' => 'city',
+      ),
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+      '#weight' => -110,
+    );
+    $form['state'] = array(
+      '#type' => 'textfield',
+      '#title' => t('State'),
+      '#attributes' => array(
+        'data-recurly' => 'state',
+      ),
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+      '#weight' => -100,
+    );
+    // country_get_list() requires includes/locale.inc.
+    require_once DRUPAL_ROOT . '/includes/locale.inc';
+    $form['country'] = array(
+      '#type' => 'select',
+      '#title' => t('Country'),
+      '#attributes' => array(
+        'data-recurly' => 'country',
+      ),
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+      '#weight' => -80,
+      '#options' => country_get_list(),
+    );
+  }
+
+  if (!$hide_vat_number) {
+    $form['vat_number'] = array(
+      '#type' => 'textfield',
+      '#title' => t('VAT Number'),
+      '#attributes' => array(
+        'data-recurly' => 'vat_number',
+      ),
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+      '#weight' => -70,
+    );
+  }
+
+  if ($address_requirement != 'none') {
+    $form['postal_code'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Postal Code'),
+      '#attributes' => array(
+        'data-recurly' => 'postal_code',
+      ),
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+      '#weight' => -90,
+    );
+  }
+
   $form['number'] = array(
     '#title' => t('Card Number'),
     '#markup' => '<div data-recurly="number"></div>',
