@@ -24,7 +24,7 @@ class RecurlyInvoicesController extends ControllerBase {
    *   Returns a render array for a list of invoices.
    */
   public function invoicesList(RouteMatchInterface $route_match) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
@@ -67,7 +67,7 @@ class RecurlyInvoicesController extends ControllerBase {
    *   Returns a render array for an invoice.
    */
   public function getInvoice(RouteMatchInterface $route_match, $invoice_number) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
@@ -136,7 +136,7 @@ class RecurlyInvoicesController extends ControllerBase {
    *   A Recurly invoice UUID.
    */
   public function getInvoicePdf(RouteMatchInterface $route_match, $invoice_number) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {

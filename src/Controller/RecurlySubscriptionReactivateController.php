@@ -48,7 +48,7 @@ class RecurlySubscriptionReactivateController extends ControllerBase {
    *   The UUID of the subscription to reactivate.
    */
   public function reactivateSubscription(RouteMatchInterface $route_match, $subscription_id = 'latest') {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {

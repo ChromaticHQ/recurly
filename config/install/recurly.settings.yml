@@ -13,3 +13,4 @@ recurly_listener_key: ''
 recurly_push_logging: false
 recurly_private_api_key: ''
 recurly_date_format: long
+recurly_entity_type: user

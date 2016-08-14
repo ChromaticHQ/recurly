@@ -146,3 +146,15 @@ function recurly_uninstall() {
 function recurly_update_8002() {
   \Drupal::service('module_installer')->install(['token']);
 }
+
+/**
+ * Adds default entity type configuration.
+ */
+function recurly_update_8001() {
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('recurly.settings');
+  if (!$config->get('recurly_entity_type')) {
+    $config->set('recurly_entity_type', 'user');
+    $config->save(TRUE);
+  }
+}

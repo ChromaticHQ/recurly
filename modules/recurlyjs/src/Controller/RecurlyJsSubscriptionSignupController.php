@@ -21,7 +21,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
    *   A Drupal render array.
    */
   public function subscribe(RouteMatchInterface $route_match) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $plan_code = $route_match->getParameter('plan_code');
     $currency = $route_match->getParameter('currency');

@@ -22,7 +22,7 @@ abstract class RecurlyAccess implements AccessInterface {
    */
   public function __construct(RouteMatchInterface $route_match) {
     $this->routeMatch = $route_match;
-    $this->entityType = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $this->entityType = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $this->subscriptionPlans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
     $this->recurlySubscriptionMax = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
   }

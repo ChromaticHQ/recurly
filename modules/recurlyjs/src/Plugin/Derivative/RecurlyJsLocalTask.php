@@ -56,7 +56,7 @@ class RecurlyJsLocalTask extends DeriverBase implements ContainerDeriverInterfac
     // (recurlyjs) and id (recurlyjs.entities). See recurlyjs.links.task.yml.
     $this->derivatives = array();
     // Get the entity type associated with recurly.
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     // Get all the plugins available to the entity (block, menu, user, etc.).
     $entity_manager_definitions = $this->entityManager->getDefinitions();
     // Pull our entity type.

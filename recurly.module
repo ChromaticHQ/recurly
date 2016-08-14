@@ -552,7 +552,7 @@ function recurly_url($operation, $context) {
  */
 function recurly_recurly_url_info($operation, $context) {
   // Only provide URLs for built-in page types.
-  $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+  $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   $context_entity_type = empty($context['entity_type']) ? NULL : $context['entity_type'];
   if (empty($recurly_entity_type) || $recurly_entity_type !== $context_entity_type) {
     return;

@@ -52,7 +52,7 @@ class RecurlySubscriptionListController extends ControllerBase {
    *   Recurly subscription details or a no-results message as a render array.
    */
   public function subscriptionList(RouteMatchInterface $route_match) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $subscriptions = [];
     // Initialize the Recurly client with the site-wide settings.

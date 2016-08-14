@@ -17,7 +17,7 @@ class RecurlyHostedRoutes {
    * be defined in YAML.
    */
   public function routes() {
-    $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     if ($entity_type && \Drupal::config('recurly.settings')->get('recurly_pages')) {
       $routes = [];
 

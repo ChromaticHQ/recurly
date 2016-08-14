@@ -31,7 +31,7 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
    *   subscription.
    */
   public function planSelect(RouteMatchInterface $route_match, $currency = NULL, $subscription_id = NULL) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $content = $entity ? $entity->label() : $this->t('No corresponding entity loaded!');

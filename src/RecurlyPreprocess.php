@@ -171,7 +171,7 @@ class RecurlyPreprocess {
    * Implements hook_preprocess_recurly_invoice().
    */
   public function preprocessRecurlyInvoice(array &$variables) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $invoice = $variables['invoice'];
     $invoice_account = $variables['invoice_account'];
     $entity = $variables['entity'];

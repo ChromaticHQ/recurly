@@ -12,7 +12,7 @@ use Drupal\Core\Url;
  * Implements hook_recurly_url_info().
  */
 function recurlyjs_recurly_url_info($operation, $context) {
-  $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+  $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   switch ($operation) {
     case 'update_billing':
       $entity_info = recurly_account_load(['account_code' => $context['account']->account_code], TRUE);
@@ -128,7 +128,7 @@ function recurlyjs_settings_form_submit(array &$form, FormStateInterface $form_s
  * Implements hook_entity_type_alter().
  */
 function recurlyjs_entity_type_alter(array &$entity_types) {
-  $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+  $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   $entity_type = $entity_types[$recurly_entity_type];
   // Set up our link templates to be used in our routes.
   // See alterRoutes in Drupal\recurlyjs\Routing\RecurlyJsRouteSubscriber.

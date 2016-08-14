@@ -21,7 +21,11 @@ class RecurlyEntityTypeInfo {
    * @see hook_entity_type_alter()
    */
   public function entityTypeAlter(array &$entity_types) {
-    $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    // Get the entity type we're using, or bail if it hasn't been set yet.
+    if (!$recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type')) {
+      return;
+    }
+
     $entity_type = $entity_types[$recurly_entity_type];
     // Set up our link templates to be used in our routes.
     // See alterRoutes in Drupal\recurly\Routing\RecurlyRouteSubscriber.
@@ -40,5 +44,4 @@ class RecurlyEntityTypeInfo {
       $entity_type->setLinkTemplate('recurly-coupon', $entity_type->getLinkTemplate('canonical') . '/subscription/redeem-coupon');
     }
   }
-
 }

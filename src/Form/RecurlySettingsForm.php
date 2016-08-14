@@ -126,7 +126,7 @@ class RecurlySettingsForm extends ConfigFormBase {
 
     // If any of the below options change we need to rebuild the menu system.
     // Keep a record of their current values.
-    $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type') ?: 'user';
+    $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
     $pages_previous_values = [
       'recurly_entity_type' => $recurly_entity_type,
       'recurly_bundle_' . $recurly_entity_type => \Drupal::config('recurly.settings')->get('recurly_bundle_' . $recurly_entity_type),
