@@ -26,7 +26,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
   // Reset the monthly limits upon account renewals.
   if ($notification->type === 'renewed_subscription_notification') {
     $account_code = $notification->account->account_code;
-    if ($local_account = recurly_account_load(['account_code' => $account_code), TRUE]) {
+    if ($local_account = recurly_account_load(['account_code' => $account_code], TRUE)) {
       // These notifications are SimpleXML objects rather than Recurly objects.
       $next_reset = new \DateTime($notification->subscription->current_period_ends_at[0]);
       $next_reset->setTimezone(new \DateTimeZone('UTC'));
