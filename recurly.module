@@ -376,7 +376,7 @@ function recurly_account_close($recurly_account, $cancelation_method = NULL) {
   if (empty($recurly_account->orphaned)) {
     try {
       // By default, closing an account will cancel all the subscriptions in
-      // that account. If refunding accounts upon cancelation, we must manually
+      // that account. If refunding accounts upon cancellation, we must manually
       // terminate each active subscription.
       if ($cancelation_method !== 'cancel') {
         $subscription_list = Recurly_SubscriptionList::getForAccount($recurly_account->account_code);

@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class RecurlyInvoicesController extends ControllerBase {
 
   /**
-   * Retreive all invoices for the specified entity.
+   * Retrieve all invoices for the specified entity.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   A RouteMatch object.
