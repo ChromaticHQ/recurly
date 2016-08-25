@@ -39,13 +39,13 @@ function recurly_settings_form($form, &$form_state) {
     '#description' => t("The subdomain of your account."),
     '#default_value' => variable_get('recurly_subdomain', ''),
   );
+  $currencies = array_keys(recurly_currency_list());
   $form['account']['recurly_default_currency'] = array(
-    '#type' => 'textfield',
+    '#type' => 'select',
     '#title' => t('Default currency'),
-    '#description' => t('Enter the 3-character currency code for the currency you would like to use by default. You can find a list of supported currencies in your <a href="!url">Recurly account currencies page</a>.', array('!url' => recurly_hosted_url('configuration/currencies'))),
+    '#description' => t('Select the 3-character currency code for the currency you would like to use by default.You can find a list of supported currencies in your <a href="!url">Recurly account currencies page</a>.', array('!url' => recurly_hosted_url('configuration/currencies'))),
     '#default_value' => variable_get('recurly_default_currency', 'USD'),
-    '#size' => 3,
-    '#maxlength' => 3,
+    '#options' => array_combine($currencies, $currencies),
   );
 
   // Add form elements to configure default push notification settings.
