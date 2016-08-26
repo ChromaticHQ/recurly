@@ -74,10 +74,10 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
     $form['#new_plan'] = $new_plan;
 
     if ($new_amount >= $previous_amount) {
-      $timeframe = \Drupal::config('recurly.settings')->get('recurly_subscription_upgrade_timeframe');
+      $timeframe = $this->config('recurly.settings')->get('recurly_subscription_upgrade_timeframe');
     }
     else {
-      $timeframe = \Drupal::config('recurly.settings')->get('recurly_subscription_downgrade_timeframe');
+      $timeframe = $this->config('recurly.settings')->get('recurly_subscription_downgrade_timeframe');
     }
     $form['timeframe'] = [
       '#type' => 'radios',

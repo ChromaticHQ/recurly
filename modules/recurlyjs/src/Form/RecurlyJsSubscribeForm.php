@@ -37,9 +37,9 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     $form['#entity_type'] = $entity_type;
     $form['#entity'] = $entity;
     $form['#plan_code'] = $plan_code;
-    $form['#currency'] = $currency ?: \Drupal::config('recurly.settings')->get('recurly_default_currency') ?: 'USD';
+    $form['#currency'] = $currency ?: $this->config('recurly.settings')->get('recurly_default_currency') ?: 'USD';
 
-    if (\Drupal::config('recurlyjs.settings')->get('recurlyjs_enable_coupons')) {
+    if ($this->config('recurlyjs.settings')->get('recurlyjs_enable_coupons')) {
       $form['coupon_code'] = [
         '#type' => 'textfield',
         '#title' => $this->t('Coupon Code'),

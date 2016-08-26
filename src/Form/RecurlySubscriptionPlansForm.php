@@ -2,7 +2,7 @@
 
 namespace Drupal\recurly\Form;
 
-use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\recurly\RecurlyFormatManager;
@@ -11,7 +11,7 @@ use Drupal\recurly\RecurlyUrlManager;
 /**
  * Recurly subscription plans form.
  */
-class RecurlySubscriptionPlansForm extends FormBase {
+class RecurlySubscriptionPlansForm extends ConfigFormBase {
 
   /**
    * The formatting service.
@@ -60,8 +60,14 @@ class RecurlySubscriptionPlansForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  protected function getEditableConfigNames() {
+    return ['recurly.settings'];
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
     // Table header definition.
     $header = [
       'status' => $this->t('Status'),
@@ -74,12 +80,12 @@ class RecurlySubscriptionPlansForm extends FormBase {
     ];
 
     // Pre-populate the table with existing plans and their weights/statuses.
-    $existing_plans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
+    $existing_plans = $this->config('recurly.settings')->get('recurly_subscription_plans') ?: [];
     $form['recurly_subscription_plans'] = [
       '#type' => 'table',
       '#header' => $header,
       '#empty' => $this->t('No subscription plans found. You can start by creating one in <a href=":url">your Recurly account</a>.', [
-        ':url' => \Drupal::config('recurly.settings')->get('recurly_subdomain') ?
+        ':url' => $this->config('recurly.settings')->get('recurly_subdomain') ?
         $this->recurlyUrlManager->hostedUrl('plans')->getUri() : 'https://app.recurly.com',
       ]),
       '#default_value' => $existing_plans,
@@ -255,7 +261,7 @@ class RecurlySubscriptionPlansForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Save plan weights and statuses to config.
     $recurly_subscription_plans = $form_state->getValue('recurly_subscription_plans');
-    \Drupal::configFactory()->getEditable('recurly.settings')->set('recurly_subscription_plans', $recurly_subscription_plans)->save();
+    $this->config('recurly.settings')->set('recurly_subscription_plans', $recurly_subscription_plans)->save();
     drupal_set_message($this->t('Status and order of subscription plans updated!'));
   }
 

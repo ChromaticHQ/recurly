@@ -50,7 +50,7 @@ class RecurlyRedeemCouponForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, RouteMatchInterface $route_match = NULL) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $form['#entity_type'] = $entity_type;
@@ -99,7 +99,7 @@ class RecurlyRedeemCouponForm extends FormBase {
       '#type' => 'select',
       '#title' => $this->t('Coupon currency'),
       '#options' => array_combine(array_keys(recurly_currency_list()), array_keys(recurly_currency_list())),
-      '#default_value' => \Drupal::config('recurly.settings')->get('recurly_default_currency'),
+      '#default_value' => $this->config('recurly.settings')->get('recurly_default_currency'),
       '#description' => $this->t('If your coupon specifies a currency, select it here. Not all coupons work in all currencies.'),
       '#access' => !$confirming_replacement_coupon,
     ];

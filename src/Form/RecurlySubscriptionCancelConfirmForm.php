@@ -78,7 +78,7 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
       $cancel_behavior = 'cancel';
     }
     else {
-      $cancel_behavior = \Drupal::config('recurly.settings')->get('recurly_subscription_cancel_behavior');
+      $cancel_behavior = $this->config('recurly.settings')->get('recurly_subscription_cancel_behavior');
     }
 
     $form['cancel'] = [

@@ -17,7 +17,7 @@ abstract class RecurlyJsFormBase extends FormBase {
     $form['#attached']['library'][] = 'recurlyjs/recurlyjs.recurlyjs';
     $form['#attached']['library'][] = 'recurlyjs/recurlyjs.element';
 
-    $form['#attached']['drupalSettings']['recurlyjs']['recurly_public_key'] = \Drupal::config('recurly.settings')->get('recurly_public_key') ?: '';
+    $form['#attached']['drupalSettings']['recurlyjs']['recurly_public_key'] = $this->config('recurly.settings')->get('recurly_public_key') ?: '';
     $form['#attached']['library'][] = 'recurlyjs/recurlyjs.configure';
     // @FIXME: Include inline call to configure RecurlyJS.
     // @see: https://github.com/CHROMATIC-LLC/recurly/blob/7.x-2.x/modules/recurlyjs/includes/recurlyjs.pages.inc#L510-L513
