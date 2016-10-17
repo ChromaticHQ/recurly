@@ -1024,7 +1024,7 @@ function recurly_subscription_redeem_coupon_validate($form, &$form_state) {
   }
 
   // Check that the coupon is available in the specified currency.
-  if ($form_state['coupon'] && $form_state['coupon']->discount_type !== 'percent') {
+  if ($form_state['coupon'] && !in_array($form_state['coupon']->discount_type, array('percent', 'free_trial'))) {
     if (!$form_state['coupon']->discount_in_cents->offsetExists($form_state['values']['coupon_currency'])) {
       form_set_error('coupon_currency', t('The coupon code you have entered is not valid in @currency currency.', array('@currency' => $form_state['values']['coupon_currency'])));
       return;
