@@ -187,7 +187,6 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
       $recurly_account->email = $entity->mail;
       $recurly_account->username = $entity->name;
     }
-    $recurly_account->create();
   }
 
   try {
@@ -198,9 +197,22 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
     $subscription->coupon_code = $coupon_code;
     $subscription->create();
   }
+  catch (Recurly_ValidationError $e) {
+    // There was an error validating information in the form. For example,
+    // credit card was declined. We don't need to log these in Drupal, you can
+    // find the errors logged within Recurly.
+    drupal_set_message(t('<strong>Unable to create subscription:</strong><br/>@error', array('@error' => $e->getMessage())), 'error');
+    $form_state['rebuild'] = TRUE;
+    return;
+  }
   catch (Recurly_Error $e) {
-    watchdog('recurlyjs', 'Unable to create subscription. Received the following error: @error', array('@error' => $e->getMessage()));
-    drupal_set_message(t('Unable to create subscription.'), 'error');
+    // Catch any non-validation errors. This will be things like unable to
+    // contact Recurly API, or lower level errors. Display a generic message to
+    // the user letting them know there was an error and then log the detailed
+    // version. There's probably nothing a user can do to correct these errors
+    // so we don't need to display the details.
+    watchdog('recurlyjs', 'Unable to create subscription: @error', array('@error' => $e->getMessage()));
+    drupal_set_message(t('An error occured while trying to create your subscription. Please contact a site administrator.'));
     $form_state['rebuild'] = TRUE;
     return;
   }
@@ -306,8 +318,22 @@ function recurlyjs_update_billing_submit($form, $form_state) {
       $billing_info->token_id = $recurly_token;
       $billing_info->update();
     }
+    catch (Recurly_ValidationError $e) {
+      // There was an error validating information in the form. For example,
+      // credit card was declined. Let the user know. These errors are logged in
+      // Recurly.
+      drupal_set_message(t('<strong>Unable to update account:</strong><br/>@error', array('@error' => $e->getMessage())), 'error');
+    }
     catch (Recurly_NotFoundError $e) {
       drupal_set_message(t('Could not find account or token is invalid or expired.'), 'error');
+      $form_state['#rebuild'] = TRUE;
+    }
+    catch (Recurly_Error $e) {
+      // Catch all other errors. Log the details, and display a message for the
+      // user.
+      watchdog('recurlyjs', 'Billing information update error: @error', array('@error' => $e->getMessage()));
+      drupal_set_message(t('An error occured while trying to update your account. Please contact a site administrator.'));
+      $form_state['#rebuild'] = TRUE;
     }
   }
 }
