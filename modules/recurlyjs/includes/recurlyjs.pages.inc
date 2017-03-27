@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Callbacks for the Recurly.js module.
@@ -100,15 +101,16 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
       }
     }
   }
-  // Although this menu callback contains little else besides the subscription
-  // form, it's a separate function because it's highly likely to need theming.
-  $form = drupal_get_form('recurlyjs_subscribe_form', $entity_type, $entity, $plan_code, $currency);
+
   try {
     $plan = Recurly_Plan::get($plan_code);
   }
   catch (Recurly_NotFoundError $e) {
     return MENU_NOT_FOUND;
   }
+  // Although this menu callback contains little else besides the subscription
+  // form, it's a separate function because it's highly likely to need theming.
+  $form = drupal_get_form('recurlyjs_subscribe_form', $entity_type, $entity, $plan_code, $plan, $currency);
   return theme('recurlyjs_subscribe_page', array('form' => $form));
 }
 
@@ -121,8 +123,15 @@ function recurlyjs_subscribe_page($entity_type, $entity, $plan_code, $currency =
  *   The entity who is subscribing.
  * @param string $plan_code
  *   The code of the plan to which the entity is subscribing.
+ * @param object $plan
+ *   The plan to which the entity is subscribing.
+ * @param string $currency
+ *   Optional currency to use for subscription form.
+ *
+ * @return array
+ *   A Form API array.
  */
-function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $plan_code, $currency = NULL) {
+function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $plan_code, $plan, $currency = NULL) {
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
     $form['error'] = array(
@@ -131,13 +140,76 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
     return $form;
   }
 
+  $currency = is_null($currency) ? variable_get('recurly_default_currency', 'USD') : $currency;
+
   $form['#entity_type'] = $entity_type;
   $form['#entity'] = $entity;
   $form['#plan_code'] = $plan_code;
-  $form['#currency'] = $currency ?: variable_get('recurly_default_currency', 'USD');
+  $form['#plan'] = $plan;
+  $form['#currency'] = $currency;
 
-  _recurlyjs_append_billing_fields($form);
-  _recurlyjs_form_attach_js($form);
+  $form['plan'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('recurlyjs-plan'),
+    ),
+  );
+
+  // Plan name, cost, and frequency.
+  foreach ($plan->unit_amount_in_cents as $unit_currency) {
+    if ($unit_currency->currencyCode === $currency) {
+      $unit_amount = recurly_format_currency($unit_currency->amount_in_cents, $unit_currency->currencyCode);
+      break;
+    }
+  }
+  $plan_name = check_plain($plan->__get('name'));
+  $frequency = '<span class="recurlyjs-element recurlyjs-plan-frequency">(' . recurly_format_price_interval($unit_amount, $plan->__get('plan_interval_length'), $plan->__get('plan_interval_unit'), TRUE) . ')</span>';
+  $form['plan']['plan_name'] = array(
+    '#markup' => '<div class="recurlyjs-element recurlyjs-plan-name">' . $plan_name . ' ' . $frequency . '</div>',
+  );
+
+  $form['pricing'] = array(
+    '#type' => '#container',
+    '#attributes' => array(
+      'class' => array('recurlyjs-pricing'),
+    ),
+  );
+  // For the recurly.Pricing() module, we need to make sure we include an input
+  // field with the plan name.
+  $form['pricing'] = array();
+  $form['pricing']['plan_code'] = array(
+    '#type' => 'hidden',
+    '#value' => $plan_code,
+    '#attributes' => array(
+      'data-recurly' => 'plan',
+    ),
+  );
+
+  // Display order summary.
+  // Setup fee. Hidden by default, populated by JS as needed.
+  $form['pricing']['plan_setup'] = array(
+    '#markup' => '<div class="recurlyjs-element recurlyjs-setup-fee recurlyjs-element__hidden">' . t('Setup fee:') . ' <span data-recurly="currency_symbol"></span><span data-recurly="setup_fee_now"></span></div>',
+  );
+
+  // Discount. Hidden by default, populated by JS as needed.
+  $form['pricing']['plan_discount'] = array(
+    '#markup' => '<div class="recurlyjs-element recurlyjs-discount recurlyjs-element__hidden">' . t('Discount:') . ' <span data-recurly="currency_symbol"></span><span data-recurly="discount_now"></span></div>',
+  );
+
+  // Sub total. Hidden by default, populated by JS as needed.
+  $form['pricing']['plan_subtotal'] = array(
+    '#markup' => '<div class="recurlyjs-element recurlyjs-subtotal recurlyjs-element recurlyjs-element__hidden">' . t('Subtotal:') . ' <span data-recurly="currency_symbol"></span><span data-recurly="subtotal_now"></span></div>',
+  );
+
+  // Taxes. Hidden by default, populated by JS as needed.
+  $form['pricing']['plan_tax'] = array(
+    '#markup' => '<div class="recurlyjs-element recurlyjs-tax recurlyjs-element recurlyjs-element__hidden">' . t('Taxes:') . ' <span data-recurly="currency_symbol"></span><span data-recurly="tax_now"></span></div>',
+  );
+
+  // Total cost.
+  $form['pricing']['plan_total'] = array(
+    '#markup' => '<div class="recurlyjs-element recurlyjs-total recurlyjs-element">' . t('Order total:') . ' <span data-recurly="currency_symbol"></span><span data-recurly="total_now"></span></div>',
+  );
 
   if (variable_get('recurlyjs_enable_coupons')) {
     $form['coupon_code'] = array(
@@ -145,11 +217,17 @@ function recurlyjs_subscribe_form($form, $form_state, $entity_type, $entity, $pl
       '#title' => t('Coupon Code'),
       '#description' => t('Recurly coupon code to be applied to subscription.'),
       '#element_validate' => array('_recurlyjs_element_validate_coupon_code'),
-      '#weight' => -250,
+      '#attributes' => array(
+        'data-recurly' => 'coupon',
+      ),
     );
   }
+
+  _recurlyjs_append_billing_fields($form);
+  _recurlyjs_form_attach_js($form);
+
   if (variable_get('recurlyjs_hide_vat_number')) {
-    $form['vat_number']['#access'] = FALSE;
+    $form['billing']['vat_number']['#access'] = FALSE;
   }
   $form['actions'] = array(
     '#type' => 'actions',
@@ -177,10 +255,8 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
 
   if (!$recurly_account) {
     $recurly_account = new Recurly_Account();
-
     $recurly_account->first_name = check_plain($form_state['values']['first_name']);
     $recurly_account->last_name = check_plain($form_state['values']['last_name']);
-
     if ($entity_type == 'user') {
       $recurly_account->email = $entity->mail;
       $recurly_account->username = $entity->name;
@@ -189,6 +265,10 @@ function recurlyjs_subscribe_form_submit($form, &$form_state) {
     // Account code is the only property required for Recurly account creation.
     // https://dev.recurly.com/docs/create-an-account.
     $recurly_account->account_code = $entity_type . '-' . $entity_id;
+
+    // Allow other modules the chance to alter the new Recurly Account object
+    // before it is saved.
+    drupal_alter('recurlyjs_account', $recurly_account, $entity, $plan_code);
   }
 
   $subscription = new Recurly_Subscription();
@@ -299,6 +379,8 @@ function recurlyjs_update_billing_form($form, $form_state, $entity_type, $entity
   _recurlyjs_append_billing_fields($form);
   _recurlyjs_form_attach_js($form);
 
+  $form['billing']['#title'] = t('New payment information');
+
   // Populate #default_value with existing billing info.
   $excluded_fields = array('month', 'year');
   foreach (element_children($form) as $form_element_name) {
@@ -362,142 +444,188 @@ function recurlyjs_update_billing_submit($form, $form_state) {
  * @param array &$form
  *   A Drupal form array.
  */
-function _recurlyjs_append_billing_fields(&$form) {
+function _recurlyjs_append_billing_fields(array &$form) {
   $form['#prefix'] = '<div class="recurly-form-wrapper">';
   $form['#suffix'] = '</div>';
-
+  $form['billing'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Payment information'),
+    '#attributes' => array(
+      'class' => array('recurlyjs-billing-info'),
+    ),
+  );
   // recurly-element.js adds errors here upon failed validation.
   $form['errors'] = array(
     '#markup' => '<div id="recurly-form-errors"></div>',
     '#weight' => -300,
   );
 
-  $form['first_name'] = array(
+  $form['billing']['name'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('recurlyjs-name-wrapper'),
+    ),
+  );
+  $form['billing']['name']['first_name'] = array(
     '#type' => 'textfield',
     '#title' => t('First Name'),
     '#attributes' => array(
       'data-recurly' => 'first_name',
     ),
-    '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -150,
+    '#prefix' => '<div class="recurlyjs-form-item__first_name">',
+    '#suffix' => '</div>',
   );
-  $form['last_name'] = array(
+  $form['billing']['name']['last_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Last Name'),
     '#attributes' => array(
       'data-recurly' => 'last_name',
     ),
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
-    '#weight' => -140,
+    '#prefix' => '<div class="recurlyjs-form-item__last_name">',
+    '#suffix' => '</div>',
+  );
+  $form['billing']['cc_info'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('recurlyjs-cc-info'),
+    ),
+  );
+  // Credit card fields are represented as <divs> in the DOM and Recurly.JS will
+  // dynamically replace them with an input field inside of an iFrame. In order
+  // to ensure these fields never contain data in Drupal's Form API we just add
+  // them as static markup.
+  $form['billing']['cc_info']['number'] = array(
+    '#title' => t('Card Number'),
+    '#markup' => '<label for="number">' . t('Card Number') . '</label><div data-recurly="number"></div>',
+    '#prefix' => '<div class="form-item recurlyjs-form-item__number">',
+    '#suffix' => '<span class="recurlyjs-icon-card recurlyjs-icon-card__inline recurlyjs-icon-card__unknown"></span></div>',
+  );
+  $form['billing']['cc_info']['cvv'] = array(
+    '#title' => t('CVV'),
+    '#markup' => '<label for="cvv">' . t('CVV') . '</label><div data-recurly="cvv"></div>',
+    '#prefix' => '<div class="form-item recurlyjs-form-item__cvv">',
+    '#suffix' => '</div>',
+  );
+  $form['billing']['cc_info']['month'] = array(
+    '#title' => t('Month'),
+    '#markup' => '<label for="month">' . t('Month') . '</label><div data-recurly="month"></div>',
+    '#prefix' => '<div class="form-item recurlyjs-form-item__month">',
+    '#suffix' => '</div>',
+  );
+  $form['billing']['cc_info']['year'] = array(
+    '#title' => t('Year'),
+    '#markup' => '<label for="year">' . t('Year') . '</label><div data-recurly="year"></div>',
+    '#prefix' => '<div class="form-item recurlyjs-form-item__year">',
+    '#suffix' => '</div>',
   );
 
   $address_requirement = variable_get('recurlyjs_address_requirement', 'full');
   $hide_vat_number = variable_get('recurlyjs_hide_vat_number', 0);
 
   if (in_array($address_requirement, array('zipstreet', 'full'))) {
-    $form['address1'] = array(
+    $form['billing']['address1'] = array(
       '#type' => 'textfield',
       '#title' => t('Address Line 1'),
       '#attributes' => array(
         'data-recurly' => 'address1',
       ),
+      '#prefix' => '<div class="recurlyjs-form-item__address1">',
+      '#suffix' => '</div>',
       '#after_build' => array('_recurlyjs_form_remove_element_name'),
-      '#weight' => -130,
     );
-    $form['address2'] = array(
+    $form['billing']['address2'] = array(
       '#type' => 'textfield',
       '#title' => t('Address Line 2'),
       '#attributes' => array(
         'data-recurly' => 'address2',
       ),
+      '#prefix' => '<div class="recurlyjs-form-item__address2">',
+      '#suffix' => '</div>',
       '#after_build' => array('_recurlyjs_form_remove_element_name'),
-      '#weight' => -120,
     );
   }
 
+  $form['billing']['city_state_postal'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('recurlyjs-city-state-postal-wrapper'),
+    ),
+  );
+
   if ($address_requirement == 'full') {
-    $form['city'] = array(
+    $form['billing']['city_state_postal']['city'] = array(
       '#type' => 'textfield',
       '#title' => t('City'),
       '#attributes' => array(
         'data-recurly' => 'city',
       ),
+      '#prefix' => '<div class="recurlyjs-form-item__city">',
+      '#suffix' => '</div>',
       '#after_build' => array('_recurlyjs_form_remove_element_name'),
-      '#weight' => -110,
     );
-    $form['state'] = array(
+    $form['billing']['city_state_postal']['state'] = array(
       '#type' => 'textfield',
       '#title' => t('State'),
       '#attributes' => array(
         'data-recurly' => 'state',
       ),
+      '#prefix' => '<div class="recurlyjs-form-item__state">',
+      '#suffix' => '</div>',
       '#after_build' => array('_recurlyjs_form_remove_element_name'),
-      '#weight' => -100,
-    );
-    // country_get_list() requires includes/locale.inc.
-    require_once DRUPAL_ROOT . '/includes/locale.inc';
-    $form['country'] = array(
-      '#type' => 'select',
-      '#title' => t('Country'),
-      '#attributes' => array(
-        'data-recurly' => 'country',
-      ),
-      '#after_build' => array('_recurlyjs_form_remove_element_name'),
-      '#weight' => -80,
-      '#options' => country_get_list(),
-    );
-  }
-
-  if (!$hide_vat_number) {
-    $form['vat_number'] = array(
-      '#type' => 'textfield',
-      '#title' => t('VAT Number'),
-      '#attributes' => array(
-        'data-recurly' => 'vat_number',
-      ),
-      '#after_build' => array('_recurlyjs_form_remove_element_name'),
-      '#weight' => -70,
     );
   }
 
   if ($address_requirement != 'none') {
-    $form['postal_code'] = array(
+    $form['billing']['city_state_postal']['postal_code'] = array(
       '#type' => 'textfield',
       '#title' => t('Postal Code'),
       '#attributes' => array(
         'data-recurly' => 'postal_code',
       ),
+      '#prefix' => '<div class="recurlyjs-form-item__postal_code">',
+      '#suffix' => '</div>',
       '#after_build' => array('_recurlyjs_form_remove_element_name'),
-      '#weight' => -90,
     );
   }
 
-  $form['number'] = array(
-    '#title' => t('Card Number'),
-    '#markup' => '<div data-recurly="number"></div>',
-    '#weight' => -60,
-  );
-  $form['cvv'] = array(
-    '#title' => t('CVV'),
-    '#markup' => '<div data-recurly="cvv"></div>',
-    '#weight' => -55,
-  );
-  $form['month'] = array(
-    '#title' => t('MM'),
-    '#markup' => '<div data-recurly="month"></div>',
-    '#weight' => -50,
-  );
-  $form['year'] = array(
-    '#title' => t('YYYY'),
-    '#markup' => '<div data-recurly="year"></div>',
-    '#weight' => -40,
-  );
-  $form['tax_code'] = array(
+  if ($address_requirement == 'full') {
+    // country_get_list() requires includes/locale.inc.
+    require_once DRUPAL_ROOT . '/includes/locale.inc';
+    $form['billing']['country'] = array(
+      '#type' => 'select',
+      '#title' => t('Country'),
+      '#attributes' => array(
+        'data-recurly' => 'country',
+      ),
+      '#prefix' => '<div class="recurlyjs-form-item__country">',
+      '#suffix' => '</div>',
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+      '#options' => country_get_list(),
+    );
+  }
+
+  if (!$hide_vat_number) {
+    $form['billing']['vat_number'] = array(
+      '#type' => 'textfield',
+      '#title' => t('VAT Number'),
+      '#attributes' => array(
+        'data-recurly' => 'vat_number',
+      ),
+      '#prefix' => '<div class="recurlyjs-form-item__vat_number">',
+      '#suffix' => '</div>',
+      '#after_build' => array('_recurlyjs_form_remove_element_name'),
+    );
+  }
+
+  $form['billing']['tax_code'] = array(
     '#type' => 'hidden',
     '#title' => t('digital'),
     '#attributes' => array(
       'data-recurly' => 'tax_code',
     ),
+    '#prefix' => '<div class="recurlyjs-form-item__tax_code">',
+    '#suffix' => '</div>',
     '#after_build' => array('_recurlyjs_form_remove_element_name'),
   );
   $form['recurly-token'] = array(
@@ -574,10 +702,10 @@ function _recurlyjs_coupon_valid_for_plan(Recurly_Coupon $recurly_coupon, $plan_
  * @param array &$form
  *   A Drupal form array.
  */
-function _recurlyjs_form_attach_js(&$form) {
+function _recurlyjs_form_attach_js(array &$form) {
   $recurly_public_key = variable_get('recurly_public_key', '');
   // Add Recurly.js and the inline code to the page.
-  $form['#attached']['js'][] = 'https://js.recurly.com/v4/recurly.js';
+  $form['#attached']['js']['https://js.recurly.com/v4/recurly.js'] = array('type' => 'external');
   $form['#attached']['js'][] = drupal_get_path('module', 'recurlyjs') . '/recurly-element.js';
   $form['#attached']['js'][] = array(
     'data' => array('public_key' => $recurly_public_key),
