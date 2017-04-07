@@ -244,7 +244,7 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
  */
 function recurly_account_load($conditions = [], $local = FALSE) {
   // Create a base select query object.
-  $query = db_select('recurly_account', 'ra')->fields('ra');
+  $query = \Drupal::database()->select('recurly_account', 'ra')->fields('ra');
 
   // Add conditions to it based on the passed array.
   foreach ($conditions as $key => $value) {
@@ -359,7 +359,7 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $expor
 
   // Execute a merge query that will either insert a new record or update an
   // existing record accordingly.
-  return db_merge('recurly_account')
+  return \Drupal::database()->merge('recurly_account')
     ->key(['account_code' => $recurly_account->account_code])
     ->fields($fields)
     ->execute();
@@ -416,7 +416,7 @@ function recurly_account_close($recurly_account, $cancelation_method = NULL) {
  */
 function recurly_account_delete($recurly_account, $cancelation_method = NULL) {
   recurly_account_close($recurly_account, $cancelation_method);
-  db_delete('recurly_account')
+  \Drupal::database()->delete('recurly_account')
     ->condition('account_code', $recurly_account->account_code)
     ->execute();
 }
