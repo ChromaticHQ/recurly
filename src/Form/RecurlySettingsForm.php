@@ -194,7 +194,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#required' => TRUE,
       '#size' => 32,
       // @FIXME
-      // '#field_prefix' => url('recurly/listener/', array('absolute' => TRUE)),
+      // '#field_prefix' => url('recurly/listener/', ['absolute' => TRUE]),
     ];
 
     $form['push']['recurly_push_logging'] = [

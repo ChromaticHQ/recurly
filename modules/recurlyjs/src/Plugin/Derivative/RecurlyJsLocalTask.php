@@ -73,7 +73,7 @@ class RecurlyJsLocalTask extends DeriverBase implements ContainerDeriverInterfac
     // $base_plugin_definition contains our base class
     // (\Drupal\Core\Menu\LocalTaskDefault), the deriver class (this), provider
     // (recurlyjs) and id (recurlyjs.entities). See recurlyjs.links.task.yml.
-    $this->derivatives = array();
+    $this->derivatives = [];
     // Get the entity type associated with recurly.
     $entity_type_id = $this->recurlySettings->get('recurly_entity_type');
     // Get all the plugins available to the entity (block, menu, user, etc.).
@@ -84,12 +84,12 @@ class RecurlyJsLocalTask extends DeriverBase implements ContainerDeriverInterfac
     $has_canonical_path = $entity_type->hasLinkTemplate('recurly-subscriptionlist');
     // If we have the canonical path for this entity type, add tabs.
     if ($has_canonical_path) {
-      $this->derivatives["$entity_type_id.recurlyjs_billing_tab"] = array(
+      $this->derivatives["$entity_type_id.recurlyjs_billing_tab"] = [
         'route_name' => "entity.$entity_type_id.recurlyjs_billing",
         'title' => $this->t('Update billing information'),
         'parent_id' => "recurly.entities:$entity_type_id.recurly_tab",
         'weight' => 100,
-      );
+      ];
     }
     // Add the tabs to $base_plugin_definition.
     foreach ($this->derivatives as &$entry) {

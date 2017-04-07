@@ -69,7 +69,7 @@ class RecurlyLocalTask extends DeriverBase implements ContainerDeriverInterface 
     // $base_plugin_definition contains our base class
     // (\Drupal\Core\Menu\LocalTaskDefault), the deriver class (this),
     // provider (recurly) and id (recurly.entities). See recurly.links.task.yml.
-    $this->derivatives = array();
+    $this->derivatives = [];
     // Get the entity type associated with recurly.
     $entity_type_id = $this->config->get('recurly.settings')->get('recurly_entity_type');
     // Get all the plugins available to the entity (block, menu, user, etc.).
@@ -80,48 +80,48 @@ class RecurlyLocalTask extends DeriverBase implements ContainerDeriverInterface 
     $has_canonical_path = $entity_type->hasLinkTemplate('recurly-subscriptionlist');
     // If we have the canonical path for this entity type, add tabs.
     if ($has_canonical_path) {
-      $this->derivatives["$entity_type_id.recurly_tab"] = array(
+      $this->derivatives["$entity_type_id.recurly_tab"] = [
         'route_name' => "entity.$entity_type_id.recurly_subscriptionlist",
         'title' => $this->t('Subscription'),
         'base_route' => "entity.$entity_type_id.canonical",
         'weight' => 100,
-      );
-      $this->derivatives["$entity_type_id.recurly_signup_tab"] = array(
+      ];
+      $this->derivatives["$entity_type_id.recurly_signup_tab"] = [
         'route_name' => "entity.$entity_type_id.recurly_signup",
         'title' => $this->t('Signup'),
         'parent_id' => "recurly.entities:$entity_type_id.recurly_tab",
         'weight' => 50,
-      );
-      $this->derivatives["$entity_type_id.recurly_change_tab"] = array(
+      ];
+      $this->derivatives["$entity_type_id.recurly_change_tab"] = [
         'route_name' => "entity.$entity_type_id.recurly_change",
         'weight' => 200,
         'title' => $this->t('Change plan'),
         'parent_id' => "recurly.entities:$entity_type_id.recurly_tab",
-      );
-      $this->derivatives["$entity_type_id.invoices_tab"] = array(
+      ];
+      $this->derivatives["$entity_type_id.invoices_tab"] = [
         'route_name' => "entity.$entity_type_id.recurly_invoices",
         'title' => $this->t('Invoices'),
         'parent_id' => "recurly.entities:$entity_type_id.recurly_tab",
         'weight' => 300,
-      );
-      $this->derivatives["$entity_type_id.coupon_tab"] = array(
+      ];
+      $this->derivatives["$entity_type_id.coupon_tab"] = [
         'route_name' => "entity.$entity_type_id.recurly_coupon",
         'title' => $this->t('Redeem Coupon'),
         'parent_id' => "recurly.entities:$entity_type_id.recurly_tab",
         'weight' => 400,
-      );
-      $this->derivatives["$entity_type_id.cancel_tab"] = array(
+      ];
+      $this->derivatives["$entity_type_id.cancel_tab"] = [
         'route_name' => "entity.$entity_type_id.recurly_cancellatest",
         'title' => $this->t('Cancel'),
         'parent_id' => "recurly.entities:$entity_type_id.recurly_tab",
         'weight' => 500,
-      );
-      $this->derivatives["$entity_type_id.reactivate_tab"] = array(
+      ];
+      $this->derivatives["$entity_type_id.reactivate_tab"] = [
         'route_name' => "entity.$entity_type_id.recurly_reactivatelatest",
         'title' => $this->t('Reactivate'),
         'parent_id' => "recurly.entities:$entity_type_id.recurly_tab",
         'weight' => 500,
-      );
+      ];
     }
     // Add the tabs to $base_plugin_definition.
     foreach ($this->derivatives as &$entry) {

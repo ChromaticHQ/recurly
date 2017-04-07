@@ -228,12 +228,12 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
       // TableDrag: Weight column element.
       $row['weight'] = [
         '#type' => 'weight',
-        '#title' => t('Weight for @title', array('@title' => $plan->name)),
+        '#title' => t('Weight for @title', ['@title' => $plan->name]),
         '#title_display' => 'invisible',
         '#size' => 1,
         '#default_value' => $plan_weight,
         // Classify the weight element for #tabledrag.
-        '#attributes' => array('class' => array('plan-weight')),
+        '#attributes' => ['class' => ['plan-weight']],
       ];
 
       // Define and instantiate operations for each row.
