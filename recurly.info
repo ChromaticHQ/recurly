@@ -3,6 +3,7 @@ description = Provides API integration with Recurly using their PHP client libra
 dependencies[] = libraries
 core = 7.x
 package = Recurly
+configure= admin/config/services/recurly
 
 files[] = views/recurly_account_code_handler.inc
 files[] = views/recurly_entity_owner_handler.inc
