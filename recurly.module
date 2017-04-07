@@ -960,7 +960,12 @@ function recurly_subscription_page_access($entity_type, $entity, $operation) {
  */
 function _recurly_user_access($op, $account) {
   global $user;
-  return $user->uid && $user->uid == $account->uid;
+  if ($user->uid == 1 || user_access('manage recurly subscription') || $user->uid == $account->uid) {
+    return TRUE;
+  }
+  else {
+   return FALSE;
+  }
 }
 
 /**
