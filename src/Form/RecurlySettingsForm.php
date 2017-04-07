@@ -5,11 +5,106 @@ namespace Drupal\recurly\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Locale\CountryManagerInterface;
+use Drupal\Core\Routing\RouteBuilderInterface;
+use Drupal\recurly\RecurlyUrlManager;
+use Drupal\recurly\RecurlyTokenManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Recurly configuration settings form.
  */
 class RecurlySettingsForm extends ConfigFormBase {
+
+  /**
+   * The Recurly URL manager service.
+   *
+   * @var \Drupal\recurly\RecurlyUrlManager
+   */
+  protected $recurlyUrlManager;
+
+  /**
+   * The Recurly token manager service.
+   *
+   * @var \Drupal\recurly\RecurlyTokenManager
+   */
+  protected $recurlyTokenManager;
+
+  /**
+   * The entity type bundle info service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The country manager service.
+   *
+   * @var \Drupal\Core\Locale\CountryManagerInterface
+   */
+  protected $countryManager;
+
+  /**
+   * The router builder service.
+   *
+   * @var \Drupal\Core\Routing\RouteBuilderInterface
+   */
+  protected $routeBuilder;
+
+  /**
+   * Creates a Recurly settings form.
+   *
+   * @param \Drupal\recurly\RecurlyUrlManager $recurly_url_manager
+   *   The Recurly URL manager service.
+   * @param \Drupal\recurly\RecurlyTokenManager $recurly_token_manager
+   *   The Recurly token manager service.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_bundle_info
+   *   The entity type bundle info service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   * @param \Drupal\Core\Locale\CountryManagerInterface $country_manager
+   *   The country manager service.
+   * @param \Drupal\Core\Routing\RouteBuilderInterface $route_builder
+   *   The router builder service.
+   */
+  public function __construct(
+    RecurlyUrlManager $recurly_url_manager,
+    RecurlyTokenManager $recurly_token_manager,
+    EntityTypeBundleInfoInterface $entity_bundle_info,
+    EntityTypeManagerInterface $entity_type_manager,
+    CountryManagerInterface $country_manager,
+    RouteBuilderInterface $route_builder
+    ) {
+    $this->recurlyUrlManager = $recurly_url_manager;
+    $this->recurlyTokenManager = $recurly_token_manager;
+    $this->entityTypeBundleInfo = $entity_bundle_info;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->countryManager = $country_manager;
+    $this->routeBuilder = $route_builde;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('recurly.url_manager'),
+      $container->get('recurly.token_manager'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('entity_type.manager'),
+      $container->get('country_manager'),
+      $container->get('router.builder')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -63,12 +158,11 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#description' => $this->t("The subdomain of your account."),
       '#default_value' => $recurly_subdomain,
     ];
-    $recurly_url_manager = \Drupal::service('recurly.url_manager');
     // If subdomain isn't empty, then set currency suggestion and link,
     // otherwise leave blank.
     $currency_suggestion = !empty($recurly_subdomain) ? t('@spaceYou can find a list of supported currencies in your <a href=":url">Recurly account currencies page</a>.', [
       '@space' => ' ',
-      ':url' => $recurly_url_manager->hostedUrl('configuration/currencies')->getUri(),
+      ':url' => $this->recurlyUrlManager->hostedUrl('configuration/currencies')->getUri(),
     ]) : '';
     $currencies = array_keys(recurly_currency_list());
     $form['account']['recurly_default_currency'] = [
@@ -110,10 +204,10 @@ class RecurlySettingsForm extends ConfigFormBase {
     ];
 
     // Get a list of entity types and their bundles.
-    $entity_types = \Drupal::entityManager()->getAllBundleInfo();
+    $entity_types = $this->entityTypeBundleInfo->getAllBundleInfo();
     $entity_options = [];
     foreach ($entity_types as $entity_name => $bundles) {
-      $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_name);
+      $entity_type = $this->entityTypeManager->getDefinition($entity_name);
       $entity_options[$entity_name] = $entity_type->getLabel();
       $first_bundle_name = key($bundles);
       // Generate a list of bundles only if this entity type has them.
@@ -167,8 +261,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       }
     }
 
-    $recurly_token_manager = \Drupal::service('recurly.token_manager');
-    $mapping = $recurly_token_manager->tokenMapping();
+    $mapping = $this->recurlyTokenManager->tokenMapping();
     $form['sync']['recurly_token_mapping'] = [
       '#title' => $this->t('Token mappings'),
       '#type' => 'details',
@@ -232,12 +325,11 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#default_value' => $mapping['zip'],
     ];
-    $countries = \Drupal::service('country_manager')->getList();
     $form['sync']['recurly_token_mapping']['country'] = [
       '#title' => $this->t('Country'),
       '#type' => 'select',
       '#default_value' => $mapping['country'],
-      '#options' => $countries,
+      '#options' => $this->countryManager->getList(),
     ];
     $form['sync']['recurly_token_mapping']['phone'] = [
       '#title' => $this->t('Phone number'),
@@ -413,7 +505,7 @@ class RecurlySettingsForm extends ConfigFormBase {
     $previous_values = $form_state->get(['pages_previous_values']) ? $form_state->get(['pages_previous_values']) : [];
     foreach ($previous_values as $variable_name => $previous_value) {
       if (!$form_state->getValue([$variable_name]) && $form_state->getValue([$variable_name]) !== $previous_value) {
-        \Drupal::service('router.builder')->rebuild();
+        $this->routeBuilder->rebuild();
       }
     }
 

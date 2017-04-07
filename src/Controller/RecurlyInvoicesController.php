@@ -5,6 +5,8 @@ namespace Drupal\recurly\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\HtmlResponse;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\recurly\RecurlyPagerManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -12,6 +14,32 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Returns responses for Recurly Subscription List.
  */
 class RecurlyInvoicesController extends ControllerBase {
+
+  /**
+   * The Recurly page manager service.
+   *
+   * @var \Drupal\recurly\RecurlyPagerManager
+   */
+  protected $recurlyPageManager;
+
+  /**
+   * Creates a Recurly Invoice Controller.
+   *
+   * @param \Drupal\recurly\RecurlyPagerManager $recurly_page_manager
+   *   The Recurly page manager service.
+   */
+  public function __construct(RecurlyPagerManager $recurly_page_manager) {
+    $this->recurlyPageManager = $recurly_page_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('recurly.pager_manager')
+    );
+  }
 
   /**
    * Retrieve all invoices for the specified entity.
@@ -24,7 +52,7 @@ class RecurlyInvoicesController extends ControllerBase {
    *   Returns a render array for a list of invoices.
    */
   public function invoicesList(RouteMatchInterface $route_match) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
@@ -36,8 +64,7 @@ class RecurlyInvoicesController extends ControllerBase {
 
     $per_page = 20;
     $invoice_list = \Recurly_InvoiceList::getForAccount($account->account_code, ['per_page' => $per_page]);
-    $recurly_pager_manager = \Drupal::service('recurly.pager_manager');
-    $invoices = $recurly_pager_manager->pagerResults($invoice_list, $per_page);
+    $invoices = $this->recurlyPageManager->pagerResults($invoice_list, $per_page);
 
     return [
       '#theme' => 'recurly_invoice_list',
@@ -67,7 +94,7 @@ class RecurlyInvoicesController extends ControllerBase {
    *   Returns a render array for an invoice.
    */
   public function getInvoice(RouteMatchInterface $route_match, $invoice_number) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {
@@ -136,7 +163,7 @@ class RecurlyInvoicesController extends ControllerBase {
    *   A Recurly invoice UUID.
    */
   public function getInvoicePdf(RouteMatchInterface $route_match, $invoice_number) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     // Initialize the Recurly client with the site-wide settings.
     if (!recurly_client_initialize()) {

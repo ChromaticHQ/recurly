@@ -15,7 +15,7 @@ class RecurlyHostedAccountRedirectController extends ControllerBase {
   /**
    * Redirect to hosted pages.
    *
-   * @param EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity associated with Recurly subscriptions; most typically a user.
    */
   public function redirectToAccountManagement(EntityInterface $entity) {

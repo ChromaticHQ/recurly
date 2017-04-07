@@ -25,7 +25,7 @@ class RecurlySubscriptionCancelController extends ControllerBase {
    *   Returns \Drupal\Core\Form\FormBuilderInterface or a string.
    */
   public function subscriptionCancel(RouteMatchInterface $route_match, $subscription_id) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
 
     // Initialize the Recurly client with the site-wide settings.
@@ -53,7 +53,7 @@ class RecurlySubscriptionCancelController extends ControllerBase {
       }
     }
 
-    return \Drupal::formBuilder()->getForm('Drupal\recurly\Form\RecurlySubscriptionCancelConfirmForm', $entity_type, $entity, $subscription);
+    return $this->formBuilder()->getForm('Drupal\recurly\Form\RecurlySubscriptionCancelConfirmForm', $entity_type, $entity, $subscription);
   }
 
 }

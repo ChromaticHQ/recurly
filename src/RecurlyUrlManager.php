@@ -2,12 +2,30 @@
 
 namespace Drupal\recurly;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Url;
 
 /**
  * RecurlyUrlManager.
  */
 class RecurlyUrlManager {
+
+  /**
+   * The Recurly settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $recurlySettings;
+
+  /**
+   * Constructs the Recurly URL manager.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config service.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory) {
+    $this->recurlySettings = $config_factory->get('recurly.settings');
+  }
 
   /**
    * Generate the subdomain to use for the current account.
@@ -22,7 +40,7 @@ class RecurlyUrlManager {
    */
   public function hostedUrl($path = '', $subdomain = NULL) {
     if (!$subdomain) {
-      $subdomain = \Drupal::config('recurly.settings')->get('recurly_subdomain');
+      $subdomain = $this->recurlySettings->get('recurly_subdomain');
     }
 
     return Url::fromUri('https://' . $subdomain . '.recurly.com/' . $path);

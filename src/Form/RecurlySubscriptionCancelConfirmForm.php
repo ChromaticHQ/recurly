@@ -70,7 +70,7 @@ class RecurlySubscriptionCancelConfirmForm extends FormBase {
 
     parse_str($this->getRequest()->getQueryString(), $query_array);
     $past_due = isset($query_array['past_due']) && $query_array['past_due'] === '1';
-    $admin_access = \Drupal::currentUser()->hasPermission('administer recurly');
+    $admin_access = $this->currentUser()->hasPermission('administer recurly');
     $in_trial = recurly_subscription_in_trial($subscription);
 
     // If in a trial, only cancel the account instead of terminating.

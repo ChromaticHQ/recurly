@@ -2,12 +2,41 @@
 
 namespace Drupal\recurly_hosted\Routing;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\Route;
 
 /**
  * Defines dynamic routes.
  */
-class RecurlyHostedRoutes {
+class RecurlyHostedRoutes implements ContainerInjectionInterface {
+
+  /**
+   * The Recurly settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $recurlySettings;
+
+  /**
+   * Constructs a new Recurly hosted routes route subscriber.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config service.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory) {
+    $this->recurlySettings = $config_factory->get('recurly.settings');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory')
+    );
+  }
 
   /**
    * Define custom routes.
@@ -17,8 +46,8 @@ class RecurlyHostedRoutes {
    * be defined in YAML.
    */
   public function routes() {
-    $entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
-    if ($entity_type && \Drupal::config('recurly.settings')->get('recurly_pages')) {
+    $entity_type = $this->recurlySettings->get('recurly_entity_type');
+    if ($entity_type && $this->recurlySettings->get('recurly_pages')) {
       $routes = [];
 
       $routes['recurly_hosted.update_billing'] = new Route(

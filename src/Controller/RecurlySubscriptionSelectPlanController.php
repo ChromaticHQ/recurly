@@ -31,7 +31,7 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
    *   subscription.
    */
   public function planSelect(RouteMatchInterface $route_match, $currency = NULL, $subscription_id = NULL) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $content = $entity ? $entity->label() : $this->t('No corresponding entity loaded!');
@@ -66,7 +66,7 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
     // If signing up to a new subscription, ensure the user doesn't have a plan.
     else {
       $subscriptions = [];
-      $currency = isset($currency) ? $currency : \Drupal::config('recurly.settings')->get('recurly_default_currency');
+      $currency = isset($currency) ? $currency : $this->config('recurly.settings')->get('recurly_default_currency');
       $mode = self::SELECT_PLAN_MODE_SIGNUP;
       $entity_type = $entity->getEntityType()->getLowercaseLabel();
       $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
@@ -82,7 +82,7 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
     }
 
     $all_plans = recurly_subscription_plans();
-    $enabled_plan_keys = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
+    $enabled_plan_keys = $this->config('recurly.settings')->get('recurly_subscription_plans') ?: [];
     $enabled_plans = [];
     foreach ($enabled_plan_keys as $plan_code => $enabled) {
       foreach ($all_plans as $plan) {

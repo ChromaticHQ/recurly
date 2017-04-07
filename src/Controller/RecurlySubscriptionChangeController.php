@@ -21,7 +21,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
    *   Returns \Drupal\Core\Form\FormBuilderInterface or a string.
    */
   public function changePlan(RouteMatchInterface $route_match) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $subscription_id = $route_match->getParameter('subscription_id');
     $new_plan_code = $route_match->getParameter('new_plan_code');
@@ -58,7 +58,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
     }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
-    return \Drupal::formBuilder()->getForm('Drupal\recurly\Form\RecurlySubscriptionChangeConfirmForm', $entity_type, $entity, $subscription, $previous_plan, $new_plan);
+    return $this->formBuilder()->getForm('Drupal\recurly\Form\RecurlySubscriptionChangeConfirmForm', $entity_type, $entity, $subscription, $previous_plan, $new_plan);
   }
 
 }

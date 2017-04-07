@@ -92,7 +92,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       $subscription->create();
     }
     catch (\Recurly_Error $e) {
-      \Drupal::logger('recurlyjs')->error('Unable to create subscription. Received the following error: @error', ['@error' => $e->getMessage()]);
+      $this->logger('recurlyjs')->error('Unable to create subscription. Received the following error: @error', ['@error' => $e->getMessage()]);
       drupal_set_message($this->t('Unable to create subscription.'), 'error');
       $form_state->setRebuild(TRUE);
       return;
@@ -106,7 +106,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       recurly_account_save($account, $entity_type, $entity->id());
     }
     catch (\Recurly_Error $e) {
-      \Drupal::logger('recurlyjs')->error('New subscriber account could not be retreived from Recurly. Received the following error: @error', ['@error' => $e->getMessage()]);
+      $this->logger('recurlyjs')->error('New subscriber account could not be retreived from Recurly. Received the following error: @error', ['@error' => $e->getMessage()]);
     }
     return $this->redirect("entity.$entity_type.recurly_subscriptionlist", [
       $entity->getEntityType()->getLowercaseLabel() => $entity->id(),

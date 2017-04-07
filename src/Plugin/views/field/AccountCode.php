@@ -5,6 +5,7 @@ namespace Drupal\recurly\Plugin\views\field;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\views\ResultRow;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Add a link to view a Recurly account.
@@ -14,6 +15,32 @@ use Drupal\views\Plugin\views\field\FieldPluginBase;
  * @ViewsField("recurly_account_code")
  */
 class AccountCode extends FieldPluginBase {
+
+  /**
+   * The Recurly URL manager service.
+   *
+   * @var \Drupal\recurly\RecurlyUrlManager
+   */
+  protected $recurlyUrlManager;
+
+  /**
+   * Creates an account code field plugin base.
+   *
+   * @param \Drupal\recurly\RecurlyUrlManager $recurly_url_manager
+   *   The Recurly URL manager service.
+   */
+  public function __construct(RecurlyUrlManager $recurly_url_manager) {
+    $this->recurlyUrlManager = $recurly_url_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('recurly.url_manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -51,7 +78,7 @@ class AccountCode extends FieldPluginBase {
    *
    * @param string $data
    *   Sanitized data to render.
-   * @param ResultRow $values
+   * @param \Drupal\views\ResultRow $values
    *   An ResultRow object of values associated with this row.
    *
    * @return mixed
@@ -60,8 +87,7 @@ class AccountCode extends FieldPluginBase {
   private function renderLink($data, ResultRow $values) {
     if (!empty($this->options['link_to_recurly']) && ($account_code = $this->getValue($values)) && $data !== NULL && $data !== '') {
       $this->options['alter']['make_link'] = TRUE;
-      $recurly_url_manager = \Drupal::service('recurly.url_manager');
-      $this->options['alter']['path'] = $recurly_url_manager->hostedUrl('accounts/' . $account_code)->getUri();
+      $this->options['alter']['path'] = $this->recurlyUrlManager->hostedUrl('accounts/' . $account_code)->getUri();
     }
     return $data;
   }

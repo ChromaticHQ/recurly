@@ -20,7 +20,7 @@ class RecurlyManageSubscriptionController extends ControllerBase {
    *   A redirect response object that may be returned by the controller.
    */
   public function subscriptionRedirect($account_code) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $account = recurly_account_load(['account_code' => $account_code], TRUE);
     if ($account) {
       return $this->redirect("entity.$entity_type_id.recurly_signup", [$entity_type_id => $account->entity_id]);

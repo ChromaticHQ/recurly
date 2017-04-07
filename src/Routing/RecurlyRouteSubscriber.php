@@ -2,6 +2,7 @@
 
 namespace Drupal\recurly\Routing;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Routing\RouteSubscriberBase;
 use Drupal\Core\Routing\RoutingEvents;
@@ -21,20 +22,30 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
   protected $entityManager;
 
   /**
+   * The Recurly settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $recurlySettings;
+
+  /**
    * Constructs a new RouteSubscriber object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config service.
    */
-  public function __construct(EntityManagerInterface $entity_manager) {
+  public function __construct(EntityManagerInterface $entity_manager, ConfigFactoryInterface $config_factory) {
     $this->entityManager = $entity_manager;
+    $this->recurlySettings = $config_factory->get('recurly.settings');
   }
 
   /**
    * {@inheritdoc}
    */
   protected function alterRoutes(RouteCollection $collection) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->recurlySettings->get('recurly_entity_type');
     $entity_manager_definitions = $this->entityManager->getDefinitions();
     $entity_type = $entity_manager_definitions[$entity_type_id];
     if ($entity_type->hasLinkTemplate('recurly-subscriptionlist') || $entity_type->hasLinkTemplate('recurly-signup') || $entity_type->hasLinkTemplate('recurly-change') || $entity_type->hasLinkTemplate('recurly-billing')) {
@@ -54,7 +65,7 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
           $recurly_subscriptionlist,
           [
             '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionListController::subscriptionList',
-            '_title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') == 1 ? 'Subscription Summary' : 'Subscription List',
+            '_title' => $this->recurlySettings->get('recurly_subscription_max') == 1 ? 'Subscription Summary' : 'Subscription List',
           ],
           [
             '_permission' => 'manage recurly subscription',
@@ -115,7 +126,7 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
           $recurly_signup,
           [
             '_controller' => '\Drupal\recurly\Controller\RecurlySubscriptionSelectPlanController::planSelect',
-            '_title' => \Drupal::config('recurly.settings')->get('recurly_subscription_max') == 1 ? 'Signup' : 'Add plan',
+            '_title' => $this->recurlySettings->get('recurly_subscription_max') == 1 ? 'Signup' : 'Add plan',
           ],
           [
             '_entity_access' => "$entity_type_id.update",
@@ -255,7 +266,7 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
 
         $collection->add("entity.$entity_type_id.recurly_invoicepdf", $route);
       }
-      if (\Drupal::config('recurly.settings')->get('recurly_coupon_page') ?: 1) {
+      if ($this->recurlySettings->get('recurly_coupon_page') ?: 1) {
         if ($recurly_coupon = $entity_type->getLinkTemplate('recurly-coupon')) {
           $route = new Route(
             $recurly_coupon,

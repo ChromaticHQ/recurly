@@ -3,6 +3,7 @@
 namespace Drupal\recurly;
 
 use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Link;
 
 /**
@@ -18,13 +19,23 @@ class RecurlyPreprocess {
   protected $recurlyFormatter;
 
   /**
+   * The Recurly settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $recurlySettings;
+
+  /**
    * Constructs a \Drupal\recurly\RecurlyPreprocess object.
    *
    * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
    *   A Recurly formatter object.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config service.
    */
-  public function __construct(RecurlyFormatManager $recurly_formatter) {
+  public function __construct(RecurlyFormatManager $recurly_formatter, ConfigFactoryInterface $config_factory) {
     $this->recurlyFormatter = $recurly_formatter;
+    $this->recurlySettings = $config_factory->get('recurly.settings');
   }
 
   /**
@@ -171,7 +182,7 @@ class RecurlyPreprocess {
    * Implements hook_preprocess_recurly_invoice().
    */
   public function preprocessRecurlyInvoice(array &$variables) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->recurlySettings->get('recurly_entity_type');
     $invoice = $variables['invoice'];
     $invoice_account = $variables['invoice_account'];
     $entity = $variables['entity'];

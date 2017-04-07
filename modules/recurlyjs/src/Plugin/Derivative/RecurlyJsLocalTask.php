@@ -3,6 +3,7 @@
 namespace Drupal\recurlyjs\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -24,16 +25,33 @@ class RecurlyJsLocalTask extends DeriverBase implements ContainerDeriverInterfac
   protected $entityManager;
 
   /**
+   * The string translation service.
+   */
+
+  /**
+   * The Recurly settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $recurlySettings;
+
+  /**
    * Creates a RecurlyJsLocalTask object.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The translation manager.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config service.
    */
-  public function __construct(EntityManagerInterface $entity_manager, TranslationInterface $string_translation) {
+  public function __construct(
+    EntityManagerInterface $entity_manager,
+    TranslationInterface $string_translation,
+    ConfigFactoryInterface $config_factory) {
     $this->entityManager = $entity_manager;
     $this->stringTranslation = $string_translation;
+    $this->recurlySettings = $config_factory->get('recurly.settings');
   }
 
   /**
@@ -42,7 +60,8 @@ class RecurlyJsLocalTask extends DeriverBase implements ContainerDeriverInterfac
   public static function create(ContainerInterface $container, $base_plugin_id) {
     return new static(
       $container->get('entity.manager'),
-      $container->get('string_translation')
+      $container->get('string_translation'),
+      $container->get('config.factory')
     );
   }
 
@@ -56,7 +75,7 @@ class RecurlyJsLocalTask extends DeriverBase implements ContainerDeriverInterfac
     // (recurlyjs) and id (recurlyjs.entities). See recurlyjs.links.task.yml.
     $this->derivatives = array();
     // Get the entity type associated with recurly.
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->recurlySettings->get('recurly_entity_type');
     // Get all the plugins available to the entity (block, menu, user, etc.).
     $entity_manager_definitions = $this->entityManager->getDefinitions();
     // Pull our entity type.

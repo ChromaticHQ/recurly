@@ -2,6 +2,7 @@
 
 namespace Drupal\recurly\Form;
 
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -28,16 +29,29 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
   protected $recurlyUrlManager;
 
   /**
+   * The module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * Constructs a \Drupal\recurly\Form\RecurlySubscriptionPlansForm object.
    *
    * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
    *   The Recurly formatter to be used for formatting.
    * @param \Drupal\recurly\RecurlyUrlManager $recurly_url_manager
    *   The Recurly URL service to be used for generating URLs.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
    */
-  public function __construct(RecurlyFormatManager $recurly_formatter, RecurlyUrlManager $recurly_url_manager) {
+  public function __construct(
+    RecurlyFormatManager $recurly_formatter,
+    RecurlyUrlManager $recurly_url_manager,
+    ModuleHandlerInterface $module_handler) {
     $this->recurlyFormatter = $recurly_formatter;
     $this->recurlyUrlManager = $recurly_url_manager;
+    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -46,7 +60,8 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('recurly.format_manager'),
-      $container->get('recurly.url_manager')
+      $container->get('recurly.url_manager'),
+      $container->get('module_handler')
     );
   }
 
@@ -231,7 +246,7 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
       ];
 
       // Add a purchase link if Hosted Payment Pages are enabled.
-      if (\Drupal::moduleHandler()->moduleExists('recurly_hosted')) {
+      if ($this->moduleHandler->moduleExists('recurly_hosted')) {
         $operations['purchase'] = [
           'title' => $this->t('purchase'),
           'url' => recurly_hosted_subscription_plan_purchase_url($plan->plan_code),

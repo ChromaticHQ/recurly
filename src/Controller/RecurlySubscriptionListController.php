@@ -9,27 +9,39 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\recurly\RecurlyFormatManager;
+use Drupal\recurly\RecurlyPagerManager;
 
 /**
  * Returns responses for Recurly Subscription List.
  */
 class RecurlySubscriptionListController extends ControllerBase {
 
+
   /**
-   * The formatting service.
+   * The Recurly formatting service.
    *
    * @var \Drupal\recurly\RecurlyFormatManager
    */
   protected $recurlyFormatter;
 
   /**
-   * Constructor.
+   * The Recurly page manager service.
+   *
+   * @var \Drupal\recurly\RecurlyPagerManager
+   */
+  protected $recurlyPageManager;
+
+  /**
+   * Creates a subscription list controller.
    *
    * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
    *   The Recurly formatter to be used for formatting.
+   * @param \Drupal\recurly\RecurlyPagerManager $recurly_page_manager
+   *   The Recurly page manager service.
    */
-  public function __construct(RecurlyFormatManager $recurly_formatter) {
+  public function __construct(RecurlyFormatManager $recurly_formatter, RecurlyPagerManager $recurly_page_manager) {
     $this->recurlyFormatter = $recurly_formatter;
+    $this->recurlyPageManager = $recurly_page_manager;
   }
 
   /**
@@ -37,7 +49,8 @@ class RecurlySubscriptionListController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('recurly.format_manager')
+      $container->get('recurly.format_manager'),
+      $container->get('recurly.pager_manager')
     );
   }
 
@@ -52,7 +65,7 @@ class RecurlySubscriptionListController extends ControllerBase {
    *   Recurly subscription details or a no-results message as a render array.
    */
   public function subscriptionList(RouteMatchInterface $route_match) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $subscriptions = [];
     // Initialize the Recurly client with the site-wide settings.
@@ -74,10 +87,9 @@ class RecurlySubscriptionListController extends ControllerBase {
 
     // Unlikely that we'd have more than 50 subscriptions, but you never know.
     $per_page = 50;
-    $subscription_type = \Drupal::config('recurly.settings')->get('recurly_subscription_display');
+    $subscription_type = $this->config('recurly.settings')->get('recurly_subscription_display');
     $subscription_list = \Recurly_SubscriptionList::getForAccount($account->account_code, ['per_page' => $per_page]);
-    $recurly_pager_manager = \Drupal::service('recurly.pager_manager');
-    $page_subscriptions = $recurly_pager_manager->pagerResults($subscription_list, $per_page);
+    $page_subscriptions = $this->recurlyPageManager->pagerResults($subscription_list, $per_page);
 
     $subscriptions['subscriptions']['#attached']['library'][] = 'recurly/recurly.default';
 
@@ -102,7 +114,7 @@ class RecurlySubscriptionListController extends ControllerBase {
         sort($states);
       }
 
-      if (\Drupal::config('recurly.settings')->get('recurly_subscription_max') === '1') {
+      if ($this->config('recurly.settings')->get('recurly_subscription_max') === '1') {
         $links = FALSE;
       }
       else {
@@ -168,7 +180,7 @@ class RecurlySubscriptionListController extends ControllerBase {
     ];
 
     // Allow other modules to alter subscriptions.
-    \Drupal::moduleHandler()->alter('recurly_subscription_list_page', $subscriptions);
+    $this->moduleHandler()->alter('recurly_subscription_list_page', $subscriptions);
 
     // If the user doesn't have any active subscriptions, redirect to signup.
     if (count(Element::children($subscriptions['subscriptions'])) === 0) {
@@ -214,7 +226,7 @@ class RecurlySubscriptionListController extends ControllerBase {
       ];
     }
     // Allow other modules to provide links, perhaps "suspend" for example.
-    \Drupal::moduleHandler()->alter('recurly_subscription_links', $links);
+    $this->moduleHandler()->alter('recurly_subscription_links', $links);
 
     return $links;
   }

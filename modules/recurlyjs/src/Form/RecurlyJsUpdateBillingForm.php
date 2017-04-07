@@ -71,7 +71,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
       ];
     }
     catch (Recurly_NotFoundError $e) {
-      \Drupal::logger('recurlyjs')->notice('Unable to retrieve billing information. Received the following error: @error', ['@error' => $e->getMessage()]);
+      $this->logger('recurlyjs')->notice('Unable to retrieve billing information. Received the following error: @error', ['@error' => $e->getMessage()]);
       drupal_set_message($this->t('Unable to retrieve billing information.'), 'error');
       return $form;
     }

@@ -21,7 +21,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
    *   A Drupal render array.
    */
   public function subscribe(RouteMatchInterface $route_match) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $plan_code = $route_match->getParameter('plan_code');
     $currency = $route_match->getParameter('currency');
@@ -38,7 +38,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
       $current_subscriptions = recurly_account_get_subscriptions($local_account->account_code, 'active');
       // If the account is only allowed one subscription total, they shouldn't
       // ever see this signup page.
-      if ((\Drupal::config('recurly.settings')->get('recurly_subscription_max') ?: '1') === '1' && count($current_subscriptions) && empty($_POST)) {
+      if (($this->config('recurly.settings')->get('recurly_subscription_max') ?: '1') === '1' && count($current_subscriptions) && empty($_POST)) {
         $current_subscription = reset($current_subscriptions);
         drupal_set_message($this->t('This account already has a @plan plan!', ['@plan' => $current_subscription->plan->name]));
         if ($url = recurly_url('select_plan', ['entity_type' => $entity_type, 'entity' => $entity])) {
@@ -61,7 +61,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
     }
     // Although this controller contains little else besides the subscription
     // form, it's a separate class because it's highly likely to need theming.
-    $form = \Drupal::formBuilder()->getForm('Drupal\recurlyjs\Form\RecurlyJsSubscribeForm', $entity_type, $entity, $plan_code, $currency);
+    $form = $this->formBuilder()->getForm('Drupal\recurlyjs\Form\RecurlyJsSubscribeForm', $entity_type, $entity, $plan_code, $currency);
     try {
       $plan = \Recurly_Plan::get($plan_code);
     }

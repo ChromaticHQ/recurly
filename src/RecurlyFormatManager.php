@@ -3,6 +3,9 @@
 namespace Drupal\recurly;
 
 use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
  * Constants for "state" strings.
@@ -20,6 +23,47 @@ const RECURLY_STATE_PAST_DUE = 'past_due';
  * RecurlyFormatManager.
  */
 class RecurlyFormatManager {
+
+  /**
+   * The module handler service.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
+   * The Recurly settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $recurlySettings;
+
+  /**
+   * The translation manager service.
+   *
+   * @var \Drupal\Core\StringTranslation\TranslationInterface
+   */
+  protected $stringTranslation;
+
+  /**
+   * Constructs the Recurly format manager.
+   *
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config service.
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $translation_manager
+   *   The translation manager service.
+   */
+  public function __construct(
+    ModuleHandlerInterface $module_handler,
+    ConfigFactoryInterface $config_factory,
+    TranslationInterface $translation_manager
+    ) {
+    $this->moduleHandler = $module_handler;
+    $this->recurlySettings = $config_factory->get('recurly.settings');
+    $this->stringTranslation = $translation_manager;
+  }
 
   /**
    * Format a Recurly subscription state.
@@ -56,7 +100,7 @@ class RecurlyFormatManager {
    * Format a date for use in invoices.
    */
   public function formatDate($date) {
-    $format = \Drupal::config('recurly.settings')->get('recurly_date_format');
+    $format = $this->recurlySettings->get('recurly_date_format');
     if (is_object($date)) {
       $date->setTimezone(new \DateTimeZone('UTC'));
       $timestamp = $date->format('U');
@@ -82,7 +126,7 @@ class RecurlyFormatManager {
     $rounding_step = isset($currency_info[5]) ? $currency_info[5] : NULL;
 
     // Commerce module provides a more flexible and complete currency formatter.
-    if (\Drupal::moduleHandler()->moduleExists('commerce')) {
+    if ($this->moduleHandler->moduleExists('commerce')) {
       $formatted = commerce_currency_format($price_in_cents, $currency, NULL, TRUE);
     }
     else {
@@ -129,10 +173,10 @@ class RecurlyFormatManager {
   public function formatPriceInterval($amount, $count, $unit, $html = FALSE) {
     if ($amount === NULL) {
       if ($unit == 'days') {
-        return \Drupal::translation()->formatPlural($count, '1 day trial', '@count day trial');
+        return $this->stringTranslation->formatPlural($count, '1 day trial', '@count day trial');
       }
       else {
-        return \Drupal::translation()->formatPlural($count, '1 month trial', '@count month trial');
+        return $this->stringTranslation->formatPlural($count, '1 month trial', '@count month trial');
       }
     }
 

@@ -4,11 +4,39 @@ namespace Drupal\recurlyjs\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Locale\CountryManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * RecurlyJS abstract class with common form elements to be shared.
  */
 abstract class RecurlyJsFormBase extends FormBase {
+
+  /**
+   * The country manager service.
+   *
+   * @var \Drupal\Core\Locale\CountryManagerInterface
+   */
+  protected $countryManager;
+
+  /**
+   * Creates a RecurlyJS base form.
+   *
+   * @param \Drupal\Core\Locale\CountryManagerInterface $country_manager
+   *   The country manager service.
+   */
+  public function __construct(CountryManagerInterface $country_manager) {
+    $this->countryManager = $country_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('country_manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -39,7 +67,7 @@ abstract class RecurlyJsFormBase extends FormBase {
    * @return array
    *   The modified form array.
    */
-  private function appendBillingFields($form) {
+  private function appendBillingFields(array $form) {
     $form['#prefix'] = '<div class="recurly-form-wrapper">';
     $form['#suffix'] = '</div>';
 
@@ -112,7 +140,7 @@ abstract class RecurlyJsFormBase extends FormBase {
       '#after_build' => ['::removeElementName'],
       '#weight' => -90,
     ];
-    $countries = \Drupal::service('country_manager')->getList();
+    $countries = $this->countryManager->getList();
     $form['country'] = [
       '#type' => 'select',
       '#title' => $this->t('Country'),

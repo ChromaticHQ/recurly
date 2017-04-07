@@ -88,7 +88,7 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
       ],
       '#description' => $this->t('If changes take effect immediately, the price difference will either result in a credit applied when the subscription renews or will trigger a prorated charge within the hour.'),
       '#default_value' => $timeframe,
-      '#access' => \Drupal::currentUser()->hasPermission('administer recurly'),
+      '#access' => $this->currentUser()->hasPermission('administer recurly'),
     ];
 
     // TODO: We could potentially calculate the charge/credit amount here, but
@@ -101,7 +101,7 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
     }
     $form['timeframe_help'] = [
       '#markup' => $timeframe_message,
-      '#access' => !\Drupal::currentUser()->hasPermission('administer recurly'),
+      '#access' => !$this->currentUser()->hasPermission('administer recurly'),
     ];
     $form['actions'] = [
       '#type' => 'actions',

@@ -43,15 +43,18 @@ services:
     class: Drupal\recurly\RecurlyPagerManager
   recurly.token_manager:
     class: Drupal\recurly\RecurlyTokenManager
+    arguments: ['@config.factory']
   recurly.url_manager:
     class: Drupal\recurly\RecurlyUrlManager
+    arguments: ['@config.factory']
   recurly.route_subscriber:
     class: Drupal\recurly\Routing\RecurlyRouteSubscriber
-    arguments: ['@entity.manager']
+    arguments: ['@entity.manager', '@config.factory']
     tags:
       - { name: event_subscriber }
   recurly.format_manager:
     class: Drupal\recurly\RecurlyFormatManager
+    arguments: ['@module_handler', '@config.factory', '@string_translation']
   recurly.entity_type:
     class: Drupal\recurly\RecurlyEntityTypeInfo
     arguments: ['@string_translation', '@entity_type.manager']
@@ -60,4 +63,4 @@ services:
     arguments: ['@entity_type.manager']
   recurly.recurly_preprocess:
     class: Drupal\recurly\RecurlyPreprocess
-    arguments: ['@recurly.format_manager']
+    arguments: ['@recurly.format_manager', '@config.factory']

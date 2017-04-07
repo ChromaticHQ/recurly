@@ -172,7 +172,7 @@ class RecurlyRedeemCouponForm extends FormBase {
             $existing_coupon_redemption->delete();
           }
           catch (\Recurly_NotFoundError $e) {
-            \Drupal::logger('recurly')->error('Unable to remove existing coupon redemption: @error', ['@error' => $e->getMessage()]);
+            $this->logger('recurly')->error('Unable to remove existing coupon redemption: @error', ['@error' => $e->getMessage()]);
             drupal_set_message('Unable to remove existing coupon.', 'error');
             return;
           }
