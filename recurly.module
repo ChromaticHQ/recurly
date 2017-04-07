@@ -587,7 +587,7 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
  *   TRUE or FALSE indicating whether or not the client was initialized with the
  *   specified account settings.
  */
-function recurly_client_initialize($settings = NULL, $reset = FALSE) {
+function recurly_client_initialize(array $settings = NULL, $reset = FALSE) {
   static $initialized = FALSE;
   $client = NULL;
 
@@ -614,7 +614,7 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
     require_once $path . '/lib/recurly.php';
 
     // Required for the API.
-    Recurly_Client::$apiKey = $settings['api_key'];
+    Recurly_Client::$apikey = $settings['api_key'];
   }
   else {
     watchdog('recurly', 'Could not find the Recurly PHP client library in sites/all/libraries/recurly.', array(), WATCHDOG_ERROR);
@@ -642,7 +642,7 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
  *   include an additional 'orphaned' property set to TRUE. Returns FALSE if no
  *   data can be found locally at all.
  */
-function recurly_account_load($conditions = array(), $local = FALSE) {
+function recurly_account_load(array $conditions = array(), $local = FALSE) {
   // Create a base select query object.
   $query = db_select('recurly_account', 'ra')->fields('ra');
 
@@ -965,7 +965,7 @@ function _recurly_user_access($op, $account) {
 
 /**
  * Returns an array of subscription plan objects for the current account.
- * 
+ *
  * Retrieves them from a local cache if possible.
  *
  * @param bool $reset_cache
@@ -1056,7 +1056,7 @@ function recurly_hosted_url($path = '') {
  *   A string containing a URL for the operation, or NULL if no module is
  *   available to handle the operation.
  */
-function recurly_url($operation, $context) {
+function recurly_url($operation, array $context) {
   $urls = module_invoke_all('recurly_url_info', $operation, $context);
   $return_url = NULL;
   foreach ($urls as $url) {

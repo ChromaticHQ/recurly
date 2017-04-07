@@ -119,7 +119,8 @@ function recurly_subscription_list_page($entity_type, $entity) {
       '#total' => recurly_format_currency($total, $subscription->currency),
       '#subscription_links' => $links ? theme('links', array(
         'links' => $links,
-        'attributes' => array('class' => array('inline', 'links')))) : NULL,
+        'attributes' => array('class' => array('inline', 'links')),
+      )) : NULL,
       '#message' => $message,
       '#subscription' => $subscription,
       '#account' => $account,
@@ -665,7 +666,7 @@ function recurly_subscription_cancel_confirm($form, $form_state, $entity_type, $
   );
   $form['cancel']['description'] = array(
     '#type' => 'markup',
-    '#markup' => '<p>' . t('Canceling a subscription will cause it not to renew. If you cancel the subscription, it will continue until <strong>@date</strong>. On that date, the subscription will expire and not be invoiced again. The subscription can be reactivated before it expires.', array('@date' => recurly_format_date($subscription->current_period_ends_at)))  . '</p>',
+    '#markup' => '<p>' . t('Canceling a subscription will cause it not to renew. If you cancel the subscription, it will continue until <strong>@date</strong>. On that date, the subscription will expire and not be invoiced again. The subscription can be reactivated before it expires.', array('@date' => recurly_format_date($subscription->current_period_ends_at))) . '</p>',
   );
   $form['cancel']['actions'] = array(
     '#type' => 'actions',
@@ -793,7 +794,6 @@ function template_preprocess_recurly_subscription_cancel_confirm(&$variables) {
   $variables['subscription'] = $variables['form']['#subscription'];
   $variables['past_due'] = isset($_GET['past_due']) && $_GET['past_due'] === '1';
 }
-
 
 /**
  * Menu callback; Reactivate a subscription immediately and redirect.
@@ -959,10 +959,10 @@ function recurly_subscription_redeem_coupon($form, &$form_state, $entity_type, $
   // and if they need to confirm replacing their coupon with a new one.
   if ($confirming_replacement_coupon) {
     $form_state['confirmed'] = TRUE;
-    $help = '<p>' . t('Your account already has a coupon that will be applied to your next invoice. Are you sure you want to replace your existing coupon "!old_coupon" with "!new_coupon"? You may not be able to use your previous coupon again.',
-      array(
-        '!old_coupon' => recurly_format_coupon($form_state['existing_coupon'], $form_state['existing_redemption']->currency),
-        '!new_coupon' => recurly_format_coupon($form_state['coupon'], $form_state['values']['coupon_currency']))) . '</p>';
+    $help = '<p>' . t('Your account already has a coupon that will be applied to your next invoice. Are you sure you want to replace your existing coupon "!old_coupon" with "!new_coupon"? You may not be able to use your previous coupon again.', array(
+      '!old_coupon' => recurly_format_coupon($form_state['existing_coupon'], $form_state['existing_redemption']->currency),
+      '!new_coupon' => recurly_format_coupon($form_state['coupon'], $form_state['values']['coupon_currency']),
+    )) . '</p>';
   }
   elseif ($account->redemption) {
     $form_state['existing_redemption'] = $account->redemption->get();
@@ -1042,7 +1042,7 @@ function recurly_subscription_redeem_coupon_submit($form, &$form_state) {
   if ($account && $coupon && $account->redemption) {
     // If the user already has a coupon, rebuild the form and ask confirmation.
     if (empty($form_state['confirmed'])) {
-      drupal_set_message('You already have an active coupon, are you sure you want to replace it?', 'warning');
+      drupal_set_message(t('You already have an active coupon, are you sure you want to replace it?', 'warning'));
       $form_state['confirm'] = TRUE;
       $form_state['rebuild'] = TRUE;
       return;
