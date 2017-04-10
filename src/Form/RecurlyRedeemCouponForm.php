@@ -190,8 +190,8 @@ class RecurlyRedeemCouponForm extends FormBase {
       drupal_set_message($this->t('Unable to redeem the coupon @code, the coupon may no longer be valid.', ['@code' => $coupon->coupon_code]), 'error');
     }
     else {
-      drupal_set_message($this->t('The coupon !coupon has been applied to your account and will be redeemed the next time your subscription renews.', [
-        '!coupon' => $this->recurlyFormatter->formatCoupon($coupon, $form_state->getValue(['coupon_currency'])),
+      drupal_set_message($this->t('The coupon @coupon has been applied to your account and will be redeemed the next time your subscription renews.', [
+        '@coupon' => $this->recurlyFormatter->formatCoupon($coupon, $form_state->getValue(['coupon_currency']), FALSE),
       ]));
     }
   }

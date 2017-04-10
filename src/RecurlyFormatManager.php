@@ -171,6 +171,7 @@ class RecurlyFormatManager {
    * Format an interval of time in a human-readable way.
    */
   public function formatPriceInterval($amount, $count, $unit, $html = FALSE) {
+    // Trial only pricing.
     if ($amount === NULL) {
       if ($unit == 'days') {
         return $this->stringTranslation->formatPlural($count, '1 day trial', '@count day trial');
@@ -179,35 +180,68 @@ class RecurlyFormatManager {
         return $this->stringTranslation->formatPlural($count, '1 month trial', '@count month trial');
       }
     }
-
-    $replacements = [
-      '!count' => $html ? '<span class="plan-count">' . SafeMarkup::checkPlain($count) . '<span>' : SafeMarkup::checkPlain($count),
-      '!amount' => $html ? '<span class="plan-amount">' . $amount . '</span>' : $amount,
-    ];
+    // Set default values.
+    $time_indicator = 'per';
+    $time_unit = NULL;
+    $time_length = NULL;
+    // Exactly 1 day or 1 month.
     if ($count == 1) {
       switch ($unit) {
         case 'days':
-          return t('!amount per day', $replacements);
+          $time_unit = 'day';
+          break;
 
         case 'months':
-          return t('!amount per month', $replacements);
+          $time_unit = 'month';
+          break;
       }
     }
+    // Exactly 1 week.
     elseif ($count == 7 && $unit == 'days') {
-      return t('!amount per week', $replacements);
+      $time_unit = 'week';
     }
+    // Exactly 1 year.
     elseif ($count == 12 && $unit == 'months') {
-      return t('!amount per year', $replacements);
+      $time_unit = 'year';
     }
     else {
       switch ($unit) {
         case 'days':
-          return t('!amount every !count days', $replacements);
+          $time_indicator = 'every';
+          $time_unit = 'days';
+          $time_length = $count;
+          break;
 
         case 'months':
-          return t('!amount every !count months', $replacements);
+          $time_indicator = 'every';
+          $time_unit = 'months';
+          $time_length = $count;
+          break;
       }
     }
+    // Allow for price formatting with and without HTML.
+    if (!$html) {
+      if (!$time_length) {
+        return t('@amount @time_indicator @time_unit', array(
+          '@amount' => strip_tags($amount),
+          '@time_indicator' => $time_indicator,
+          '@time_unit' => $time_unit,
+        ));
+      }
+      return t('@amount @time_indicator @time_length @time_unit', array(
+        '@amount' => strip_tags($amount),
+        '@time_indicator' => $time_indicator,
+        '@time_length' => $time_length,
+        '@time_unit' => $time_unit,
+      ));
+    }
+    return array(
+      '#theme' => 'recurly_subscription_price_interval',
+      '#amount' => $amount,
+      '#time_length' => $time_length,
+      '#time_unit' => $time_unit,
+      '#time_indicator' => $time_indicator,
+    );
   }
 
   /**

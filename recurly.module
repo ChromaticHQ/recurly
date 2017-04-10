@@ -98,6 +98,15 @@ function recurly_theme() {
     'render element' => 'form',
     'template' => 'recurly-subscription-cancel-confirm',
   ];
+  $items['recurly_subscription_price_interval'] = [
+    'variables' => [
+      'time_length' => NULL,
+      'amount' => array(),
+      'time_unit' => NULL,
+      'time_indicator' => NULL,
+    ],
+    'template' => 'recurly-subscription-price-interval',
+  ];
 
   return $items;
 }

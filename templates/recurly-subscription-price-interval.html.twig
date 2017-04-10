@@ -1,0 +1,14 @@
+{#
+
+/**
+ * @file
+ * Builds the subscription price interval markup.
+ *
+ * Available variables:
+ * - amount: The plan amount.
+ * - time_indicator: The time word.
+ * - time_length: The plan length.
+ * - time_unit: The plan time unit.
+ */
+#}
+{{ amount|raw }} {{ time_indicator }} {% if time_length %}<span class="plan-count">{{ time_length }} </span>{% endif %}{{ time_unit }}
