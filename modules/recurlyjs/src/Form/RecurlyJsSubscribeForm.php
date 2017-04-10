@@ -81,7 +81,6 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
         $recurly_account->email = $entity->getEmail();
         $recurly_account->username = $entity->getAccountName();
       }
-      $recurly_account->create();
     }
     try {
       $subscription = new \Recurly_Subscription();
@@ -91,7 +90,20 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       $subscription->coupon_code = $coupon_code;
       $subscription->create();
     }
+    catch (\Recurly_ValidationError $e) {
+      // There was an error validating information in the form. For example,
+      // credit card was declined. We don't need to log these in Drupal, you can
+      // find the errors logged within Recurly.
+      drupal_set_message($this->t('<strong>Unable to create subscription:</strong><br/>@error', ['@error' => $e->getMessage()]), 'error');
+      $form_state->setRebuild(TRUE);
+      return;
+    }
     catch (\Recurly_Error $e) {
+      // Catch any non-validation errors. This will be things like unable to
+      // contact Recurly API, or lower level errors. Display a generic message
+      // to the user letting them know there was an error and then log the
+      // detailed version. There's probably nothing a user can do to correct
+      // these errors so we don't need to display the details.
       $this->logger('recurlyjs')->error('Unable to create subscription. Received the following error: @error', ['@error' => $e->getMessage()]);
       drupal_set_message($this->t('Unable to create subscription.'), 'error');
       $form_state->setRebuild(TRUE);

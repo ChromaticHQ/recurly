@@ -118,8 +118,22 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
         $billing_info->token_id = $recurly_token;
         $billing_info->update();
       }
+      catch (\Recurly_ValidationError $e) {
+        // There was an error validating information in the form. For example,
+        // credit card was declined. Let the user know. These errors are logged
+        // in Recurly.
+        drupal_set_message($this->t('<strong>Unable to update account:</strong><br/>@error', ['@error' => $e->getMessage()]), 'error');
+      }
       catch (\Recurly_NotFoundError $e) {
         drupal_set_message($this->t('Could not find account or token is invalid or expired.'), 'error');
+        $form_state->setRebuild(TRUE);
+      }
+      catch (\Recurly_Error $e) {
+        // Catch all other errors. Log the details, and display a message for
+        // the user.
+        $this->logger('recurlyjs')->error('Billing information update error: @error', ['@error' => $e->getMessage()]);
+        drupal_set_message($this->t('An error occured while trying to update your account. Please contact a site administrator.'));
+        $form_state->setRebuild(TRUE);
       }
     }
   }
