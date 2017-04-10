@@ -47,23 +47,16 @@ function recurly_subscription_list_page($entity_type, $entity) {
   // Unlikely that we'd have more than 50 subscriptions, but you never know.
   $per_page = 50;
   $subscription_type = variable_get('recurly_subscription_display', 'live');
-  $subscription_list = Recurly_SubscriptionList::getForAccount($account->account_code, array('per_page' => $per_page));
+  $state = $subscription_type === 'live' ? array('state' => 'active') : NULL;
+  $params = array('per_page' => $per_page, $state);
+  $subscription_list = Recurly_SubscriptionList::getForAccount($account->account_code, $params);
   $page_subscriptions = recurly_pager_results($subscription_list, $per_page);
 
   $subscriptions['subscriptions']['#attached']['css'] = array(
     drupal_get_path('module', 'recurly') . '/css/recurly.css',
   );
 
-  $total_displayed = 0;
   foreach ($page_subscriptions as $subscription) {
-    // Do not show subscriptions that are not active if only showing active.
-    // TODO: Figure out if Recurly_SubscriptionList can only return active
-    // subscriptions to begin with, rather than hiding them like this.
-    if ($subscription->state === 'expired' && $subscription_type === 'live') {
-      continue;
-    }
-    $total_displayed++;
-
     // Determine the state of this subscription.
     $states = recurly_subscription_get_states($subscription, $account);
 
