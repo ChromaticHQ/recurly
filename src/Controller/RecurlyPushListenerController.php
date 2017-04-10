@@ -18,7 +18,7 @@ class RecurlyPushListenerController extends ControllerBase {
    * @param string $subdomain
    *   Recurly account subdomain.
    *
-   * @return HtmlResponse
+   * @return \Drupal\Core\Render\HtmlResponse
    *   The appropriate HtmlResponse object.
    */
   public function processPushNotification($key, $subdomain = NULL) {

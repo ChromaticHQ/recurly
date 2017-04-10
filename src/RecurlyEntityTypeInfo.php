@@ -44,4 +44,5 @@ class RecurlyEntityTypeInfo {
       $entity_type->setLinkTemplate('recurly-coupon', $entity_type->getLinkTemplate('canonical') . '/subscription/redeem-coupon');
     }
   }
+
 }

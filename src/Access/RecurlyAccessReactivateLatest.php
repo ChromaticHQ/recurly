@@ -2,7 +2,6 @@
 
 namespace Drupal\recurly\Access;
 
-
 /**
  * Checks if the reactivate latest operation should be accessible.
  */

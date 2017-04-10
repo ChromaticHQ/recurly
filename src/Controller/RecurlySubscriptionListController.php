@@ -338,7 +338,7 @@ class RecurlySubscriptionListController extends ControllerBase {
    * @return string
    *   Text to be used as the table header when the subscription period ends.
    */
-  protected function periodEndHeaderString($states) {
+  protected function periodEndHeaderString(array $states) {
     if (count(array_intersect(['canceled', 'non_renewing', 'expired'], $states))
       && !in_array('in_trial', $states)) {
       return $this->t('Expiration Date');

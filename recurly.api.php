@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * API and hook documentation for the Recurly module.
@@ -93,7 +94,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
  *   A string containing the full URL to that particular action. If the module
  *   does not provide a page to an action, NULL should be returned.
  */
-function hook_recurly_url_info($operation, $context) {
+function hook_recurly_url_info($operation, array $context) {
   // Only provide URLs for built-in page types.
   $recurly_entity_type = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   if (empty($recurly_entity_type) || $recurly_entity_type !== $context['entity_type']) {
@@ -138,8 +139,7 @@ function hook_recurly_url_info($operation, $context) {
  *
  * @see RecurlySubscriptionListController::subscriptionList()
  */
-function hook_recurly_subscription_list_page_alter(&$subscriptions) {
-
+function hook_recurly_subscription_list_page_alter(array &$subscriptions) {
   // Fetch all subscription IDs.
   $ids = Element::children($subscriptions['subscriptions']);
 
@@ -149,10 +149,10 @@ function hook_recurly_subscription_list_page_alter(&$subscriptions) {
 
     // Fetch the custom entity containing additional information.
     $entities = \Drupal::entityQuery('node')
-        ->condition('type', 'recurly_custom_content_type')
-        ->condition('uid', \Drupal::currentUser()->id())
-        ->condition('field_subscription_id', $id)
-        ->execute();
+      ->condition('type', 'recurly_custom_content_type')
+      ->condition('uid', \Drupal::currentUser()->id())
+      ->condition('field_subscription_id', $id)
+      ->execute();
     $subscription = Node::load(array_values($entities)[0]);
 
     // Add the name of the subscription to its properties.

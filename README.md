@@ -1,5 +1,6 @@
 # Recurly
-[![Build Status](https://travis-ci.org/ChromaticHQ/recurly.svg?branch=8.x-1.x)](https://travis-ci.org/ChromaticHQ/recurly)
+![Build Status](https://travis-ci.org/ChromaticHQ/recurly.svg?branch=8.x-1.x) -
+[travis-ci](https://travis-ci.org/ChromaticHQ/recurly)
 
 ## Description
 This module provides API integration with [Recurly](https://recurly.com/), a
@@ -51,8 +52,9 @@ subscriptions, it does *not* provide any built-in way to perform actions when
 a subscription is purchased (such as granting a user a role) or perform any
 actions when a subscription expires (such as blocking a user account). Currently
 performing a response to an action requires custom coding through
-`hook_recurly_process_push_notification()`. See the [recurly.api.php](http://cgit.drupalcode.org/recurly/tree/recurly.api.php?h=8.x-1.x)
-file for more information on that hook.
+`hook_recurly_process_push_notification()`. See the
+[recurly.api.php](http://cgit.drupalcode.org/recurly/tree/recurly.api.php?) file
+for more information on that hook.
 
 ## Account Codes and Recurly E-mails
 When creating new accounts in Recurly.com, the Drupal Recurly module will use
@@ -71,7 +73,9 @@ The Recurly module will redirect the account from the account code to
 http://example.com/user/[uid]/subscription.
 
 ## Support
-Please use [the issue queue](http://drupal.org/project/issues/recurly?categories=All) for filing bugs with this module.
+Please use
+[the issue queue](http://drupal.org/project/issues/recurly?categories=All) for
+filing bugs with this module.
 
 WE DO NOT PROVIDE SUPPORT ON CUSTOM CODING. Please use the issue queue for
 issues that are believed to be bugs or for requesting features!

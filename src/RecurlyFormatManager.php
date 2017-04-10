@@ -222,26 +222,26 @@ class RecurlyFormatManager {
     // Allow for price formatting with and without HTML.
     if (!$html) {
       if (!$time_length) {
-        return t('@amount @time_indicator @time_unit', array(
+        return t('@amount @time_indicator @time_unit', [
           '@amount' => strip_tags($amount),
           '@time_indicator' => $time_indicator,
           '@time_unit' => $time_unit,
-        ));
+        ]);
       }
-      return t('@amount @time_indicator @time_length @time_unit', array(
+      return t('@amount @time_indicator @time_length @time_unit', [
         '@amount' => strip_tags($amount),
         '@time_indicator' => $time_indicator,
         '@time_length' => $time_length,
         '@time_unit' => $time_unit,
-      ));
+      ]);
     }
-    return array(
+    return [
       '#theme' => 'recurly_subscription_price_interval',
       '#amount' => $amount,
       '#time_length' => $time_length,
       '#time_unit' => $time_unit,
       '#time_indicator' => $time_indicator,
-    );
+    ];
   }
 
   /**

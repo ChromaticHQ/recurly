@@ -101,7 +101,7 @@ function recurly_theme() {
   $items['recurly_subscription_price_interval'] = [
     'variables' => [
       'time_length' => NULL,
-      'amount' => array(),
+      'amount' => [],
       'time_unit' => NULL,
       'time_indicator' => NULL,
     ],
@@ -186,7 +186,7 @@ function recurly_user_cancel($edit, $account, $method) {
  *   TRUE or FALSE indicating whether or not the client was initialized with the
  *   specified account settings.
  */
-function recurly_client_initialize($settings = NULL, $reset = FALSE) {
+function recurly_client_initialize(array $settings = NULL, $reset = FALSE) {
   static $initialized = FALSE;
   $client = NULL;
 
@@ -251,7 +251,7 @@ function recurly_client_initialize($settings = NULL, $reset = FALSE) {
  *   include an additional 'orphaned' property set to TRUE. Returns FALSE if no
  *   data can be found locally at all.
  */
-function recurly_account_load($conditions = [], $local = FALSE) {
+function recurly_account_load(array $conditions = [], $local = FALSE) {
   // Create a base select query object.
   $query = \Drupal::database()->select('recurly_account', 'ra')->fields('ra');
 
@@ -544,7 +544,7 @@ function recurly_subscription_in_trial($subscription) {
  *   A Drupal Url object containing a route and route parameters, or NULL if no
  *   module is available to handle the operation.
  */
-function recurly_url($operation, $context) {
+function recurly_url($operation, array $context) {
   $urls = \Drupal::moduleHandler()->invokeAll('recurly_url_info', [$operation, $context]);
 
   $return_url = NULL;

@@ -55,7 +55,7 @@ function recurly_hosted_recurly_url_info($operation, $context) {
  * @return \Drupal\Core\Url
  *   A Drupal Url object for the plan's edit page at Recurly.
  */
-function recurly_hosted_account_edit_url($recurly_account) {
+function recurly_hosted_account_edit_url(array $recurly_account) {
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   return $recurly_url_manager->hostedUrl('accounts/' . $recurly_account->account_code)->getUri();
 }
@@ -73,7 +73,7 @@ function recurly_hosted_account_edit_url($recurly_account) {
  *   A Drupal Url object for the account's front end management page at Recurly;
  *   uses the hosted login token if specified and it's available.
  */
-function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token = FALSE) {
+function recurly_hosted_account_manage_url(array $recurly_account, $hosted_login_token = FALSE) {
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   // Return a Url using the hosted login token if available.
   if ($hosted_login_token && !empty($recurly_account->hosted_login_token)) {
@@ -102,7 +102,7 @@ function recurly_hosted_account_manage_url($recurly_account, $hosted_login_token
  * @return \Drupal\Core\Url
  *   A Drupal Url object for the plan's Hosted Payment Page at Recurly.
  */
-function recurly_hosted_subscription_plan_purchase_url($plan_code, $account_code = NULL, $username = NULL, $settings = NULL) {
+function recurly_hosted_subscription_plan_purchase_url($plan_code, $account_code = NULL, $username = NULL, array $settings = NULL) {
   $url = 'subscribe/' . $plan_code;
   if ($account_code) {
     $url .= '/' . $account_code;

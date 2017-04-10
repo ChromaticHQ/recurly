@@ -2,7 +2,6 @@
 
 namespace Drupal\recurly\Access;
 
-
 /**
  * Checks if the cancel operation should be accessible.
  */
