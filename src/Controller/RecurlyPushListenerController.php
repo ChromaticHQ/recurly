@@ -102,7 +102,7 @@ class RecurlyPushListenerController extends ControllerBase {
         // Attempt to find a matching user account by e-mail address if the
         // enabled entity type is user.
         elseif ($entity_type === 'user' && ($user = user_load_by_mail($recurly_account->email))) {
-          recurly_account_save($recurly_account, 'user', $user->uid);
+          recurly_account_save($recurly_account, 'user', $user->id());
         }
       }
       elseif (!empty($local_account)) {

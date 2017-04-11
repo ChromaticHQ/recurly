@@ -89,7 +89,7 @@ class RecurlySettingsForm extends ConfigFormBase {
     $this->entityTypeBundleInfo = $entity_bundle_info;
     $this->entityTypeManager = $entity_type_manager;
     $this->countryManager = $country_manager;
-    $this->routeBuilder = $route_builde;
+    $this->routeBuilder = $route_builder;
   }
 
   /**
