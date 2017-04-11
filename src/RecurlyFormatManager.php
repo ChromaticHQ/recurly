@@ -2,7 +2,7 @@
 
 namespace Drupal\recurly;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
@@ -262,7 +262,7 @@ class RecurlyFormatManager {
         return t('Card declined');
 
       default:
-        return SafeMarkup::checkPlain($status);
+        return Html::escape($status);
     }
   }
 
@@ -282,14 +282,14 @@ class RecurlyFormatManager {
   public function formatCoupon(\Recurly_Coupon $coupon, $currency, $html = FALSE) {
     // @todo. I am not sure about Recurly_Coupon. I do not think that class exists.
     if ($coupon->discount_type === 'percent') {
-      $amount = SafeMarkup::checkPlain($coupon->discount_percent) . '%';
+      $amount = Html::escape($coupon->discount_percent) . '%';
     }
     else {
       $coupon_currency = $coupon->discount_in_cents[$currency];
       $amount = $this->formatCurrency($coupon_currency->amount_in_cents, $currency, $html);
     }
 
-    return SafeMarkup::checkPlain($coupon->name) . t('@space(@amount discount)', ['@amount' => ' ', '@amount' => $amount]);
+    return Html::escape($coupon->name) . t('@space(@amount discount)', ['@amount' => ' ', '@amount' => $amount]);
   }
 
 }

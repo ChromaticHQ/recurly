@@ -2,7 +2,7 @@
 
 namespace Drupal\recurly;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Link;
 
@@ -81,9 +81,9 @@ class RecurlyPreprocess {
         }
       }
       $variables['filtered_plans'][$plan_code] = [
-        'plan_code' => SafeMarkup::checkPlain($plan_code),
-        'name' => SafeMarkup::checkPlain($plan->name),
-        'description' => SafeMarkup::checkPlain($plan->description),
+        'plan_code' => Html::escape($plan_code),
+        'name' => Html::escape($plan->name),
+        'description' => Html::escape($plan->description),
         'setup_fee' => $setup_fee_amount,
         'amount' => $unit_amount,
         'plan_interval' => $this->recurlyFormatter->formatPriceInterval($unit_amount, $plan->plan_interval_length, $plan->plan_interval_unit, TRUE),
@@ -165,7 +165,7 @@ class RecurlyPreprocess {
       $row[] = $this->recurlyFormatter->formatCurrency($invoice->total_in_cents, $invoice->currency);
       $rows[] = [
         'data' => $row,
-        'class' => [SafeMarkup::checkPlain($invoice->state)],
+        'class' => [Html::escape($invoice->state)],
       ];
     }
 
@@ -206,21 +206,21 @@ class RecurlyPreprocess {
     ];
     if ($billing_info) {
       $variables += [
-        'first_name' => SafeMarkup::checkPlain($billing_info->first_name),
-        'last_name' => SafeMarkup::checkPlain($billing_info->last_name),
-        'address1' => SafeMarkup::checkPlain($billing_info->address1),
-        'address2' => isset($billing_info->address2) ? SafeMarkup::checkPlain($billing_info->address2) : NULL,
-        'city' => SafeMarkup::checkPlain($billing_info->city),
-        'state' => SafeMarkup::checkPlain($billing_info->state),
-        'zip' => SafeMarkup::checkPlain($billing_info->zip),
-        'country' => SafeMarkup::checkPlain($billing_info->country),
+        'first_name' => Html::escape($billing_info->first_name),
+        'last_name' => Html::escape($billing_info->last_name),
+        'address1' => Html::escape($billing_info->address1),
+        'address2' => isset($billing_info->address2) ? Html::escape($billing_info->address2) : NULL,
+        'city' => Html::escape($billing_info->city),
+        'state' => Html::escape($billing_info->state),
+        'zip' => Html::escape($billing_info->zip),
+        'country' => Html::escape($billing_info->country),
       ];
     }
     foreach ($invoice->line_items as $line_item) {
       $variables['line_items'][$line_item->uuid] = [
         'start_date' => $this->recurlyFormatter->formatDate($line_item->start_date),
         'end_date' => $this->recurlyFormatter->formatDate($line_item->end_date),
-        'description' => SafeMarkup::checkPlain($line_item->description),
+        'description' => Html::escape($line_item->description),
         'amount' => $this->recurlyFormatter->formatCurrency($line_item->total_in_cents, $line_item->currency),
       ];
     }

@@ -2,7 +2,7 @@
 
 namespace Drupal\recurlyjs\Form;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -56,18 +56,18 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
     try {
       $billing_info = \Recurly_BillingInfo::get($recurly_account->account_code);
       // Format expiration date.
-      $exp_date = sprintf('%1$02d', SafeMarkup::checkPlain($billing_info->month)->__toString()) . '/' . SafeMarkup::checkPlain($billing_info->year);
+      $exp_date = sprintf('%1$02d', Html::escape($billing_info->month)) . '/' . Html::escape($billing_info->year);
       // Determine the correct number of masked card numbers depending on the
       // type of card.
       $mask_length = strcasecmp($billing_info->card_type, self::CARD_TYPE_AMEX) === 0 ? self::CARD_LENGTH_AMEX : self::CARD_LENGTH_OTHER;
       $form['existing'] = [
         '#theme' => 'recurly_credit_card_information',
-        '#card_type' => SafeMarkup::checkPlain($billing_info->card_type),
-        '#first_name' => SafeMarkup::checkPlain($billing_info->first_name),
-        '#last_name' => SafeMarkup::checkPlain($billing_info->last_name),
+        '#card_type' => Html::escape($billing_info->card_type),
+        '#first_name' => Html::escape($billing_info->first_name),
+        '#last_name' => Html::escape($billing_info->last_name),
         '#exp_date' => $exp_date,
-        '#last_four' => SafeMarkup::checkPlain($billing_info->last_four),
-        '#card_num_masked' => str_repeat('x', $mask_length) . SafeMarkup::checkPlain($billing_info->last_four),
+        '#last_four' => Html::escape($billing_info->last_four),
+        '#card_num_masked' => str_repeat('x', $mask_length) . Html::escape($billing_info->last_four),
       ];
     }
     catch (Recurly_NotFoundError $e) {

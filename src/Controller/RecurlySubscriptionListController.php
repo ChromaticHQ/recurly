@@ -2,7 +2,7 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -129,8 +129,8 @@ class RecurlySubscriptionListController extends ControllerBase {
         $full_add_on = \Recurly_Addon::get($plan->plan_code, $add_on->add_on_code);
         $add_ons[$add_on->add_on_code] = [
           'add_on_code' => $add_on->add_on_code,
-          'name' => SafeMarkup::checkPlain($full_add_on->name),
-          'quantity' => SafeMarkup::checkPlain($add_on->quantity),
+          'name' => Html::escape($full_add_on->name),
+          'quantity' => Html::escape($add_on->quantity),
           'cost' => $this->recurlyFormatter->formatCurrency($add_on->unit_amount_in_cents, $subscription->currency),
         ];
         $total += $add_on->unit_amount_in_cents * $add_on->quantity;
@@ -149,7 +149,7 @@ class RecurlySubscriptionListController extends ControllerBase {
       $subscriptions['subscriptions'][$subscription->uuid] = [
         '#theme' => ['recurly_subscription_summary'],
         '#plan_code' => $plan->plan_code,
-        '#plan_name' => SafeMarkup::checkPlain($plan->name),
+        '#plan_name' => Html::escape($plan->name),
         '#state_array' => $states,
         '#state_status' => $this->recurlyFormatter->formatState(reset($states)),
         '#period_end_header' => $this->periodEndHeaderString($states),
