@@ -3,8 +3,18 @@ language: php
 php:
   - 7.0
 
+env:
+  - TRAVIS_NODE_VERSION="6"
+
 install:
 - composer global require drupal/coder 8.*
+# Install correct node version, since this is a non-node (PHP) project.
+# @see: http://austinpray.com/ops/2015/09/20/change-travis-node-version.html
+- rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
+- npm install -g eslint
 
 script:
+  # Validate Drupal PHP standards with PHPCS.
   - ~/.composer/vendor/bin/phpcs --standard=~/.composer/vendor/drupal/coder/coder_sniffer/Drupal/ruleset.xml -v .
+  # Validate Drupal JS standards with ESLint.
+  - eslint .
