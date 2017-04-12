@@ -223,7 +223,7 @@ function recurly_client_initialize(array $settings = NULL, $reset = FALSE) {
     require_once $path . '/lib/recurly.php';
 
     // Required for the API.
-    Recurly_Client::$apiKey = $settings['api_key'];
+    Recurly_Client::$apikey = $settings['api_key'];
   }
   else {
     \Drupal::logger('recurly')->error('Could not find the Recurly PHP client library in sites/all/libraries/recurly.', []);
