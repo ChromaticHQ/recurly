@@ -3,28 +3,79 @@
 namespace Drupal\recurly\Access;
 
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\Routing\Route;
 
 /**
  * Recurly access check abstract class for shared functionality.
  */
 abstract class RecurlyAccess implements AccessInterface {
-  protected $subscriptionPlans;
-  protected $recurlySubscriptionMax;
-  protected $localAccount;
-  protected $entityType;
+
+  /**
+   * The route match service.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
   protected $routeMatch;
+
+  /**
+   * The Recurly settings.
+   *
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $recurlySettings;
+
+  /**
+   * The current user service.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $currentUser;
+
+  /**
+   * The available subscription plans.
+   *
+   * @var array
+   */
+  protected $subscriptionPlans;
+
+  /**
+   * The maximum number of subscriptions.
+   *
+   * @var int
+   */
+  protected $recurlySubscriptionMax;
+
+  /**
+   * The Recurly account.
+   *
+   * @var \Recurly_Account
+   */
+  protected $localAccount;
+
+  /**
+   * The Recurly entity type machine name.
+   *
+   * @var string
+   */
+  protected $entityType;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(RouteMatchInterface $route_match) {
+  public function __construct(
+    RouteMatchInterface $route_match,
+    ConfigFactoryInterface $config,
+    AccountProxyInterface $current_user) {
     $this->routeMatch = $route_match;
-    $this->entityType = \Drupal::config('recurly.settings')->get('recurly_entity_type');
-    $this->subscriptionPlans = \Drupal::config('recurly.settings')->get('recurly_subscription_plans') ?: [];
-    $this->recurlySubscriptionMax = \Drupal::config('recurly.settings')->get('recurly_subscription_max');
+    $this->recurlySettings = $config->get('recurly.settings');
+    $this->currentUser = $current_user;
+    $this->entityType = $this->recurlySettings->get('recurly_entity_type');
+    $this->subscriptionPlans = $this->recurlySettings->get('recurly_subscription_plans') ?: [];
+    $this->recurlySubscriptionMax = $this->recurlySettings->get('recurly_subscription_max');
   }
 
   /**
