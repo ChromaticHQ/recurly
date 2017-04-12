@@ -4,6 +4,7 @@ namespace Drupal\recurly;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
  * Defines a class for reacting to entity events.
@@ -18,13 +19,25 @@ class RecurlyEntityOperations {
   protected $entityTypeManager;
 
   /**
+   * The translation manager service.
+   *
+   * @var \Drupal\Core\StringTranslation\TranslationInterface
+   */
+  protected $stringTranslation;
+
+  /**
    * Constructs a new RecurlyEntityOperations object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   Entity type manager service.
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $translation_manager
+   *   The translation manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(
+    EntityTypeManagerInterface $entity_type_manager,
+    TranslationInterface $translation_manager) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->stringTranslation = $translation_manager;
   }
 
   /**
@@ -100,7 +113,7 @@ class RecurlyEntityOperations {
         $recurly_account->update();
       }
       catch (Recurly_Error $e) {
-        drupal_set_message(t('The billing system reported an error: "@error" To ensure proper billing, please correct the problem if possible or contact support.', ['@error' => $e->getMessage()]), 'warning');
+        drupal_set_message($this->stringTranslation->translate('The billing system reported an error: "@error" To ensure proper billing, please correct the problem if possible or contact support.', ['@error' => $e->getMessage()]), 'warning');
         \Drupal::logger('recurly')->error('Account information could not be sent to the Recurly, it reported "@error" while trying to update <a href="@url">@title</a> with the values @values.', [
           '@error' => $e->getMessage(),
           '@title' => $entity->label(),

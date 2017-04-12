@@ -71,28 +71,28 @@ class RecurlyFormatManager {
   public function formatState($state) {
     switch ($state) {
       case RECURLY_STATE_ACTIVE:
-        return t('Active');
+        return $this->stringTranslation->translate('Active');
 
       case RECURLY_STATE_CANCELED:
-        return t('Canceled (will not renew)');
+        return $this->stringTranslation->translate('Canceled (will not renew)');
 
       case RECURLY_STATE_EXPIRED:
-        return t('Expired');
+        return $this->stringTranslation->translate('Expired');
 
       case RECURLY_STATE_FUTURE:
-        return t('Future Activation');
+        return $this->stringTranslation->translate('Future Activation');
 
       case RECURLY_STATE_PENDING_SUBSCRIPTION:
-        return t('Switching to new plan');
+        return $this->stringTranslation->translate('Switching to new plan');
 
       case RECURLY_STATE_IN_TRIAL:
-        return t('Trial');
+        return $this->stringTranslation->translate('Trial');
 
       case RECURLY_STATE_LIVE:
-        return t('Live');
+        return $this->stringTranslation->translate('Live');
 
       case RECURLY_STATE_PAST_DUE:
-        return t('Past Due');
+        return $this->stringTranslation->translate('Past Due');
     }
   }
 
@@ -222,13 +222,13 @@ class RecurlyFormatManager {
     // Allow for price formatting with and without HTML.
     if (!$html) {
       if (!$time_length) {
-        return t('@amount @time_indicator @time_unit', [
+        return $this->stringTranslation->translate('@amount @time_indicator @time_unit', [
           '@amount' => strip_tags($amount),
           '@time_indicator' => $time_indicator,
           '@time_unit' => $time_unit,
         ]);
       }
-      return t('@amount @time_indicator @time_length @time_unit', [
+      return $this->stringTranslation->translate('@amount @time_indicator @time_length @time_unit', [
         '@amount' => strip_tags($amount),
         '@time_indicator' => $time_indicator,
         '@time_length' => $time_length,
@@ -250,16 +250,16 @@ class RecurlyFormatManager {
   public function formatTransactionStatus($status) {
     switch ($status) {
       case 'success':
-        return t('Successful payment');
+        return $this->stringTranslation->translate('Successful payment');
 
       case 'failed':
-        return t('Failed payment');
+        return $this->stringTranslation->translate('Failed payment');
 
       case 'voided':
-        return t('Voided');
+        return $this->stringTranslation->translate('Voided');
 
       case 'declined':
-        return t('Card declined');
+        return $this->stringTranslation->translate('Card declined');
 
       default:
         return Html::escape($status);
@@ -289,7 +289,7 @@ class RecurlyFormatManager {
       $amount = $this->formatCurrency($coupon_currency->amount_in_cents, $currency, $html);
     }
 
-    return Html::escape($coupon->name) . t('@space(@amount discount)', ['@amount' => ' ', '@amount' => $amount]);
+    return Html::escape($coupon->name) . $this->stringTranslation->translate('@space(@amount discount)', ['@amount' => ' ', '@amount' => $amount]);
   }
 
 }
