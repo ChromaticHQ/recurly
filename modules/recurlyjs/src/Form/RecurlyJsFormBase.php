@@ -2,6 +2,7 @@
 
 namespace Drupal\recurlyjs\Form;
 
+use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Locale\CountryManagerInterface;
@@ -20,13 +21,25 @@ abstract class RecurlyJsFormBase extends FormBase {
   protected $countryManager;
 
   /**
+   * The event dispatcher service.
+   *
+   * @var \Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher
+   */
+  protected $eventDispatcher;
+
+  /**
    * Creates a RecurlyJS base form.
    *
    * @param \Drupal\Core\Locale\CountryManagerInterface $country_manager
    *   The country manager service.
+   * @param \Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher $event_dispatcher
+   *   The event dispatcher service.
    */
-  public function __construct(CountryManagerInterface $country_manager) {
+  public function __construct(
+    CountryManagerInterface $country_manager,
+    ContainerAwareEventDispatcher $event_dispatcher) {
     $this->countryManager = $country_manager;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -34,7 +47,8 @@ abstract class RecurlyJsFormBase extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('country_manager')
+      $container->get('country_manager'),
+      $container->get('event_dispatcher')
     );
   }
 

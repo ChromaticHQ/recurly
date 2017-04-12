@@ -2,7 +2,11 @@
 
 namespace Drupal\recurlyjs\Form;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\recurlyjs\RecurlyJsEvents;
+use Drupal\recurlyjs\Event\SubscriptionAlter;
+use Drupal\recurlyjs\Event\SubscriptionCreated;
 
 /**
  * RecurlyJS subscribe form.
@@ -71,23 +75,40 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
     $recurly_account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
     if (!$recurly_account) {
       $recurly_account = new \Recurly_Account();
-      // Account code is the only property required for Recurly account
-      // creation.
-      // https://dev.recurly.com/docs/create-an-account
-      $recurly_account->account_code = $entity_type . '-' . $entity->id();
-      $recurly_account->billing_info = new \Recurly_BillingInfo();
-      $recurly_account->billing_info->token_id = $recurly_token;
+      $recurly_account->first_name = Html::escape($form_state->getValue('first_name'));
+      $recurly_account->last_name = Html::escape($form_state->getValue('last_name'));
+
       if ($entity_type == 'user') {
         $recurly_account->email = $entity->getEmail();
         $recurly_account->username = $entity->getAccountName();
       }
+
+      // Account code is the only property required for account creation.
+      // https://dev.recurly.com/docs/create-an-account.
+      $recurly_account->account_code = $entity_type . '-' . $entity_id;
     }
+
+    $subscription = new \Recurly_Subscription();
+    $subscription->account = $recurly_account;
+    $subscription->plan_code = $plan_code;
+    $subscription->currency = $currency;
+    $subscription->coupon_code = $coupon_code;
+
+    // Allow other modules the chance to alter the new Recurly Subscription
+    // object before it is saved.
+    $event = new SubscriptionAlter($subscription, $entity, $plan_code);
+    $this->eventDispatcher->dispatch(RecurlyJsEvents::SUBSCRIPTION_ALTER, $event);
+    $subscription = $event->getSubscription();
+
+    // Billing info is based on the token we retrieved from the Recurly JS API
+    // and should only contain the token in this case. We add this after the
+    // above alter hook to ensure it's not modified.
+    $subscription->account->billing_info = new \Recurly_BillingInfo();
+    $subscription->account->billing_info->token_id = $recurly_token;
+
     try {
-      $subscription = new \Recurly_Subscription();
-      $subscription->account = $recurly_account;
-      $subscription->plan_code = $plan_code;
-      $subscription->currency = $currency;
-      $subscription->coupon_code = $coupon_code;
+      // This saves all of the data assembled above in addition to creating a
+      // new subscription record.
       $subscription->create();
     }
     catch (\Recurly_ValidationError $e) {
@@ -109,6 +130,11 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       $form_state->setRebuild(TRUE);
       return;
     }
+
+    // Allow other modules to react to the new subscription being created.
+    $event = new SubscriptionCreated($subscription, $entity, $plan_code);
+    $this->eventDispatcher->dispatch(RecurlyJsEvents::SUBSCRIPTION_CREATED, $event);
+    $subscription = $event->getSubscription();
 
     drupal_set_message($this->t('Account upgraded to @plan!', ['@plan' => $subscription->plan->name]));
     // Save the account locally immediately so that subscriber information may
