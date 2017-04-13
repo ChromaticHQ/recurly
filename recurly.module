@@ -547,7 +547,11 @@ function recurly_process_push_notification($key, $subdomain = NULL) {
         // i.e. "user-1" would match the user with UID 1.
         $parts = explode('-', $recurly_account->account_code);
         $entity_type = variable_get('recurly_entity_type', 'user');
-        if ($parts[0] === $entity_type) {
+        // Load account by entity ID if enabled.
+        if (variable_get('recurly_load_without_prefix', FALSE) && (is_integer($recurly_account->code)) && ($entity = entity_load($entity_type, $recurly_account->code))) {
+          recurly_account_save($recurly_account, $entity_type, $recurly_account->code);
+        }
+        elseif ($parts[0] === $entity_type) {
           if (isset($parts[1]) && is_numeric($parts[1]) && ($entity = entity_load($parts[0], array($parts[1])))) {
             recurly_account_save($recurly_account, $entity_type, $parts[1]);
           }

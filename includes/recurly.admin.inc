@@ -72,6 +72,12 @@ function recurly_settings_form($form, &$form_state) {
     '#title' => t('Log authenticated incoming push notifications. (Primarily used for debugging purposes.)'),
     '#default_value' => variable_get('recurly_push_logging', FALSE),
   );
+  $form['push']['recurly_load_without_prefix'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Load account codes without the default prefix.'),
+    '#description' => t('Disable the account code prefix (<code>entity_type-</code>) when loading an account from a Recurly push notification.'),
+    '#default_value' => variable_get('recurly_load_without_prefix', FALSE),
+  );
 
   $entity_types = entity_get_info();
   $entity_options = array();
