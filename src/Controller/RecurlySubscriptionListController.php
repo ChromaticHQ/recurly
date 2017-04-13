@@ -88,21 +88,14 @@ class RecurlySubscriptionListController extends ControllerBase {
     // Unlikely that we'd have more than 50 subscriptions, but you never know.
     $per_page = 50;
     $subscription_type = $this->config('recurly.settings')->get('recurly_subscription_display');
-    $subscription_list = \Recurly_SubscriptionList::getForAccount($account->account_code, ['per_page' => $per_page]);
+    $state = $subscription_type === 'live' ? ['state' => 'active'] : NULL;
+    $params = ['per_page' => $per_page, $state];
+    $subscription_list = \Recurly_SubscriptionList::getForAccount($account->account_code, $params);
     $page_subscriptions = $this->recurlyPageManager->pagerResults($subscription_list, $per_page);
 
     $subscriptions['subscriptions']['#attached']['library'][] = 'recurly/recurly.default';
 
-    $total_displayed = 0;
     foreach ($page_subscriptions as $subscription) {
-      // Do not show subscriptions that are not active if only showing active.
-      // TODO: Figure out if Recurly_SubscriptionList can only return active
-      // subscriptions to begin with, rather than hiding them like this.
-      if ($subscription->state === 'expired' && $subscription_type === 'live') {
-        continue;
-      }
-      $total_displayed++;
-
       // Determine the state of this subscription.
       $states = $this->subscriptionGetStates($subscription, $account);
 
