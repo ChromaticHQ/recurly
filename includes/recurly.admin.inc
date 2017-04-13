@@ -203,6 +203,7 @@ function recurly_settings_form($form, &$form_state) {
     '#type' => 'select',
     '#default_value' => $mapping['country'],
     '#options' => country_get_list(),
+    '#empty_option' => t('Select country...'),
   );
   $form['sync']['recurly_token_mapping']['phone'] = array(
     '#title' => t('Phone number'),

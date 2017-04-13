@@ -602,6 +602,7 @@ function _recurlyjs_append_billing_fields(array &$form) {
       '#suffix' => '</div>',
       '#after_build' => array('_recurlyjs_form_remove_element_name'),
       '#options' => country_get_list(),
+      '#empty_option' => t('Select country...'),
     );
   }
 
