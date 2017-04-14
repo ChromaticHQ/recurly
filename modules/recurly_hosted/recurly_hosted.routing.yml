@@ -1,2 +1,0 @@
-route_callbacks:
-  - '\Drupal\recurly_hosted\Routing\RecurlyHostedRoutes::routes'

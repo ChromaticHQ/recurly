@@ -49,13 +49,13 @@ function recurly_hosted_recurly_url_info($operation, $context) {
 /**
  * Returns an edit Url for a Recurly account.
  *
- * @param array $recurly_account
+ * @param \Recurly_Account $recurly_account
  *   The recurly account values array returned by recurly_account_load.
  *
  * @return \Drupal\Core\Url
  *   A Drupal Url object for the plan's edit page at Recurly.
  */
-function recurly_hosted_account_edit_url(array $recurly_account) {
+function recurly_hosted_account_edit_url(\Recurly_Account $recurly_account) {
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   return $recurly_url_manager->hostedUrl('accounts/' . $recurly_account->account_code)->getUri();
 }
@@ -63,8 +63,8 @@ function recurly_hosted_account_edit_url(array $recurly_account) {
 /**
  * Returns a front end management Url for a Recurly account.
  *
- * @param array $recurly_account
- *   The recurly account values array returned by recurly_account_load.
+ * @param \Recurly_Account $recurly_account
+ *   The recurly account object returned by recurly_account_load.
  * @param bool $hosted_login_token
  *   Boolean indicating whether or not to use the hosted login token in the Url
  *   if it's available in the account object; defaults to FALSE.
@@ -73,7 +73,7 @@ function recurly_hosted_account_edit_url(array $recurly_account) {
  *   A Drupal Url object for the account's front end management page at Recurly;
  *   uses the hosted login token if specified and it's available.
  */
-function recurly_hosted_account_manage_url(array $recurly_account, $hosted_login_token = FALSE) {
+function recurly_hosted_account_manage_url(\Recurly_Account $recurly_account, $hosted_login_token = FALSE) {
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   // Return a Url using the hosted login token if available.
   if ($hosted_login_token && !empty($recurly_account->hosted_login_token)) {

@@ -1,0 +1,6 @@
+services:
+  recurly_hosted.route_subscriber:
+    class: Drupal\recurly_hosted\Routing\RecurlyHostedRouteSubscriber
+    arguments: ['@entity.manager', '@config.factory']
+    tags:
+      - { name: event_subscriber }
