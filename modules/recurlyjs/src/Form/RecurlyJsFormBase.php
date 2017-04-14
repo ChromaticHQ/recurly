@@ -164,6 +164,7 @@ abstract class RecurlyJsFormBase extends FormBase {
       '#after_build' => ['::removeElementName'],
       '#weight' => -80,
       '#options' => $countries,
+      '#empty_option' => $this->t('Select country...'),
     ];
     $form['vat_number'] = [
       '#type' => 'textfield',

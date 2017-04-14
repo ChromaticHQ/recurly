@@ -330,6 +330,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#type' => 'select',
       '#default_value' => $mapping['country'],
       '#options' => $this->countryManager->getList(),
+      '#empty_option' => $this->t('Select country...'),
     ];
     $form['sync']['recurly_token_mapping']['phone'] = [
       '#title' => $this->t('Phone number'),
