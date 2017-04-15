@@ -20,6 +20,6 @@ recurlyjs.recurlyjs:
     name: MIT
     url: https://github.com/recurly/recurly-js/blob/master/LICENSE.md
     gpl-compatible: true
-  version: 3.*
+  version: 4.*
   js:
-    https://js.recurly.com/v3/recurly.js: { type: external, minified: true }
+    https://js.recurly.com/v4/recurly.js: { type: external, minified: true }

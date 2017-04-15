@@ -14,9 +14,4 @@
   <p>{{ 'No credit card currently on file.'|t }}</p>
 {% endif %}
 
-{#
-@FIXME: Previously drupal_render_children($form) was called here. This now needs
-to be handled on the PHP side of the fence.
-@see: https://www.drupal.org/node/1920746
-#}
-{{ form }}
+{{ form|without('existing') }}

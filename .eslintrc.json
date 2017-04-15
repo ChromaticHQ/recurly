@@ -13,7 +13,8 @@
     "matchMedia": true,
     "Backbone": true,
     "Modernizr": true,
-    "CKEDITOR": true
+    "CKEDITOR": true,
+    "recurly": true
   },
   "rules": {
     // Errors.

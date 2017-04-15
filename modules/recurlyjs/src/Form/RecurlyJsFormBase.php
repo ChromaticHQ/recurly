@@ -56,6 +56,7 @@ abstract class RecurlyJsFormBase extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['#attached']['library'][] = 'recurlyjs/recurlyjs.default';
     $form['#attached']['library'][] = 'recurlyjs/recurlyjs.recurlyjs';
     $form['#attached']['library'][] = 'recurlyjs/recurlyjs.element';
 
@@ -85,132 +86,182 @@ abstract class RecurlyJsFormBase extends FormBase {
     $form['#prefix'] = '<div class="recurly-form-wrapper">';
     $form['#suffix'] = '</div>';
 
+    $form['billing'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Payment Information'),
+      '#attributes' => [
+        'class' => ['recurlyjs-billing-info'],
+      ],
+    ];
     // recurly-element.js adds errors here upon failed validation.
     $form['errors'] = [
       '#markup' => '<div id="recurly-form-errors"></div>',
       '#weight' => -300,
     ];
-
-    $form['first_name'] = [
+    $form['billing']['name'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['recurlyjs-name-wrapper'],
+      ],
+    ];
+    $form['billing']['name']['first_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('First Name'),
       '#attributes' => [
         'data-recurly' => 'first_name',
       ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -150,
+      '#prefix' => '<div class="recurlyjs-form-item__first_name">',
+      '#suffix' => '</div>',
     ];
-    $form['last_name'] = [
+    $form['billing']['name']['last_name'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Last Name'),
+      '#title' => t('Last Name'),
       '#attributes' => [
         'data-recurly' => 'last_name',
       ],
       '#after_build' => ['::removeElementName'],
-      '#weight' => -140,
+      '#prefix' => '<div class="recurlyjs-form-item__last_name">',
+      '#suffix' => '</div>',
     ];
-    $form['address1'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Address Line 1'),
+    $form['billing']['cc_info'] = [
+      '#type' => 'container',
       '#attributes' => [
-        'data-recurly' => 'address1',
+        'class' => ['recurlyjjs-cc-info'],
       ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -130,
     ];
-    $form['address2'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Address Line 2'),
-      '#attributes' => [
-        'data-recurly' => 'address2',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -120,
-    ];
-    $form['city'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('City'),
-      '#attributes' => [
-        'data-recurly' => 'city',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -110,
-    ];
-    $form['state'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('State'),
-      '#attributes' => [
-        'data-recurly' => 'state',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -100,
-    ];
-    $form['postal_code'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Postal Code'),
-      '#attributes' => [
-        'data-recurly' => 'postal_code',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -90,
-    ];
-    $countries = $this->countryManager->getList();
-    $form['country'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Country'),
-      '#attributes' => [
-        'data-recurly' => 'country',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -80,
-      '#options' => $countries,
-      '#empty_option' => $this->t('Select country...'),
-    ];
-    $form['vat_number'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('VAT Number'),
-      '#attributes' => [
-        'data-recurly' => 'vat_number',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -70,
-    ];
-    $form['number'] = [
-      '#type' => 'textfield',
+    // Credit card fields are represented as <divs> in the DOM and Recurly.JS
+    // will dynamically replace them with an input field inside of an iFrame. In
+    // order to ensure these fields never contain data in Drupal's Form API we
+    // just add them as static markup.
+    $form['billing']['cc_info']['number'] = [
       '#title' => $this->t('Card Number'),
-      '#attributes' => [
-        'data-recurly' => 'number',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -60,
+      '#markup' => '<label for="number">' . $this->t('Card Number') . '</label><div data-recurly="number"></div>',
+      '#allowed_tags' => ['label', 'div'],
+      '#prefix' => '<div class="form-item recurlyjs-form-item__number">',
+      '#suffix' => '<span class="recurlyjs-icon-card recurlyjs-icon-card__inline recurlyjs-icon-card__unknown"></span></div>',
     ];
-    $form['cvv'] = [
-      '#type' => 'textfield',
+    $form['billing']['cc_info']['cvv'] = [
       '#title' => $this->t('CVV'),
-      '#attributes' => [
-        'data-recurly' => 'cvv',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -55,
+      '#markup' => '<label for="cvv">' . t('CVV') . '</label><div data-recurly="cvv"></div>',
+      '#allowed_tags' => ['label', 'div'],
+      '#prefix' => '<div class="form-item recurlyjs-form-item__cvv">',
+      '#suffix' => '</div>',
     ];
-    $form['month'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('MM'),
-      '#attributes' => [
-        'data-recurly' => 'month',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -50,
+    $form['billing']['cc_info']['month'] = [
+      '#title' => $this->t('Month'),
+      '#markup' => '<label for="month">' . $this->t('Month') . '</label><div data-recurly="month"></div>',
+      '#allowed_tags' => ['label', 'div'],
+      '#prefix' => '<div class="form-item recurlyjs-form-item__month">',
+      '#suffix' => '</div>',
     ];
-    $form['year'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('YYYY'),
-      '#attributes' => [
-        'data-recurly' => 'year',
-      ],
-      '#after_build' => ['::removeElementName'],
-      '#weight' => -40,
+    $form['billing']['cc_info']['year'] = [
+      '#title' => $this->t('Year'),
+      '#markup' => '<label for="year">' . $this->t('Year') . '</label><div data-recurly="year"></div>',
+      '#allowed_tags' => ['label', 'div'],
+      '#prefix' => '<div class="form-item recurlyjs-form-item__year">',
+      '#suffix' => '</div>',
     ];
+
+    $address_requirement = \Drupal::state()->get('recurlyjs_address_requirement', 'full');
+    $hide_vat_number = \Drupal::state()->get('recurlyjs_hide_vat_number', 0);
+
+    if (in_array($address_requirement, [
+      'zipstreet',
+      'full',
+    ])) {
+      $form['billing']['address1'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Address Line 1'),
+        '#attributes' => [
+          'data-recurly' => 'address1',
+        ],
+        '#prefix' => '<div class="recurlyjs-form-item__address1">',
+        '#suffix' => '</div>',
+        '#after_build' => ['::removeElementName'],
+      ];
+      $form['billing']['address2'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Address Line 2'),
+        '#attributes' => [
+          'data-recurly' => 'address2',
+        ],
+        '#prefix' => '<div class="recurlyjs-form-item__address2">',
+        '#suffix' => '</div>',
+        '#after_build' => ['::removeElementName'],
+      ];
+    }
+    $form['billing']['city_state_postal'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['recurlyjs-city-state-postal-wrapper'],
+      ],
+    ];
+
+    if ($address_requirement == 'full') {
+      $form['billing']['city_state_postal']['city'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('City'),
+        '#attributes' => [
+          'data-recurly' => 'city',
+        ],
+        '#prefix' => '<div class="recurlyjs-form-item__city">',
+        '#suffix' => '</div>',
+        '#after_build' => ['::removeElementName'],
+      ];
+      $form['billing']['city_state_postal']['state'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('State'),
+        '#attributes' => [
+          'data-recurly' => 'state',
+        ],
+        '#prefix' => '<div class="recurlyjs-form-item__state">',
+        '#suffix' => '</div>',
+        '#after_build' => ['::removeElementName'],
+      ];
+    }
+
+    if ($address_requirement != 'none') {
+      $form['billing']['city_state_postal']['postal_code'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Postal Code'),
+        '#attributes' => [
+          'data-recurly' => 'postal_code',
+        ],
+        '#prefix' => '<div class="recurlyjs-form-item__postal_code">',
+        '#suffix' => '</div>',
+        '#after_build' => ['::removeElementName'],
+      ];
+    }
+
+    if ($address_requirement == 'full') {
+      $countries = $this->countryManager->getList();
+      $form['billing']['country'] = [
+        '#type' => 'select',
+        '#title' => $this->t('Country'),
+        '#attributes' => [
+          'data-recurly' => 'country',
+        ],
+        '#prefix' => '<div class="recurlyjs-form-item__country">',
+        '#suffix' => '</div>',
+        '#after_build' => ['::removeElementName'],
+        '#options' => $countries,
+        '#empty_option' => $this->t('Select country...'),
+      ];
+    }
+
+    if (!$hide_vat_number) {
+      $form['billing']['vat_number'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('VAT Number'),
+        '#attributes' => [
+          'data-recurly' => 'vat_number',
+        ],
+        '#prefix' => '<div class="recurlyjs-form-item__vat_number">',
+        '#suffix' => '</div>',
+        '#after_build' => ['::removeElementName'],
+      ];
+    }
+
     $form['tax_code'] = [
       '#type' => 'hidden',
       '#title' => $this->t('digital'),

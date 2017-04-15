@@ -148,7 +148,7 @@ class RecurlySettingsForm extends ConfigFormBase {
     $form['account']['recurly_public_key'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Public Key'),
-      '#description' => $this->t('Enter this if needed for Recurly.js. Note that this version of the Recurly module only supports Recurly.js v3, which uses the "public key" and not the "transparent post key" used by Recurly.js v2.'),
+      '#description' => $this->t('Enter this if needed for Recurly.js. Note that this version of the Recurly module only supports Recurly.js v4, which uses the "public key" and not the "transparent post key" used by Recurly.js v2.'),
       '#default_value' => $this->config('recurly.settings')->get('recurly_public_key'),
     ];
     $recurly_subdomain = $this->config('recurly.settings')->get('recurly_subdomain');
