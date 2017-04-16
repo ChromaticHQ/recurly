@@ -35,7 +35,7 @@ class RecurlyEntityOperations {
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
-    TranslationInterface $translation_manager) {
+    TranslationInterface $translation_manager = NULL) {
     $this->entityTypeManager = $entity_type_manager;
     $this->stringTranslation = $translation_manager;
   }
