@@ -112,7 +112,7 @@ class RecurlyEntityOperations {
         }
         $recurly_account->update();
       }
-      catch (Recurly_Error $e) {
+      catch (\Recurly_Error $e) {
         drupal_set_message($this->stringTranslation->translate('The billing system reported an error: "@error" To ensure proper billing, please correct the problem if possible or contact support.', ['@error' => $e->getMessage()]), 'warning');
         \Drupal::logger('recurly')->error('Account information could not be sent to the Recurly, it reported "@error" while trying to update <a href="@url">@title</a> with the values @values.', [
           '@error' => $e->getMessage(),

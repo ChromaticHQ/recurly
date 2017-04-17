@@ -70,7 +70,7 @@ class RecurlyJsUpdateBillingForm extends RecurlyJsFormBase {
         '#card_num_masked' => str_repeat('x', $mask_length) . Html::escape($billing_info->last_four),
       ];
     }
-    catch (Recurly_NotFoundError $e) {
+    catch (\Recurly_NotFoundError $e) {
       $this->logger('recurlyjs')->notice('Unable to retrieve billing information. Received the following error: @error', ['@error' => $e->getMessage()]);
       drupal_set_message($this->t('Unable to retrieve billing information.'), 'error');
       return $form;

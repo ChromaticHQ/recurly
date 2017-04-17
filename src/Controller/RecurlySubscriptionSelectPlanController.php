@@ -53,12 +53,12 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
       }
       else {
         try {
-          $subscription = Recurly_Subscription::get($subscription_id);
+          $subscription = \Recurly_Subscription::get($subscription_id);
           $subscriptions[$subscription->uuid] = $subscription;
           $currency = $subscription->plan->currency;
           $mode = self::SELECT_PLAN_MODE_CHANGE;
         }
-        catch (Recurly_NotFoundError $e) {
+        catch (\Recurly_NotFoundError $e) {
           throw new NotFoundHttpException($this->t('Subscription not found'));
         }
       }

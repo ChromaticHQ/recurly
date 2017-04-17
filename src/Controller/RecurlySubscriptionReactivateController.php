@@ -79,7 +79,7 @@ class RecurlySubscriptionReactivateController extends ControllerBase {
         '@date' => $this->recurlyFormatter->formatDate($subscription->current_period_ends_at),
       ]));
     }
-    catch (Recurly_Error $e) {
+    catch (\Recurly_Error $e) {
       drupal_set_message($this->t('The plan could not be reactivated because the billing service encountered an error.'));
       return;
     }

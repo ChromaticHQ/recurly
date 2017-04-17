@@ -474,7 +474,7 @@ class RecurlySettingsForm extends ConfigFormBase {
         $plans = recurly_subscription_plans();
       }
 
-      catch (Recurly_UnauthorizedError $e) {
+      catch (\Recurly_UnauthorizedError $e) {
         $form_state->setErrorByName('recurly_private_api_key', $this->t('Your API Key is not authorized to connect to Recurly.'));
       }
     }

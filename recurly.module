@@ -223,7 +223,7 @@ function recurly_client_initialize(array $settings = NULL, $reset = FALSE) {
     require_once $path . '/lib/recurly.php';
 
     // Required for the API.
-    Recurly_Client::$apiKey = $settings['api_key'];
+    \Recurly_Client::$apiKey = $settings['api_key'];
   }
   else {
     \Drupal::logger('recurly')->error('Could not find the Recurly PHP client library in sites/all/libraries/recurly.', []);
@@ -277,9 +277,9 @@ function recurly_account_load(array $conditions = [], $local = FALSE) {
   try {
     recurly_client_initialize();
     try {
-      $recurly_account = Recurly_Account::get($data->account_code);
+      $recurly_account = \Recurly_Account::get($data->account_code);
     }
-    catch (Recurly_NotFoundError $e) {
+    catch (\Recurly_NotFoundError $e) {
       // Return the orphaned data if no account was found at Recurly.
       $data->orphaned = TRUE;
       return $data;
@@ -326,12 +326,12 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $expor
   if ($export) {
     // Check to see if the record already exists.
     try {
-      $remote_account = Recurly_Account::get($recurly_account->account_code);
+      $remote_account = \Recurly_Account::get($recurly_account->account_code);
       // If it does than update the account now.
       try {
         $recurly_account->update();
       }
-      catch (Recurly_NotFoundError $e) {
+      catch (\Recurly_NotFoundError $e) {
         watchdog_exception('recurly', $e);
         return FALSE;
       }
@@ -341,7 +341,7 @@ function recurly_account_save($recurly_account, $entity_type, $entity_id, $expor
       try {
         $recurly_account->create();
       }
-      catch (Recurly_NotFoundError $e) {
+      catch (\Recurly_NotFoundError $e) {
         watchdog_exception('recurly', $e);
         return FALSE;
       }
@@ -388,7 +388,7 @@ function recurly_account_close($recurly_account, $cancelation_method = NULL) {
       // that account. If refunding accounts upon cancellation, we must manually
       // terminate each active subscription.
       if ($cancelation_method !== 'cancel') {
-        $subscription_list = Recurly_SubscriptionList::getForAccount($recurly_account->account_code);
+        $subscription_list = \Recurly_SubscriptionList::getForAccount($recurly_account->account_code);
         foreach ($subscription_list as $subscription) {
           if ($subscription->state === 'active') {
             $username = $recurly_account->username ? $recurly_account->username : $recurly_account->account_code;
@@ -406,7 +406,7 @@ function recurly_account_close($recurly_account, $cancelation_method = NULL) {
       // Then close the account.
       $recurly_account->close();
     }
-    catch (Recurly_Error $e) {
+    catch (\Recurly_Error $e) {
       // Throw the highest level alert. Failure could result in accounts getting
       // charged after the Drupal account is deleted.
       \Drupal::logger('recurly')->alert('A Recurly account with the account code @code was intended to be closed, but may still open! The Recurly API returned the error "@error".', [
@@ -451,7 +451,7 @@ function recurly_account_get_subscriptions($account_code, $state) {
     $accounts[$account_code] = [];
 
     recurly_client_initialize();
-    $subscription_list = Recurly_SubscriptionList::getForAccount($account_code, ['per_page' => 200]);
+    $subscription_list = \Recurly_SubscriptionList::getForAccount($account_code, ['per_page' => 200]);
     $accounts[$account_code] = ['active' => [], 'expired' => []];
     foreach ($subscription_list as $subscription) {
       if ($subscription->state !== 'expired') {
@@ -501,7 +501,7 @@ function recurly_subscription_plans($reset_cache = FALSE) {
   }
 
   // Retrieve the subscription plans from Recurly.
-  $plans = Recurly_PlanList::get();
+  $plans = \Recurly_PlanList::get();
 
   return $plans;
 }

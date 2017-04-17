@@ -140,7 +140,7 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
         $subscription->updateAtRenewal();
       }
     }
-    catch (Recurly_Error $e) {
+    catch (\Recurly_Error $e) {
       drupal_set_message($this->t('The plan could not be updated because the billing service encountered an error.'));
       return;
     }

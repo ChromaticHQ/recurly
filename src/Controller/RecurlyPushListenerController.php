@@ -71,7 +71,7 @@ class RecurlyPushListenerController extends ControllerBase {
       try {
         $recurly_account = \Recurly_Account::get($notification->account->account_code);
       }
-      catch (Recurly_NotFoundError $e) {
+      catch (\Recurly_NotFoundError $e) {
         drupal_set_message($this->t('Account not found'));
         watchdog_exception('recurly', $e);
       }
