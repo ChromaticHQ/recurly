@@ -171,7 +171,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       return;
     }
     // Check that the coupon is available in the specified currency.
-    if ($coupon && $coupon->discount_type !== 'percent') {
+    if ($coupon && !in_array($coupon->discount_type, ['percent', 'free_trial'])) {
       if (!$coupon->discount_in_cents->offsetExists($currency)) {
         form_error($element, $this->t('The coupon code you have entered is not valid in @currency.', ['@currency' => $currency]));
         return;

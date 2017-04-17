@@ -124,7 +124,7 @@ class RecurlyRedeemCouponForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
     // Initialize the Recurly client with the site-wide settings.
-    if (recurly_client_initialize()) {
+    if (!recurly_client_initialize()) {
       $form_state->setErrorByName('coupon_code', $this->t('Could not initialize the Recurly client.'));
       return;
     }
@@ -140,7 +140,7 @@ class RecurlyRedeemCouponForm extends FormBase {
     }
 
     // Check that the coupon is available in the specified currency.
-    if ($form_state->get('coupon') && $form_state->get('coupon')->discount_type !== 'percent') {
+    if ($form_state->get('coupon') && !in_array($form_state->get('coupon')->discount_type, ['percent', 'free_trial'])) {
       if (!$form_state->get('coupon')->discount_in_cents->offsetExists($form_state->getValue('coupon_currency'))) {
         $form_state->setErrorByName('coupon_currency', $this->t('The coupon code you have entered is not valid in @currency currency.', ['@currency' => $form_state->getValue('coupon_currency')]));
         return;
