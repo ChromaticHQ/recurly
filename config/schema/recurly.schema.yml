@@ -1,5 +1,5 @@
 recurly.settings:
-  type: mapping
+  type: config_object
   label: Settings
   mapping:
     recurly_subscription_max:
