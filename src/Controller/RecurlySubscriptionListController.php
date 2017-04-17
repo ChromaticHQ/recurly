@@ -241,7 +241,7 @@ class RecurlySubscriptionListController extends ControllerBase {
       case 'past_due':
         $url = recurly_url('update_billing', $context);
         if ($url) {
-          return $this->t('This account is past due. Please <a href="TTurl">update your billing information</a>.', ['TTurl' => $url]);
+          return $this->t('This account is past due. Please <a href=":url">update your billing information</a>.', [':url' => $url]);
         }
         else {
           return $this->t('This account is past due. Please contact an administrator to update your billing information.');
@@ -249,7 +249,7 @@ class RecurlySubscriptionListController extends ControllerBase {
       case 'canceled':
         $url = recurly_url('reactivate', $context);
         if ($url) {
-          return $this->t('This plan is canceled and will not renew. You may <a href="TTurl">reactivate the plan</a> to resume billing.', ['TTurl' => $url]);
+          return $this->t('This plan is canceled and will not renew. You may <a href=":url">reactivate the plan</a> to resume billing.', [':url' => $url]);
         }
         else {
           return $this->t('This plan is canceled and will not renew.');
@@ -257,7 +257,7 @@ class RecurlySubscriptionListController extends ControllerBase {
       case 'expired':
         $url = recurly_url('select_plan', $context);
         if ($url) {
-          return $this->t('This plan has expired. Please <a href="TTurl">purchase a new subscription</a>.', ['TTurl' => $url]);
+          return $this->t('This plan has expired. Please <a href=":url">purchase a new subscription</a>.', [':url' => $url]);
         }
         else {
           return $this->t('This plan has expired.');

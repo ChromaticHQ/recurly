@@ -131,7 +131,7 @@ class RecurlyInvoicesController extends ControllerBase {
     if ($invoice->state != 'collected') {
       $url = recurly_url('update_billing', ['entity' => $entity]);
       if ($url) {
-        $error_message = $this->t('This invoice is past due! Please <a href="TTurl">update your billing information</a>.', ['TTurl' => $url->toString()]);
+        $error_message = $this->t('This invoice is past due! Please <a href=":url">update your billing information</a>.', [':url' => $url->toString()]);
       }
       else {
         $error_message = $this->t('This invoice is past due! Please contact an administrator to update your billing information.');
