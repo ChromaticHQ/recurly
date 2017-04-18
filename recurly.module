@@ -570,14 +570,23 @@ function recurly_recurly_url_info($operation, $context) {
 
   switch ($operation) {
     case 'select_plan':
-      return Url::fromRoute("entity.$recurly_entity_type.recurly_signup", [$recurly_entity_type => $context['entity']->id()]);
+      return Url::fromRoute("entity.$recurly_entity_type.recurly_signup", [
+        $recurly_entity_type => $context['entity']->id(),
+      ]);
 
     case 'change_plan':
-      return Url::fromRoute("entity.$recurly_entity_type.recurly_planchange", [
-        $recurly_entity_type => $context['entity']->id(),
-        'subscription_id' => $context['subscription']->uuid,
-        'new_plan_code' => isset($context['plan_code']) ? $context['plan_code'] : NULL,
-      ]);
+      if (isset($context['plan_code'])) {
+        return Url::fromRoute("entity.$recurly_entity_type.recurly_planchange", [
+          $recurly_entity_type => $context['entity']->id(),
+          'subscription_id' => $context['subscription']->uuid,
+          'new_plan_code' => isset($context['plan_code']) ? $context['plan_code'] : NULL,
+        ]);
+      }
+      else {
+        return Url::fromRoute("entity.$recurly_entity_type.recurly_change", [
+          $recurly_entity_type => $context['entity']->id(),
+        ]);
+      }
 
     case 'cancel':
       return Url::fromRoute("entity.$recurly_entity_type.recurly_cancel", [
@@ -592,7 +601,9 @@ function recurly_recurly_url_info($operation, $context) {
       ]);
 
     case 'redeem_coupon':
-      return Url::fromRoute("entity.$recurly_entity_type.recurly_coupon", [$recurly_entity_type => $context['entity']->id()]);
+      return Url::fromRoute("entity.$recurly_entity_type.recurly_coupon", [
+        $recurly_entity_type => $context['entity']->id(),
+      ]);
   }
 }
 

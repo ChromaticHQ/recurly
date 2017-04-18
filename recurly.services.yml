@@ -29,12 +29,7 @@ services:
     tags:
       - { name: access_check, applies_to: _access_check_recurly_cancel }
     arguments: ['@current_route_match', '@config.factory', '@current_user']
-  access_check.recurly.change:
-    class: Drupal\recurly\Access\RecurlyAccessChangePlanLatest
-    tags:
-      - { name: access_check, applies_to: _access_check_recurly_change_plan }
-    arguments: ['@current_route_match', '@config.factory', '@current_user']
-  access_check.recurly.change:
+  access_check.recurly.signup:
     class: Drupal\recurly\Access\RecurlyAccessSignUp
     tags:
       - { name: access_check, applies_to: _access_check_recurly_signup }

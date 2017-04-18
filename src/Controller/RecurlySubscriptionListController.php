@@ -107,12 +107,7 @@ class RecurlySubscriptionListController extends ControllerBase {
         sort($states);
       }
 
-      if ($this->config('recurly.settings')->get('recurly_subscription_max') === '1') {
-        $links = FALSE;
-      }
-      else {
-        $links = $this->subscriptionLinks($entity_type, $entity, $subscription, $account, $states);
-      }
+      $links = $this->subscriptionLinks($entity_type, $entity, $subscription, $account, $states);
 
       $plan = $subscription->plan;
       $add_ons = [];
@@ -192,7 +187,6 @@ class RecurlySubscriptionListController extends ControllerBase {
       'entity_type' => $entity_type,
       'entity' => $entity,
       'subscription' => $subscription,
-      'plan_code' => $subscription->plan->plan_code,
       'account' => $account,
     ];
 

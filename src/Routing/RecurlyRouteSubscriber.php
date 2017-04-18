@@ -93,7 +93,6 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
             '_entity_access' => "$entity_type_id.update",
             '_access_check_recurly_user' => 'TRUE',
             '_access_check_recurly_local_account' => 'TRUE',
-            '_access_check_recurly_change_plan' => 'TRUE',
           ],
           $options
         );
@@ -113,7 +112,6 @@ class RecurlyRouteSubscriber extends RouteSubscriberBase {
             '_entity_access' => "$entity_type_id.update",
             '_access_check_recurly_user' => 'TRUE',
             '_access_check_recurly_local_account' => 'TRUE',
-            '_access_check_recurly_change_plan' => 'TRUE',
           ],
           $options
         );
