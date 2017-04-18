@@ -80,4 +80,13 @@ class RecurlySettingsFormWebTest extends WebTestBase {
     $this->assertField('recurly_subscription_cancel_behavior');
   }
 
+  /**
+   * Test settings form submission.
+   */
+  protected function testSettingsFormSubmission() {
+    $this->drupalGet('/admin/config/services/recurly');
+    $this->drupalPostForm(NULL, [], t('Save configuration'));
+    $this->assertText('The configuration options have been saved.');
+  }
+
 }
