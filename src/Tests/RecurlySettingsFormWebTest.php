@@ -26,16 +26,6 @@ class RecurlySettingsFormWebTest extends WebTestBase {
   protected $adminUser;
 
   /**
-   * Form values that are set by default.
-   *
-   * @var array
-   */
-  protected $defaultFormValues = [
-    'recurly_default_currency' => 'USD',
-    'recurly_public_key' => '',
-  ];
-
-  /**
    * {@inheritdoc}
    */
   protected function setUp() {
@@ -51,10 +41,10 @@ class RecurlySettingsFormWebTest extends WebTestBase {
   /**
    * Test the settings page.
    */
-  protected function testSettingsPage() {
+  protected function testSettingsSections() {
     $this->drupalGet('/admin/config/services/recurly');
+    $this->assertResponse(200);
 
-    $this->assertText(t('Default account settings'));
     $this->assertText(t('Push notification settings'));
     $this->assertText(t('Built-in subscription/invoice pages'));
   }
@@ -64,14 +54,30 @@ class RecurlySettingsFormWebTest extends WebTestBase {
    */
   protected function testSettingsFields() {
     $this->drupalGet('/admin/config/services/recurly');
-    $this->assertField('edit-recurly-public-key');
-  }
 
-  /**
-   * Test if the default values are shown correctly in the form.
-   */
-  protected function testDefaultFormValues() {
-    $this->drupalGet('/admin/config/services/recurly');
+    // Account settings group.
+    $this->assertText(t('Default account settings'));
+    $this->assertField('recurly_private_api_key');
+    $this->assertField('recurly_public_key');
+    $this->assertField('recurly_subdomain');
+    $this->assertField('recurly_default_currency');
+
+    // Push notifcation group.
+    $this->assertText(t('Push notification settings'));
+    $this->assertField('recurly_listener_key');
+    $this->assertField('recurly_push_logging');
+
+    // Account sync group.
+    $this->assertField('recurly_entity_type');
+
+    // Buil-in page group.
+    $this->assertField('recurly_pages');
+    $this->assertField('recurly_coupon_page');
+    $this->assertField('recurly_subscription_display');
+    $this->assertField('recurly_subscription_max');
+    // $this->assertField('recurly_subscription_upgrade_timeframe');
+    // $this->assertField('recurly_subscription_downgrade_timeframe');.
+    $this->assertField('recurly_subscription_cancel_behavior');
   }
 
 }
