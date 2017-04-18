@@ -87,7 +87,7 @@ abstract class RecurlyAccess implements AccessInterface {
   /**
    * Determine if this is a signup path.
    *
-   * @param Symfony\Component\Routing\Route $route
+   * @param \Symfony\Component\Routing\Route $route
    *   A Route object.
    *
    * @return bool

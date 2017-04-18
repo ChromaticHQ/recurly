@@ -4,6 +4,7 @@ namespace Drupal\recurly\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Recurly change subscription controller.
@@ -36,7 +37,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
     }
     catch (\Recurly_NotFoundError $e) {
       drupal_set_message($this->t('Subscription not found.'));
-      return MENU_NOT_FOUND;
+      throw new NotFoundHttpException();
     }
 
     // Load the old plan.
@@ -45,7 +46,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
     }
     catch (\Recurly_NotFoundError $e) {
       drupal_set_message($this->t('Plan code "@plan" not found.', ['@plan' => $subscription->plan->plan_code]));
-      return MENU_NOT_FOUND;
+      throw new NotFoundHttpException();
     }
 
     // Load the new plan.
@@ -54,7 +55,7 @@ class RecurlySubscriptionChangeController extends ControllerBase {
     }
     catch (\Recurly_NotFoundError $e) {
       drupal_set_message($this->t('Plan code "@plan" not found.', ['@plan' => $new_plan_code]));
-      return MENU_NOT_FOUND;
+      throw new NotFoundHttpException();
     }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
