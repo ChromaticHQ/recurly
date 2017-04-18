@@ -101,6 +101,22 @@ abstract class RecurlyAccess implements AccessInterface {
   }
 
   /**
+   * Determine if this is a registration path.
+   *
+   * @param Symfony\Component\Routing\Route $route
+   *   A Route object.
+   *
+   * @return bool
+   *   TRUE if the path contains 'register', else FALSE.
+   */
+  protected function pathIsRegistration(Route $route) {
+    if (strpos($route->getPath(), 'register') !== FALSE) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Loads the Recurly account.
    */
   protected function setLocalAccount() {

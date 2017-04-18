@@ -9,11 +9,16 @@
  */
 
 use Drupal\Component\Utility\UrlHelper;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_recurly_url_info().
  */
 function recurly_hosted_recurly_url_info($operation, $context) {
+  if (\Drupal::currentUser()->isAnonymous()) {
+    return Url::fromRoute('recurly.redirect_to_registration');
+  }
+
   switch ($operation) {
     case 'update_billing':
       return recurly_hosted_account_manage_url($context['account'], TRUE);

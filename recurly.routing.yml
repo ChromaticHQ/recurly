@@ -1,5 +1,18 @@
+recurly.select_plan:
+  path: '/subscription/signup'
+  defaults:
+    _controller: '\Drupal\recurly\Controller\RecurlySubscriptionSelectPlanController::planSelect'
+    _title: 'Subscription plans'
+  requirements:
+    _access_check_recurly_select_plan: 'TRUE'
+recurly.redirect_to_registration:
+  path: '/subscription/register'
+  defaults:
+    _controller: '\Drupal\recurly\Controller\RecurlySubscriptionSelectPlanController::redirectToRegistration'
+  requirements:
+    _access_check_recurly_select_plan: 'TRUE'
 recurly.manage_subscription:
-  path: 'manage-subscription/{account_code}'
+  path: '/manage-subscription/{account_code}'
   defaults:
     _controller: '\Drupal\recurly\Controller\RecurlyManageSubscriptionController::subscriptionRedirect'
   requirements:

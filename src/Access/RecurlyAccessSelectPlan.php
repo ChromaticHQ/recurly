@@ -14,7 +14,7 @@ class RecurlyAccessSelectPlan extends RecurlyAccess {
    */
   public function access() {
     $route = $this->routeMatch->getCurrentRouteMatch()->getRouteObject();
-    if (!empty($this->subscriptionPlans) && $this->pathIsSignup($route) || $this->recurlySubscriptionMax != 1) {
+    if (!empty($this->subscriptionPlans) && ($this->pathIsSignup($route) || $this->pathIsRegistration($route)) || $this->recurlySubscriptionMax != 1) {
       return AccessResult::allowed();
     }
     return AccessResult::forbidden();

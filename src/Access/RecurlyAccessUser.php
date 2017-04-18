@@ -17,7 +17,7 @@ class RecurlyAccessUser extends RecurlyAccess {
     // 'administer recurly' permission, only allow them to view their own
     // subscriptions.
     if ($this->entityType == 'user') {
-      $entity_id = $this->routeMatch->getCurrentRouteMatch()->getRawParameter($this->entityType);
+      $entity_id = $this->routeMatch->getMasterRouteMatch()->getRawParameter($this->entityType);
       if ($this->currentUser->id() != $entity_id && !$this->currentUser->hasPermission('administer recurly')) {
         return AccessResult::forbidden();
       }

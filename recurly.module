@@ -9,6 +9,7 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 
@@ -675,4 +676,32 @@ function template_preprocess_recurly_invoice_list(&$variables) {
  */
 function template_preprocess_recurly_invoice(&$variables) {
   \Drupal::service('recurly.recurly_preprocess')->preprocessRecurlyInvoice($variables);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alter the user edit form to redirect new users to plan selection.
+ */
+function recurly_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form['actions']['submit']['#submit'][] = 'recurly_user_edit_form_submit_redirect';
+}
+
+/**
+ * Redirects to the subscription selection page after setting user password.
+ *
+ * @param array $form
+ *   The form definition.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The current state of the form.
+ */
+function recurly_user_edit_form_submit_redirect(array $form, FormStateInterface $form_state) {
+  if (\Drupal::currentUser()->isAuthenticated()) {
+    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+    $authenticated_route_name = "entity.$entity_type_id.recurly_signup";
+    $authenticated_route = \Drupal::service('router.route_provider')->getRouteByName($authenticated_route_name);
+    $form_state->setRedirect($authenticated_route_name, [
+      'user' => \Drupal::currentUser()->id(),
+    ], $authenticated_route->getOptions());
+  }
 }

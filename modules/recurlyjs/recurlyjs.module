@@ -12,6 +12,10 @@ use Drupal\Core\Url;
  * Implements hook_recurly_url_info().
  */
 function recurlyjs_recurly_url_info($operation, $context) {
+  if (\Drupal::currentUser()->isAnonymous()) {
+    return Url::fromRoute('recurly.redirect_to_registration');
+  }
+
   $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
   switch ($operation) {
     case 'update_billing':

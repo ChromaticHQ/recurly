@@ -121,8 +121,7 @@ class RecurlyPreprocess {
 
     // Check if this is an account that is creating a new subscription.
     $variables['expired_subscriptions'] = FALSE;
-    $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
-    if ($account) {
+    if (!empty($entity) && recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()])) {
       $variables['expired_subscriptions'] = empty($subscriptions);
     }
   }
