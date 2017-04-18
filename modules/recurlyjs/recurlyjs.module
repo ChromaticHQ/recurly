@@ -66,7 +66,10 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, FormStateInterface 
   $recurly_account_link_text = t('your Recurly account');
   if (\Drupal::config('recurly.settings')->get('recurly_subdomain')) {
     $url = Url::fromUri($recurly_url_manager->hostedUrl('configuration/edit')->getUri())->toString();
-    $recurly_account_link = '<a href="' . Url::fromUri($recurly_url_manager->hostedUrl('configuration/edit')->getUri())->toString() . '">' . $recurly_account_link_text . '</a>';
+    $recurly_account_link = t('<a href=":recurly_configuration_url">:recurly_account_link_text</a>', [
+      ':recurly_configuration_url' => $url,
+      ':recurly_account_link_text' => $recurly_account_link_text,
+    ]);
   }
   else {
     $recurly_account_link = $recurly_account_link_text;
@@ -81,10 +84,9 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, FormStateInterface 
       'none' => t('None'),
     ],
     '#default_value' => \Drupal::config('recurlyjs.settings')->get('address_requirement') ?: 'full',
-    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on %link in "Site Settings".',
+    '#description' => t('Choose the level of address information required. Collecting more address information reduces the probability of fraudulent accounts. This setting should match the address requirements as configured on @link in "Site Settings".',
       [
-        // @FIXME: Url is not being escaped appropriately.
-        '%link' => $recurly_account_link,
+        '@link' => $recurly_account_link,
       ]),
   ];
 
@@ -106,7 +108,9 @@ function _recurlyjs_form_recurly_settings_form_alter(&$form, FormStateInterface 
     '#title' => t('Enable PayPal'),
     '#type' => 'checkbox',
     '#default_value' => \Drupal::config('recurlyjs.settings')->get('recurlyjs_accept_paypal') ?: FALSE,
-    '#description' => t('Show an option to pay with PayPal. This requires a PayPal Business account with Referential Transactions enabled. <a href="https://docs.recurly.com/payment-gateways/paypal-payments">See the Recurly Paypal documentation</a>.'),
+    '#description' => t('Show an option to pay with PayPal. This requires a PayPal Business account with Referential Transactions enabled. <a href="@paypal_link">See the Recurly Paypal documentation</a>.', [
+      '@paypal_link' => 'https://docs.recurly.com/payment-gateways/paypal-payments',
+    ]),
   ];
 
   $form['#submit'][] = 'recurlyjs_settings_form_submit';

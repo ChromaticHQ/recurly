@@ -160,7 +160,7 @@ class RecurlySettingsForm extends ConfigFormBase {
     ];
     // If subdomain isn't empty, then set currency suggestion and link,
     // otherwise leave blank.
-    $currency_suggestion = !empty($recurly_subdomain) ? t('@spaceYou can find a list of supported currencies in your <a href=":url">Recurly account currencies page</a>.', [
+    $currency_suggestion = !empty($recurly_subdomain) ? $this->t('@spaceYou can find a list of supported currencies in your <a href=":url">Recurly account currencies page</a>.', [
       '@space' => ' ',
       ':url' => $this->recurlyUrlManager->hostedUrl('configuration/currencies')->getUri(),
     ]) : '';
@@ -168,8 +168,8 @@ class RecurlySettingsForm extends ConfigFormBase {
     $form['account']['recurly_default_currency'] = [
       '#type' => 'select',
       '#title' => $this->t('Default currency'),
-      '#description' => $this->t('Select the 3-character currency code for the currency you would like to use by default.:currency_suggestion', [
-        ':currency_suggestion' => $currency_suggestion,
+      '#description' => $this->t('Select the 3-character currency code for the currency you would like to use by default.@currency_suggestion', [
+        '@currency_suggestion' => $currency_suggestion,
       ]),
       '#default_value' => $this->config('recurly.settings')->get('recurly_default_currency'),
       '#options' => array_combine($currencies, $currencies),
