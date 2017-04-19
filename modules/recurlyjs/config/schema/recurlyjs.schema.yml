@@ -1,0 +1,12 @@
+recurlyjs.settings:
+  type: config_object
+  label: Settings
+  mapping:
+    recurlyjs_address_requirement:
+      type: string
+    recurlyjs_enable_add_ons:
+      type: string
+    recurlyjs_enable_coupons:
+      type: string
+    recurlyjs_accept_paypal:
+      type: string
