@@ -52,6 +52,13 @@ function recurly_hosted_recurly_url_info($operation, $context) {
 }
 
 /**
+ * Implements hook_entity_type_alter().
+ */
+function recurly_hosted_entity_type_alter(array &$entity_types) {
+  \Drupal::service('recurly_hosted.entity_type')->entityTypeAlter($entity_types);
+}
+
+/**
  * Returns an edit Url for a Recurly account.
  *
  * @param \Recurly_Account $recurly_account
@@ -82,7 +89,7 @@ function recurly_hosted_account_manage_url(\Recurly_Account $recurly_account, $h
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   // Return a Url using the hosted login token if available.
   if ($hosted_login_token && !empty($recurly_account->hosted_login_token)) {
-    return $recurly_url_manager->hostedUrl('account/' . $recurly_account->hosted_login_token)->getUri();
+    return $recurly_url_manager->hostedUrl('account/billing_info?ht=' . $recurly_account->hosted_login_token)->getUri();
   }
   return $recurly_url_manager->hostedUrl('account')->getUri();
 }

@@ -4,3 +4,6 @@ services:
     arguments: ['@entity.manager', '@config.factory']
     tags:
       - { name: event_subscriber }
+  recurly_hosted.entity_type:
+    class: Drupal\recurly_hosted\RecurlyHostedEntityTypeInfo
+    arguments: ['@config.factory']

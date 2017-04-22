@@ -1,0 +1,3 @@
+recurly_hosted.entities:
+  class: \Drupal\Core\Menu\LocalTaskDefault
+  deriver: \Drupal\recurly_hosted\Plugin\Derivative\RecurlyHostedLocalTask

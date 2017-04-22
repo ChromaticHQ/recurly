@@ -52,7 +52,7 @@ services:
     arguments: ['@module_handler', '@config.factory', '@string_translation']
   recurly.entity_type:
     class: Drupal\recurly\RecurlyEntityTypeInfo
-    arguments: ['@string_translation', '@entity_type.manager']
+    arguments: ['@config.factory']
   recurly.entity_operations:
     class: Drupal\recurly\RecurlyEntityOperations
     arguments: ['@entity_type.manager']
