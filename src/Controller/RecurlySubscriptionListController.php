@@ -88,8 +88,8 @@ class RecurlySubscriptionListController extends ControllerBase {
     // Unlikely that we'd have more than 50 subscriptions, but you never know.
     $per_page = 50;
     $subscription_type = $this->config('recurly.settings')->get('recurly_subscription_display');
-    $state = $subscription_type === 'live' ? ['state' => 'active'] : NULL;
-    $params = ['per_page' => $per_page, $state];
+    $state = $subscription_type === 'live' ? ['state' => 'active'] : [];
+    $params = array_merge(['per_page' => $per_page], $state);
     $subscription_list = \Recurly_SubscriptionList::getForAccount($account->account_code, $params);
     $page_subscriptions = $this->recurlyPageManager->pagerResults($subscription_list, $per_page);
 
