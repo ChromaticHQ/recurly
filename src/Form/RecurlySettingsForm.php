@@ -400,7 +400,6 @@ class RecurlySettingsForm extends ConfigFormBase {
         '0' => $this->t('Multiple-plan mode'),
       ],
       '#description' => $this->t('Single-plan mode allows users are only one subscription at a time, preventing them from having multiple plans active at the same time. If users are allowed to sign up for more than one subscription, use Multiple-plan mode.'),
-      '#access' => count($plan_options),
       '#default_value' => $this->config('recurly.settings')->get('recurly_subscription_max'),
       '#states' => $pages_enabled,
     ];
@@ -411,7 +410,6 @@ class RecurlySettingsForm extends ConfigFormBase {
         'now' => $this->t('Upgrade immediately (pro-rating billing period usage)'),
         'renewal' => $this->t('On next renewal'),
       ],
-      '#access' => count($plan_options) > 1,
       '#description' => $this->t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission. An upgrade is considered moving to any plan that costs more than the current plan (regardless of billing cycle).'),
       '#default_value' => $this->config('recurly.settings')->get('recurly_subscription_upgrade_timeframe') ?: 'now',
       '#states' => $pages_enabled,
@@ -423,7 +421,6 @@ class RecurlySettingsForm extends ConfigFormBase {
         'now' => $this->t('Downgrade immediately (pro-rating billing period usage)'),
         'renewal' => $this->t('On next renewal'),
       ],
-      '#access' => count($plan_options) > 1,
       '#description' => $this->t('Affects users who are able to change their own plan (if more than one is enabled). Overriddable when changing plans as users with "Administer Recurly" permission. A downgrade is considered moving to any plan that costs less than the current plan (regardless of billing cycle).'),
       '#default_value' => $this->config('recurly.settings')->get('recurly_subscription_downgrade_timeframe') ?: 'renewal',
       '#states' => $pages_enabled,
@@ -437,7 +434,6 @@ class RecurlySettingsForm extends ConfigFormBase {
         'terminate_full' => $this->t('Terminate immediately (full refund)'),
       ],
       '#description' => $this->t('Affects users canceling their own subscription plans. Overriddable when canceling plans as users with "Administer Recurly" permission. Note that this behavior is also used when content associated with a Recurly account is deleted, or when users associated with an account are canceled.'),
-      '#enabled' => count($plan_options) > 1,
       '#default_value' => $this->config('recurly.settings')->get('recurly_subscription_cancel_behavior') ?: 'cancel',
       '#states' => $pages_enabled,
     ];

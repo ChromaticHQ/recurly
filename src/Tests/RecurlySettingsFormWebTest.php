@@ -91,15 +91,35 @@ class RecurlySettingsFormWebTest extends WebTestBase {
     $this->drupalGet('/admin/config/services/recurly');
     $this->assertField('recurly_pages');
     $this->assertFieldChecked('edit-recurly-pages', 'Recurly pages enabled by default.');
+
     $this->assertFieldByName('recurly_coupon_page');
     $this->assertFieldChecked('edit-recurly-coupon-page', 'Recurly coupon pages enabled by default.');
+
     $this->assertFieldByName('recurly_subscription_display');
+    $this->assertFieldById('edit-recurly-subscription-display-live', 'live', 'Recurly list subscriptions \'live\' option present.');
+    $this->assertFieldById('edit-recurly-subscription-display-all', 'all', 'Recurly list subscriptions \'all\' option present.');
     $this->assertFieldChecked('edit-recurly-subscription-display-live', 'Recurly subscription display set to \'live\' by default.');
+
     $this->assertFieldByName('recurly_subscription_max');
+    $this->assertFieldById('edit-recurly-subscription-max-1', '1', 'Recurly single plan option present.');
+    $this->assertFieldById('edit-recurly-subscription-max-0', '0', 'Recurly multiple plan option present.');
     $this->assertFieldChecked('edit-recurly-subscription-max-1', 'Recurly set to single plan mode by default.');
 
+    $this->assertFieldByName('recurly_subscription_upgrade_timeframe');
+    $this->assertFieldById('edit-recurly-subscription-upgrade-timeframe-now', 'now', 'Recurly upgrade plan option \'now\' present.');
+    $this->assertFieldById('edit-recurly-subscription-upgrade-timeframe-renewal', 'renewal', 'Recurly upgrade plan option \'renewal\' present.');
+    $this->assertFieldChecked('edit-recurly-subscription-upgrade-timeframe-now', 'Recurly upgrade plan behavior defaults to \'now\'.');
+
+    $this->assertFieldByName('recurly_subscription_downgrade_timeframe');
+    $this->assertFieldById('edit-recurly-subscription-downgrade-timeframe-now', 'now', 'Recurly downgrade plan option \'now\' present.');
+    $this->assertFieldById('edit-recurly-subscription-downgrade-timeframe-renewal', 'renewal', 'Recurly downgrade plan option \'renewal\' present.');
+    $this->assertFieldChecked('edit-recurly-subscription-downgrade-timeframe-renewal', 'Recurly downgrade plan behavior defaults to \'renewal\'.');
+
     $this->assertFieldByName('recurly_subscription_cancel_behavior');
-    $this->assertFieldChecked('edit-recurly-subscription-cancel-behavior-cancel', 'Cancel behavior defaults to "cancel".');
+    $this->assertFieldById('edit-recurly-subscription-cancel-behavior-cancel', 'cancel', 'Recurly cancel plan option \'at renewal\' present.');
+    $this->assertFieldById('edit-recurly-subscription-cancel-behavior-terminate-prorated', 'terminate_prorated', 'Recurly cancel plan option \'immediately with prorated refund\' present.');
+    $this->assertFieldById('edit-recurly-subscription-cancel-behavior-terminate-full', 'terminate_full', 'Recurly cancel plan option \'immediately with full refund\' present.');
+    $this->assertFieldChecked('edit-recurly-subscription-cancel-behavior-cancel', 'Recurly cancel behavior defaults to \'cancel\'.');
   }
 
   /**
