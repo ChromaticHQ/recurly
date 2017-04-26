@@ -12,31 +12,39 @@ Libraries API
 Installation
 ------------
 
-- Download the Recurly PHP library from
+1. Download the Recurly PHP library from
   https://github.com/recurly/recurly-client-php and place it in
   sites/all/libraries so that "recurly.php" is located at
   sites/all/libraries/recurly/lib/recurly.php.
 
-- If you want to enable billing forms on your site, enable the recurlyjs module.
+2. If you want to enable billing forms on your site, enable the Recurly.js
+  submodule.
 
-  IMPORTANT: This version of the Recurly module is only compatible with
-  Recurly.js API v4 and the Recurly v2 API.
+  IMPORTANT: This version of the Recurly module is
+  only compatible with Recurly.js v4 and the Recurly v2 API.
 
-- Log into your Recurly.com account and visit the API Credentials page.
-  (developer/api_access) Copy the value for the Private API Key and subdomain
+3. Log into your Recurly.com account and visit the API Credentials page at
+  "developer/api_keys". Copy the value for the Private API Key and subdomain
   (found in the address bar or configuration/edit) & paste them into the module
   configuration in Drupal under admin/config/services/recurly. If you are using
   recurlyjs, you will also need the Public Key.
 
-- While on the Recurly settings page in Drupal, copy the full URL from the
+4. While on the Recurly settings page in Drupal, copy the full URL from the
   description of  the "Listener URL key" field. It should be something like:
   "https://example.com/recurly/listener/QVDtH2CR". Use an HTTPS URL if
   available. Take this full URL and paste it into the Recurly.com settings for
-  "Webhook URL" - Developers > Webhooks (configuration/notifications/configure).
+  "Endpoint URL" - Developers > Webhooks > Webhook Endpoints at
+  "configuration/endpoints". If no endpoints are configured, configure a new
+  webhook endpoint at "configuration/endpoints/new", using the
+  same "Listener URL key" field.
 
-- After you have set up the desired plans in Recurly, on your Drupal site visit
+5. After you have set up the desired plans in Recurly, on your Drupal site visit
   admin/config/services/recurly/subscription-plans and enable the desired plans.
 
+6. Enable the appropriate permissions at "admin/people/permissions".
+
+Notes
+---------------------------------
 By default, the Recurly module will provide built-in pages for managing
 subscriptions on a one-subscription-per-user basis. You may also enable the
 Recurly.js module *OR* the Recurly Managed Pages module to allow users to update
