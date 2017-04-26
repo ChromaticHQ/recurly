@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Display a signup page listing all the available plans.

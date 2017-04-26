@@ -34,7 +34,6 @@ function recurlyjs_uninstall() {
   variable_del('recurlyjs_hide_vat_number');
 }
 
-
 /**
  * Remove recurly_api_key.
  */

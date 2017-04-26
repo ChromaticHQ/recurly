@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Hook documentation for Recurly JS module.

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Output a list of invoices for a particular account. Typically displayed under

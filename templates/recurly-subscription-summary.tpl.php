@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Output a summary of a subscription with links to manage it.

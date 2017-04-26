@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Prints out a summary of an existing credit card with masked digits.

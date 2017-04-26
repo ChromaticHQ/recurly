@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Print the output of the subscription cancelation form.

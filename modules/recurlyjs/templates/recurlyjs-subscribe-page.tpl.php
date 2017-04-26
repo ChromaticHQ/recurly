@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Print out the subscription page for a particular plan.

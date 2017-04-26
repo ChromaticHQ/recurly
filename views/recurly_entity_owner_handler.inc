@@ -64,4 +64,5 @@ class recurly_entity_owner_handler extends views_handler_relationship {
       $this->query->add_tag($access_tag);
     }
   }
+
 }

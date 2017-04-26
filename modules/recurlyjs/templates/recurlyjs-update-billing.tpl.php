@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Displays the form for updating a credit card number for a subscription.

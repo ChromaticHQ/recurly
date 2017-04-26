@@ -552,7 +552,7 @@ Drupal.theme.prototype.tableDragChangedWarning = function () { return ''; };";
     'header' => $header,
     'rows' => $rows,
     'attributes' => array('id' => 'recurly-subscription-plans'),
-    ));
+  ));
   $output .= drupal_render_children($form);
   return $output;
 }

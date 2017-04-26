@@ -968,7 +968,7 @@ function _recurly_user_access($op, $account) {
     return TRUE;
   }
   else {
-   return FALSE;
+    return FALSE;
   }
 }
 
