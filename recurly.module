@@ -498,13 +498,29 @@ function recurly_subscription_plans($reset_cache = FALSE) {
 
   // Initialize the Recurly client with the site-wide settings.
   if (!recurly_client_initialize()) {
-    return FALSE;
+    return [];
   }
 
   // Retrieve the subscription plans from Recurly.
   $plans = \Recurly_PlanList::get();
 
   return $plans;
+}
+
+/**
+ * Determines if subscription plans have been configured.
+ *
+ * Retrieves them from a local cache if possible.
+ *
+ * @param bool $reset_cache
+ *   Boolean indicating whether or not to reset the subscription plan cache when
+ *   retrieving plans.
+ *
+ * @return bool
+ *   TRUE if there is at least one plan configured, else FALSE.
+ */
+function recurly_subscription_plans_configured($reset_cache = FALSE) {
+  return !empty(recurly_subscription_plans($reset_cache));
 }
 
 /**
@@ -707,12 +723,21 @@ function recurly_form_user_form_alter(&$form, FormStateInterface $form_state, $f
  *   The current state of the form.
  */
 function recurly_user_edit_form_submit_redirect(array $form, FormStateInterface $form_state) {
-  if (\Drupal::currentUser()->isAuthenticated()) {
-    $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
-    $authenticated_route_name = "entity.$entity_type_id.recurly_signup";
-    $authenticated_route = \Drupal::service('router.route_provider')->getRouteByName($authenticated_route_name);
-    $form_state->setRedirect($authenticated_route_name, [
-      'user' => \Drupal::currentUser()->id(),
-    ], $authenticated_route->getOptions());
+  if (!\Drupal::currentUser()->isAuthenticated() || !recurly_subscription_plans_configured()) {
+    return;
   }
+  $entity_type_id = \Drupal::config('recurly.settings')->get('recurly_entity_type');
+  $authenticated_route_name = "entity.$entity_type_id.recurly_signup";
+
+  try {
+    $authenticated_route = \Drupal::service('router.route_provider')->getRouteByName($authenticated_route_name);
+  }
+  catch (RouteNotFoundException $e) {
+    watchdog_exception('recurly', $e);
+    return;
+  }
+
+  $form_state->setRedirect($authenticated_route_name, [
+    'user' => \Drupal::currentUser()->id(),
+  ], $authenticated_route->getOptions());
 }
