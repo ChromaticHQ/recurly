@@ -78,6 +78,7 @@ class RecurlyJsRouteSubscriber extends RouteSubscriberBase {
           '_entity_access' => "$entity_type_id.update",
           '_access_check_recurly_user' => 'TRUE',
           '_access_check_recurly_list' => 'TRUE',
+          '_access_check_recurly_local_account' => 'TRUE',
         ],
         $options
       );

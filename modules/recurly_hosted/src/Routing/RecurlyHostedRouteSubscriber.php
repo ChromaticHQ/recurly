@@ -31,6 +31,7 @@ class RecurlyHostedRouteSubscriber extends RecurlyRouteSubscriber {
           '_entity_access' => "$this->entityType.update",
           '_access_check_recurly_user' => 'TRUE',
           '_access_check_recurly_default' => 'TRUE',
+          '_access_check_recurly_local_account' => 'TRUE',
         ],
         $this->routeOptions
       );
