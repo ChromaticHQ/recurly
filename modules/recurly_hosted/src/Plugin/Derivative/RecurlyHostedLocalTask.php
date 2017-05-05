@@ -82,7 +82,7 @@ class RecurlyHostedLocalTask extends DeriverBase implements ContainerDeriverInte
     if ($has_canonical_path) {
       $this->derivatives["$entity_type_id.billing_tab"] = [
         'route_name' => 'recurly_hosted.update_billing',
-        'title' => $this->t('Update Billing'),
+        'title' => $this->t('Update billing information'),
         'parent_id' => "recurly.entities:$entity_type_id.recurly_tab",
         'weight' => 400,
       ];
