@@ -85,7 +85,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
 
       // Account code is the only property required for account creation.
       // https://dev.recurly.com/docs/create-an-account.
-      $recurly_account->account_code = $entity_type . '-' . $entity_id;
+      $recurly_account->account_code = $entity_type . '-' . $entity->id();
     }
 
     $subscription = new \Recurly_Subscription();
