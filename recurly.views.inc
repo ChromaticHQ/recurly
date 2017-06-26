@@ -91,17 +91,17 @@ function recurly_views_data() {
 function recurly_views_data_alter(&$data) {
   // Add relationships from entity types to Recurly Accounts.
   $entity_info = \Drupal::entityTypeManager()->getDefinitions();
-  foreach ($entity_info as $entity_type => $info) {
-    $base_table = $info->getBaseTable();
-    $description = t('@base-entity from @join-entity', ['@join-entity' => $info->getLabel()->render(), '@base-entity' => 'Recurly Account']);
+  foreach ($entity_info as $entity_type => $entity_definition) {
+    $base_table = $entity_definition->getBaseTable();
+    $description = t('@base-entity from @join-entity', ['@join-entity' => $entity_definition->getLabel()->render(), '@base-entity' => 'Recurly Account']);
     if ($base_table) {
-      $data[$base_table]['recurly_' . $entity_type] = [
+      $data[$base_table]['recurly_entity_' . $entity_type] = [
         'title' => t('Recurly Account'),
         'help' => t('The Recurly Account of this @entity-type.', ['@entity-type' => $entity_type]),
         'relationship' => [
           'base' => 'recurly_account',
           'base field' => 'entity_id',
-          'field' => $info->getKeys()['id'],
+          'relationship field' => $entity_definition->getKey('id'),
           'id' => 'recurly_entity_owner_reverse',
           'label' => $description,
         ],
@@ -134,7 +134,7 @@ function _recurly_entity_relationship_data($label, $join_entity_type) {
     'relationship' => [
       'entity type' => $join_entity_type,
       'base' => $join_entity_info->getBaseTable(),
-      'base field' => $join_entity_info->getKeys()['id'],
+      'base field' => $join_entity_info->getKey('id'),
       'field' => 'entity_id',
       'id' => 'recurly_entity_owner',
       'label' => $description,
