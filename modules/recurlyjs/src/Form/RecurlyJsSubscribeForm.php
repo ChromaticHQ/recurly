@@ -155,7 +155,7 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
    * Element validate callback.
    */
   public function validateCouponCode($element, &$form_state, $form) {
-    $coupon_code = isset($form_state['values']['coupon_code']) ? $form_state['values']['coupon_code'] : NULL;
+    $coupon_code = $form_state->hasValue('coupon_code') ? $form_state->getValue('coupon_code') : NULL;
     if (!$coupon_code) {
       return;
     }
@@ -167,19 +167,19 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       $coupon = \Recurly_Coupon::get($coupon_code);
     }
     catch (\Recurly_NotFoundError $e) {
-      form_error($element, $this->t('The coupon code you have entered is not valid.'));
+      $form_state->setError($element, $this->t('The coupon code you have entered is not valid.'));
       return;
     }
     // Check that the coupon is available in the specified currency.
     if ($coupon && !in_array($coupon->discount_type, ['percent', 'free_trial'])) {
       if (!$coupon->discount_in_cents->offsetExists($currency)) {
-        form_error($element, $this->t('The coupon code you have entered is not valid in @currency.', ['@currency' => $currency]));
+        $form_state->setError($element, $this->t('The coupon code you have entered is not valid in @currency.', ['@currency' => $currency]));
         return;
       }
     }
     // Check the the coupon is valid for the specified plan.
     if ($coupon && !$this->couponValidForPlan($coupon, $plan_code)) {
-      form_error($element, $this->t('The coupon code you have entered is not valid for the specified plan.'));
+      $form_state->setError($element, $this->t('The coupon code you have entered is not valid for the specified plan.'));
       return;
     }
   }
