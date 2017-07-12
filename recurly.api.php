@@ -42,7 +42,7 @@ function hook_recurly_process_push_notification($subdomain, $notification) {
   // Upgrade/downgrade notifications.
   if ($notification->type === 'updated_subscription_notification' || $notification->type === 'new_subscription_notification') {
     $account_code = $notification->account->account_code;
-    if ($local_account = recurly_account_load(['account_code' => $account_code), TRUE]) {
+    if ($local_account = recurly_account_load(['account_code' => $account_code], TRUE)) {
       // Upgrade the account by assigning roles, changing fields, etc.
     }
     else {
