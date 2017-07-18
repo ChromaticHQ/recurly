@@ -66,10 +66,10 @@ class RecurlyRedeemCouponForm extends FormBase {
     // a new one.
     if ($confirming_replacement_coupon) {
       $form_state->set('confirmed', TRUE);
-      $help = '<p>' . $this->t('Your account already has a coupon that will be applied to your next invoice. Are you sure you want to replace your existing coupon ":old_coupon" with ":new_coupon"? You may not be able to use your previous coupon again.',
+      $help = '<p>' . $this->t('Your account already has a coupon that will be applied to your next invoice. Are you sure you want to replace your existing coupon "@old_coupon" with "@new_coupon"? You may not be able to use your previous coupon again.',
         [
-          ':old_coupon' => $this->recurlyFormatter->formatCoupon($form_state->get('existing_coupon'), $form_state->get('existing_redemption')->currency),
-          ':new_coupon' => $this->recurlyFormatter->formatCoupon($form_state->get('coupon'), $form_state->getValue('coupon_currency')),
+          '@old_coupon' => $this->recurlyFormatter->formatCoupon($form_state->get('existing_coupon'), $form_state->get('existing_redemption')->currency),
+          '@new_coupon' => $this->recurlyFormatter->formatCoupon($form_state->get('coupon'), $form_state->getValue('coupon_currency')),
         ]) . '</p>';
     }
     elseif ($account->redemption) {
