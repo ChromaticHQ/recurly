@@ -280,7 +280,6 @@ class RecurlyFormatManager {
    *   The formatted string ready for printing.
    */
   public function formatCoupon(\Recurly_Coupon $coupon, $currency, $html = FALSE) {
-    // @todo. I am not sure about Recurly_Coupon. I do not think that class exists.
     if ($coupon->discount_type === 'percent') {
       $amount = Html::escape($coupon->discount_percent) . '%';
     }
