@@ -288,7 +288,11 @@ class RecurlyFormatManager {
       $amount = $this->formatCurrency($coupon_currency->amount_in_cents, $currency, $html);
     }
 
-    return Html::escape($coupon->name) . $this->stringTranslation->translate('@space(Coupon code: @coupon_code, @amount discount)', ['@space' => ' ', '@coupon_code' => $coupon->coupon_code, '@amount' => $amount]);
+    return Html::escape($coupon->name) . $this->stringTranslation->translate('@space(Coupon code: @coupon_code, @amount discount)', [
+      '@space' => ' ',
+      '@coupon_code' => $coupon->coupon_code,
+      '@amount' => $amount,
+    ]);
   }
 
 }
