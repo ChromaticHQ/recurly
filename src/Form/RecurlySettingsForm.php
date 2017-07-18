@@ -195,8 +195,7 @@ class RecurlySettingsForm extends ConfigFormBase {
       '#default_value' => $this->config('recurly.settings')->get('recurly_listener_key') ?: '',
       '#required' => TRUE,
       '#size' => 32,
-      // @FIXME
-      // '#field_prefix' => url('recurly/listener/', ['absolute' => TRUE]),
+      '#field_prefix' => Url::fromUserInput('/recurly/listener/')->setAbsolute()->toString(),
     ];
 
     $form['push']['recurly_push_logging'] = [
