@@ -91,9 +91,9 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
     $all_plans = recurly_subscription_plans();
     $enabled_plan_keys = $this->config('recurly.settings')->get('recurly_subscription_plans') ?: [];
     $enabled_plans = [];
-    foreach ($enabled_plan_keys as $plan_code => $enabled) {
+    foreach ($enabled_plan_keys as $plan_code => $plan_info) {
       foreach ($all_plans as $plan) {
-        if ($enabled && $plan_code == $plan->plan_code) {
+        if ($plan_info['status'] == '1' && $plan_code == $plan->plan_code) {
           $enabled_plans[$plan_code] = $plan;
         }
       }
