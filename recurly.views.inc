@@ -93,7 +93,7 @@ function recurly_views_data_alter(&$data) {
   $entity_info = \Drupal::entityTypeManager()->getDefinitions();
   foreach ($entity_info as $entity_type => $entity_definition) {
     $base_table = $entity_definition->getBaseTable();
-    $description = t('@base-entity from @join-entity', ['@join-entity' => $entity_definition->getLabel()->render(), '@base-entity' => 'Recurly Account']);
+    $description = t('@base-entity from @join-entity', ['@join-entity' => $entity_definition->getLabel(), '@base-entity' => 'Recurly Account']);
     if ($base_table) {
       $data[$base_table]['recurly_entity_' . $entity_type] = [
         'title' => t('Recurly Account'),
@@ -124,12 +124,12 @@ function recurly_views_data_alter(&$data) {
  */
 function _recurly_entity_relationship_data($label, $join_entity_type) {
   $join_entity_info = \Drupal::entityTypeManager()->getDefinition($join_entity_type);
-  $description = t('@join-entity from @base-entity', ['@join-entity' => $join_entity_info->getLabel()->render(), '@base-entity' => $label]);
+  $description = t('@join-entity from @base-entity', ['@join-entity' => $join_entity_info->getLabel(), '@base-entity' => $label]);
 
   // 'entity type' is a key not from Views directly, but used to determine
   // what entity type need to filter on in our relationship handler.
   return [
-    'title' => $join_entity_info->getLabel()->render(),
+    'title' => $join_entity_info->getLabel(),
     'help' => t('The @entity-type owner of this @label.', ['@entity-type' => $join_entity_type, '@label' => $label]),
     'relationship' => [
       'entity type' => $join_entity_type,
