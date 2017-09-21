@@ -39,7 +39,13 @@ class recurly_entity_owner_handler extends views_handler_relationship {
       $def['type'] = 'INNER';
     }
 
-    $def['extra'] = sprintf("%s.entity_type = '%s'", $def['left_table'], $def['entity type']);
+    $def['extra'] = array(
+      array(
+        'table' => $def['left_table'],
+        'field' => 'entity_type',
+        'value' => $def['entity type'],
+      ),
+    );
 
     if (!empty($def['join_handler']) && class_exists($def['join_handler'])) {
       $join = new $def['join_handler'];

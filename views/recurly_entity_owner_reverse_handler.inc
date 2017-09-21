@@ -40,7 +40,13 @@ class recurly_entity_owner_reverse_handler extends views_handler_relationship {
     // Use a short alias for this:
     $alias = $def['table'] . '_' . $this->table;
 
-    $def['extra'] = sprintf("%s.entity_type = '%s'", $alias, $def['base type']);
+    $def['extra'] = array(
+      array(
+        'table' => $alias,
+        'field' => 'entity_type',
+        'value' => $def['base type'],
+      ),
+    );
 
     if (!empty($def['join_handler']) && class_exists($def['join_handler'])) {
       $join = new $def['join_handler']();
