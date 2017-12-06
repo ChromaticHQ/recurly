@@ -667,7 +667,7 @@ function _recurlyjs_element_validate_coupon_code($element, &$form_state, $form) 
     return;
   }
   // Check that the coupon is available in the specified currency.
-  if ($coupon && $coupon->discount_type !== 'percent') {
+  if ($coupon && !in_array($coupon->discount_type, array('percent', 'free_trial'))) {
     if (!$coupon->discount_in_cents->offsetExists($currency)) {
       form_error($element, t('The coupon code you have entered is not valid in @currency.', array('@currency' => $currency)));
       return;
