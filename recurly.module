@@ -472,7 +472,7 @@ function recurly_account_get_subscriptions($account_code, $state) {
   }
 
   // Otherwise return all subscriptions.
-  return $accounts[$account_code] + $accounts[$account_code];
+  return $accounts[$account_code];
 }
 
 /**
