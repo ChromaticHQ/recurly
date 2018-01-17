@@ -141,6 +141,11 @@ class RecurlySubscriptionChangeConfirmForm extends FormBase {
       }
     }
     catch (\Recurly_Error $e) {
+      $this->logger('recurly')->error('Subscription could not be changed for user ID %user subscription ID %id: @error', [
+        '%user' => $this->currentUser()->id(),
+        '%id' => $subscription->uuid,
+        '@error' => $e->getMessage(),
+      ]);
       drupal_set_message($this->t('The plan could not be updated because the billing service encountered an error.'));
       return;
     }
