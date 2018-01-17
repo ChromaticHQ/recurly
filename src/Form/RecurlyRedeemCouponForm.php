@@ -154,7 +154,9 @@ class RecurlyRedeemCouponForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $coupon = $form_state->get('coupon');
     $account = $form_state->get('account');
-
+    if (empty($account->redemption)) {
+      $account = recurly_account_load(['entity_type' => $form['#entity_type'], 'entity_id' => $form['#entity']->id()]);
+    }
     if ($account && $coupon && $account->redemption) {
       // If the user already has a coupon, rebuild the form and ask for
       // confirmation.
@@ -168,7 +170,7 @@ class RecurlyRedeemCouponForm extends FormBase {
       else {
         if ($existing_coupon_redemption = $form_state->get('existing_redemption')) {
           try {
-            // @FIXME: Failing to remove existing coupon.
+            $existing_coupon_redemption = $account->redemption->get();
             $existing_coupon_redemption->delete();
           }
           catch (\Recurly_NotFoundError $e) {
@@ -181,7 +183,14 @@ class RecurlyRedeemCouponForm extends FormBase {
     }
 
     // Now redeem the new coupon.
-    $response = $coupon->redeemCoupon($account->account_code, $form_state->getValue('coupon_currency'));
+    try {
+      $response = $coupon->redeemCoupon($account->account_code, $form_state->getValue('coupon_currency'));
+    }
+    catch (\Exception $e) {
+      $this->logger('recurly')->error('@error', ['@error' => $e->getMessage()]);
+      drupal_set_message($e->getMessage(), 'error');
+      return;
+    }
 
     // If the response is NULL that means for one reason or another the coupon
     // could not be applied. This is most likely because the code has already
