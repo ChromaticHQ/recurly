@@ -1,0 +1,16 @@
+{
+  "name": "drupal/recurly",
+  "description": "Allows integration with the Recurly payment service.",
+  "type": "drupal-module",
+  "homepage": "https://www.drupal.org/project/recurly",
+  "support": {
+    "issues": "https://www.drupal.org/project/recurly",
+    "source": "https://cgit.drupalcode.org/recurly"
+  },
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "recurly/recurly-client": "^2.7.0"
+  }
+}
