@@ -62,7 +62,7 @@ class RecurlyEntityOperations {
     }
 
     // Check if any of the mapping tokens have changed.
-    if (!$original_entity = \Drupal::entityManager()->getStorage($entity_type)->load($entity->getOriginalId())) {
+    if (!$entity->getOriginalId() || !$original_entity = \Drupal::entityManager()->getStorage($entity_type)->load($entity->getOriginalId())) {
       return;
     }
     $original_values = [];
