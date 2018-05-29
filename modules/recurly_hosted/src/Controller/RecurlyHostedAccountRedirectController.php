@@ -23,7 +23,7 @@ class RecurlyHostedAccountRedirectController extends ControllerBase {
     $entity = $route_match->getParameter($entity_type_id);
     if ($recurly_account = recurly_account_load(['entity_type' => $entity_type_id, 'entity_id' => $entity->id()])) {
       if ($url = recurly_hosted_account_manage_url($recurly_account, TRUE)) {
-        return new TrustedRedirectResponse($url);
+        return new TrustedRedirectResponse($url->toString());
       }
     }
     throw new NotFoundHttpException();

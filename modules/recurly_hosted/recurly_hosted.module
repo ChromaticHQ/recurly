@@ -10,6 +10,7 @@
 
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Url;
+use Drupal\recurly\RecurlyEntityTypeInfo;
 
 /**
  * Implements hook_recurly_url_info().
@@ -19,35 +20,27 @@ function recurly_hosted_recurly_url_info($operation, $context) {
     return Url::fromRoute('recurly.redirect_to_registration');
   }
 
+  $entity = $context['entity'];
+
   switch ($operation) {
     case 'update_billing':
-      return recurly_hosted_account_manage_url($context['account'], TRUE);
+      $recurly_account = recurly_account_load(['entity_id' => $entity->id()]);
+      return recurly_hosted_account_manage_url($recurly_account, TRUE);
 
     case 'subscribe':
-      $entity = $context['entity'];
       $entity_type = $context['entity_type'];
       $account_code = $entity_type . '-' . $entity->id();
 
       // Fetch tokens for the user's name and e-mail address. Replace them with
       // proper values, and then sanitize as plain text.
-      $settings_raw = [
-        'first_name' => \Drupal::config('recurly.settings')->get('recurly_token_mapping.first_name'),
-        'last_name' => \Drupal::config('recurly.settings')->get('recurly_token_mapping.last_name'),
-        'email' => \Drupal::config('recurly.settings')->get('recurly_token_mapping.email'),
-      ];
-      $token_service = \Drupal::token();
+      $settings_raw = \Drupal::service('recurly.entity_type')->getUserInfoMappings();
       foreach ($settings_raw as &$value) {
-        $value = $token_service->replace($value, ['user' => \Drupal::currentUser()]);
+        $value = \Drupal::token()->replace($value, ['user' => \Drupal::currentUser()]);
       }
       $settings = array_map(['Drupal\Component\Utility\Html', 'escape'], $settings_raw);
 
       // Return the requested plan-purchase URL.
-      return recurly_hosted_subscription_plan_purchase_url(
-          $context['plan_code'],
-          $account_code,
-          $entity->label(),
-          $settings
-      );
+      return recurly_hosted_subscription_plan_purchase_url($context['plan_code'], $account_code, $entity->label(), $settings);
   }
 }
 
@@ -89,9 +82,9 @@ function recurly_hosted_account_manage_url(\Recurly_Account $recurly_account, $h
   $recurly_url_manager = \Drupal::service('recurly.url_manager');
   // Return a Url using the hosted login token if available.
   if ($hosted_login_token && !empty($recurly_account->hosted_login_token)) {
-    return $recurly_url_manager->hostedUrl('account/billing_info?ht=' . $recurly_account->hosted_login_token)->getUri();
+    return $recurly_url_manager->hostedUrl('account/billing_info/edit?ht=' . $recurly_account->hosted_login_token);
   }
-  return $recurly_url_manager->hostedUrl('account')->getUri();
+  return $recurly_url_manager->hostedUrl('account');
 }
 
 /**

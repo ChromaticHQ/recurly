@@ -85,4 +85,18 @@ class RecurlyEntityTypeInfo {
     return FALSE;
   }
 
+  /**
+   * Fetches the mappings for basic user information.
+   *
+   * @return array
+   *   The list of mappings.
+   */
+  public function getUserInfoMappings() {
+    return [
+      'first_name' => $this->recurlySettings->get('recurly_token_mapping.first_name'),
+      'last_name' => $this->recurlySettings->get('recurly_token_mapping.last_name'),
+      'email' => $this->recurlySettings->get('recurly_token_mapping.email'),
+    ];
+  }
+
 }
