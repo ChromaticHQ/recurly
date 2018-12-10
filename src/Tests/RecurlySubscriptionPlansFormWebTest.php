@@ -2,6 +2,7 @@
 
 namespace Drupal\recurly\Tests;
 
+use Drupal\recurly\RecurlyClient;
 use Drupal\simpletest\WebTestBase;
 
 /**
@@ -44,7 +45,7 @@ class RecurlySubscriptionPlansFormWebTest extends WebTestBase {
   protected function testPlanFormWithoutCredentials() {
     $this->drupalGet('/admin/config/services/recurly/subscription-plans');
     $this->assertResponse(200);
-    $this->assertText('Could not initialize the Recurly client.');
+    $this->assertText(RecurlyClient::ERROR_MESSAGE_MISSING_API_KEY);
   }
 
 }

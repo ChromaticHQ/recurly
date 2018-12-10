@@ -2,46 +2,17 @@
 
 namespace Drupal\recurly\Form;
 
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\recurly\RecurlyFormatManager;
 
 /**
  * Recurly subscription cancel form controller.
  */
-class RecurlySubscriptionCancelConfirmForm extends FormBase {
+class RecurlySubscriptionCancelConfirmForm extends RecurlyNonConfigForm {
 
   const TERMINATE_NONE = 'terminate_none';
   const TERMINATE_PRORATED = 'terminate_prorated';
   const TERMINATE_FULL = 'terminate_full';
-
-  /**
-   * The formatting service.
-   *
-   * @var \Drupal\recurly\RecurlyFormatManager
-   */
-  protected $recurlyFormatter;
-
-  /**
-   * Constructor.
-   *
-   * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
-   *   The Recurly formatter to be used for formatting.
-   */
-  public function __construct(RecurlyFormatManager $recurly_formatter) {
-    $this->recurlyFormatter = $recurly_formatter;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('recurly.format_manager')
-    );
-  }
 
   /**
    * {@inheritdoc}

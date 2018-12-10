@@ -59,3 +59,6 @@ services:
   recurly.recurly_preprocess:
     class: Drupal\recurly\RecurlyPreprocess
     arguments: ['@recurly.format_manager', '@config.factory']
+  recurly.client:
+    class: Drupal\recurly\RecurlyClient
+    arguments: ['@config.factory', '@logger.factory', '@messenger']

@@ -1,7 +1,6 @@
 name: Recurly
 description: 'Provides API integration with Recurly using their PHP client library.'
 dependencies:
-  - libraries
   - token
 core: 8.x
 package: Recurly

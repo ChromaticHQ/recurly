@@ -2,14 +2,13 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Recurly change subscription controller.
  */
-class RecurlySubscriptionChangeController extends ControllerBase {
+class RecurlySubscriptionChangeController extends RecurlyController {
 
   /**
    * Change the existing to the specified subscription.
@@ -26,10 +25,6 @@ class RecurlySubscriptionChangeController extends ControllerBase {
     $entity = $route_match->getParameter($entity_type_id);
     $subscription_id = $route_match->getParameter('subscription_id');
     $new_plan_code = $route_match->getParameter('new_plan_code');
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
 
     // Load the subscription.
     try {

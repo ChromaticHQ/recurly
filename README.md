@@ -9,15 +9,18 @@ see [the project page](https://www.drupal.org/project/recurly).
 
 ## Requirements
 * Drupal 8.x
-* [Libraries API](https://www.drupal.org/project/libraries)
 * [Token](https://www.drupal.org/project/token)
+* [Libraries API](https://www.drupal.org/project/libraries) (only if *not* using
+[Composer](https://www.drupal.org/docs/develop/using-composer/using-composer-with-drupal)) 
 
 ## Installation
 
-1. Download the
-  [Recurly PHP library](https://github.com/recurly/recurly-client-php/releases)
-  and place it in [libraries/](https://www.drupal.org/node/1440066) so that
-  "recurly.php" is located at `libraries/recurly/lib/recurly.php`.
+1. This module must be accompanied by the
+[Recurly PHP library](https://github.com/recurly/recurly-client-php/releases).
+If installing via Composer (recommended), it will be included automatically.
+Otherwise, install and enable the Libraries API module, download the library,
+and then place it in [libraries/](https://www.drupal.org/node/1440066) so that
+`recurly.php` is located at `libraries/recurly/lib/recurly.php`.
 
 2. If you want to enable billing forms on your site, enable the Recurly.js
   (`recurlyjs`) submodule. **Important**: This version of the Recurly module is

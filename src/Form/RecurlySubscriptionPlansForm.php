@@ -2,68 +2,12 @@
 
 namespace Drupal\recurly\Form;
 
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\recurly\RecurlyFormatManager;
-use Drupal\recurly\RecurlyUrlManager;
 
 /**
  * Recurly subscription plans form.
  */
-class RecurlySubscriptionPlansForm extends ConfigFormBase {
-
-  /**
-   * The formatting service.
-   *
-   * @var \Drupal\recurly\RecurlyFormatManager
-   */
-  protected $recurlyFormatter;
-
-  /**
-   * The Recurly Url service.
-   *
-   * @var \Drupal\recurly\RecurlyUrlManager
-   */
-  protected $recurlyUrlManager;
-
-  /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * Constructs a \Drupal\recurly\Form\RecurlySubscriptionPlansForm object.
-   *
-   * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
-   *   The Recurly formatter to be used for formatting.
-   * @param \Drupal\recurly\RecurlyUrlManager $recurly_url_manager
-   *   The Recurly URL service to be used for generating URLs.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler service.
-   */
-  public function __construct(
-    RecurlyFormatManager $recurly_formatter,
-    RecurlyUrlManager $recurly_url_manager,
-    ModuleHandlerInterface $module_handler) {
-    $this->recurlyFormatter = $recurly_formatter;
-    $this->recurlyUrlManager = $recurly_url_manager;
-    $this->moduleHandler = $module_handler;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('recurly.format_manager'),
-      $container->get('recurly.url_manager'),
-      $container->get('module_handler')
-    );
-  }
+class RecurlySubscriptionPlansForm extends RecurlyConfigForm {
 
   /**
    * {@inheritdoc}
@@ -113,10 +57,6 @@ class RecurlySubscriptionPlansForm extends ConfigFormBase {
       ],
     ];
 
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
     try {
       $plans = recurly_subscription_plans();
     }

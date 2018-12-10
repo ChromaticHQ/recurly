@@ -2,42 +2,13 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\recurly\RecurlyFormatManager;
 
 /**
  * Recurly reactivate subscription controller.
  */
-class RecurlySubscriptionReactivateController extends ControllerBase {
-
-  /**
-   * The formatting service.
-   *
-   * @var \Drupal\recurly\RecurlyFormatManager
-   */
-  protected $recurlyFormatter;
-
-  /**
-   * Constructor.
-   *
-   * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
-   *   The Recurly formatter to be used for formatting.
-   */
-  public function __construct(RecurlyFormatManager $recurly_formatter) {
-    $this->recurlyFormatter = $recurly_formatter;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('recurly.format_manager')
-    );
-  }
+class RecurlySubscriptionReactivateController extends RecurlyController {
 
   /**
    * Reactivate the specified subscription.
@@ -50,10 +21,6 @@ class RecurlySubscriptionReactivateController extends ControllerBase {
   public function reactivateSubscription(RouteMatchInterface $route_match, $subscription_id = 'latest') {
     $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
 
     // Load the subscription.

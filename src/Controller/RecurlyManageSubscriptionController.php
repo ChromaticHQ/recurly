@@ -2,13 +2,12 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Default controller for the recurly module.
  */
-class RecurlyManageSubscriptionController extends ControllerBase {
+class RecurlyManageSubscriptionController extends RecurlyController {
 
   /**
    * Redirects a Recurly account code subscription management page.

@@ -2,109 +2,13 @@
 
 namespace Drupal\recurly\Form;
 
-use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Locale\CountryManagerInterface;
-use Drupal\Core\Routing\RouteBuilderInterface;
-use Drupal\recurly\RecurlyUrlManager;
-use Drupal\recurly\RecurlyTokenManager;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Recurly configuration settings form.
  */
-class RecurlySettingsForm extends ConfigFormBase {
-
-  /**
-   * The Recurly URL manager service.
-   *
-   * @var \Drupal\recurly\RecurlyUrlManager
-   */
-  protected $recurlyUrlManager;
-
-  /**
-   * The Recurly token manager service.
-   *
-   * @var \Drupal\recurly\RecurlyTokenManager
-   */
-  protected $recurlyTokenManager;
-
-  /**
-   * The entity type bundle info service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The country manager service.
-   *
-   * @var \Drupal\Core\Locale\CountryManagerInterface
-   */
-  protected $countryManager;
-
-  /**
-   * The router builder service.
-   *
-   * @var \Drupal\Core\Routing\RouteBuilderInterface
-   */
-  protected $routeBuilder;
-
-  /**
-   * Creates a Recurly settings form.
-   *
-   * @param \Drupal\recurly\RecurlyUrlManager $recurly_url_manager
-   *   The Recurly URL manager service.
-   * @param \Drupal\recurly\RecurlyTokenManager $recurly_token_manager
-   *   The Recurly token manager service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_bundle_info
-   *   The entity type bundle info service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager service.
-   * @param \Drupal\Core\Locale\CountryManagerInterface $country_manager
-   *   The country manager service.
-   * @param \Drupal\Core\Routing\RouteBuilderInterface $route_builder
-   *   The router builder service.
-   */
-  public function __construct(
-    RecurlyUrlManager $recurly_url_manager,
-    RecurlyTokenManager $recurly_token_manager,
-    EntityTypeBundleInfoInterface $entity_bundle_info,
-    EntityTypeManagerInterface $entity_type_manager,
-    CountryManagerInterface $country_manager,
-    RouteBuilderInterface $route_builder
-    ) {
-    $this->recurlyUrlManager = $recurly_url_manager;
-    $this->recurlyTokenManager = $recurly_token_manager;
-    $this->entityTypeBundleInfo = $entity_bundle_info;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->countryManager = $country_manager;
-    $this->routeBuilder = $route_builder;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('recurly.url_manager'),
-      $container->get('recurly.token_manager'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('entity_type.manager'),
-      $container->get('country_manager'),
-      $container->get('router.builder')
-    );
-  }
+class RecurlySettingsForm extends RecurlyConfigForm {
 
   /**
    * {@inheritdoc}
@@ -467,7 +371,7 @@ class RecurlySettingsForm extends ConfigFormBase {
             'recurly_subdomain',
           ]),
         ];
-        recurly_client_initialize($settings, TRUE);
+        $this->recurlyClient->initialize($settings, TRUE);
         $plans = recurly_subscription_plans();
       }
 

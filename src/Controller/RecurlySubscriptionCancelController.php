@@ -2,14 +2,13 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Recurly cancel subscription controller.
  */
-class RecurlySubscriptionCancelController extends ControllerBase {
+class RecurlySubscriptionCancelController extends RecurlyController {
 
   /**
    * Cancel the specified subscription.
@@ -27,11 +26,6 @@ class RecurlySubscriptionCancelController extends ControllerBase {
   public function subscriptionCancel(RouteMatchInterface $route_match, $subscription_id) {
     $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
-
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     // Load the subscription.

@@ -2,13 +2,12 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\HtmlResponse;
 
 /**
  * Default controller for the recurly module.
  */
-class RecurlyPushListenerController extends ControllerBase {
+class RecurlyPushListenerController extends RecurlyController {
 
   /**
    * Process push notification.
@@ -38,9 +37,6 @@ class RecurlyPushListenerController extends ControllerBase {
       $this->getLogger('recurly')->warning($url_key_error_text, []);
       return new HtmlResponse($url_key_error_text, HtmlResponse::HTTP_FORBIDDEN);
     }
-
-    // Initialize the Recurly client with the default account settings.
-    recurly_client_initialize();
 
     // Retrieve the POST XML and create a notification object from it.
     $post_xml = file_get_contents('php://input');

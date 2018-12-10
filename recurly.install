@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Crypt;
+use \Drupal\recurly\RecurlyClient;
 
 /**
  * Implements hook_requirements().
@@ -17,21 +18,17 @@ function recurly_requirements($phase) {
       'title' => t('Recurly'),
     ];
 
-    // Verify that the recurly PHP library is present.
-    $library = libraries_detect('recurly');
-    $error_message = isset($library['error message']) ? $library['error message'] : '';
-
-    if (isset($library) && $library['installed']) {
+    if (RecurlyClient::loadLibrary()) {
       $requirements['recurly']['value'] = t('The required Recurly PHP library is installed.');
       $requirements['recurly']['severity'] = REQUIREMENT_OK;
     }
     else {
       $requirements['recurly']['value'] = t('Not found');
-      $requirements['recurly']['description'] = t('@error Download the <a href=":recurly_link">Recurly PHP library</a>, extract the archive and place the directory at %path on your server.', [
-        '@error' => $error_message,
-        ':recurly_link' => $library['download url'],
-        '%path' => 'libraries/recurly',
-      ]);
+      $requirements['recurly']['description'] = t(
+        'The required Recurly PHP library is <em>not</em> installed. Please follow the installation instructions in the <a href=":doc_link">documentation</a>.', [
+          ':doc_link' => 'https://matteobrusa.github.io/md-styler/?url=cgit.drupalcode.org/recurly/plain/README.md',
+        ]
+      );
       $requirements['recurly']['severity'] = REQUIREMENT_ERROR;
     }
   }

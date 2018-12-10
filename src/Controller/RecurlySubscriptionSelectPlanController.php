@@ -2,14 +2,13 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Recurly select plan controller.
  */
-class RecurlySubscriptionSelectPlanController extends ControllerBase {
+class RecurlySubscriptionSelectPlanController extends RecurlyController {
 
   const SELECT_PLAN_MODE_SIGNUP = 'signup';
 
@@ -45,11 +44,6 @@ class RecurlySubscriptionSelectPlanController extends ControllerBase {
 
     $entity = $route_match->getParameter($entity_type_id);
     $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id)->getLowercaseLabel();
-
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
 
     $mode = $subscription_id ? self::SELECT_PLAN_MODE_CHANGE : self::SELECT_PLAN_MODE_SIGNUP;
     $subscriptions = [];

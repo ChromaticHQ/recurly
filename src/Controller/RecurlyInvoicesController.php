@@ -2,44 +2,15 @@
 
 namespace Drupal\recurly\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\HtmlResponse;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\recurly\RecurlyPagerManager;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Returns responses for Recurly Subscription List.
  */
-class RecurlyInvoicesController extends ControllerBase {
-
-  /**
-   * The Recurly page manager service.
-   *
-   * @var \Drupal\recurly\RecurlyPagerManager
-   */
-  protected $recurlyPageManager;
-
-  /**
-   * Creates a Recurly Invoice Controller.
-   *
-   * @param \Drupal\recurly\RecurlyPagerManager $recurly_page_manager
-   *   The Recurly page manager service.
-   */
-  public function __construct(RecurlyPagerManager $recurly_page_manager) {
-    $this->recurlyPageManager = $recurly_page_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('recurly.pager_manager')
-    );
-  }
+class RecurlyInvoicesController extends RecurlyController {
 
   /**
    * Retrieve all invoices for the specified entity.
@@ -54,10 +25,6 @@ class RecurlyInvoicesController extends ControllerBase {
   public function invoicesList(RouteMatchInterface $route_match) {
     $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
@@ -96,10 +63,6 @@ class RecurlyInvoicesController extends ControllerBase {
   public function getInvoice(RouteMatchInterface $route_match, $invoice_number) {
     $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);
@@ -165,10 +128,6 @@ class RecurlyInvoicesController extends ControllerBase {
   public function getInvoicePdf(RouteMatchInterface $route_match, $invoice_number) {
     $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);

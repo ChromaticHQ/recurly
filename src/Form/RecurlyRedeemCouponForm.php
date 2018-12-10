@@ -2,42 +2,13 @@
 
 namespace Drupal\recurly\Form;
 
-use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\recurly\RecurlyFormatManager;
 
 /**
  * Recurly redeem coupon form.
  */
-class RecurlyRedeemCouponForm extends FormBase {
-
-  /**
-   * The formatting service.
-   *
-   * @var \Drupal\recurly\RecurlyFormatManager
-   */
-  protected $recurlyFormatter;
-
-  /**
-   * Constructs a \Drupal\recurly\Form\RecurlyRedeemCouponForm object.
-   *
-   * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
-   *   A Recurly formatter object.
-   */
-  public function __construct(RecurlyFormatManager $recurly_formatter) {
-    $this->recurlyFormatter = $recurly_formatter;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('recurly.format_manager')
-    );
-  }
+class RecurlyRedeemCouponForm extends RecurlyNonConfigForm {
 
   /**
    * {@inheritdoc}
@@ -123,11 +94,6 @@ class RecurlyRedeemCouponForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      $form_state->setErrorByName('coupon_code', $this->t('Could not initialize the Recurly client.'));
-      return;
-    }
 
     // Query Recurly to make sure this is a valid coupon code.
     try {

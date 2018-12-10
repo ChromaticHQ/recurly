@@ -3,56 +3,14 @@
 namespace Drupal\recurly\Controller;
 
 use Drupal\Component\Utility\Html;
-use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\recurly\RecurlyFormatManager;
-use Drupal\recurly\RecurlyPagerManager;
 
 /**
  * Returns responses for Recurly Subscription List.
  */
-class RecurlySubscriptionListController extends ControllerBase {
-
-
-  /**
-   * The Recurly formatting service.
-   *
-   * @var \Drupal\recurly\RecurlyFormatManager
-   */
-  protected $recurlyFormatter;
-
-  /**
-   * The Recurly page manager service.
-   *
-   * @var \Drupal\recurly\RecurlyPagerManager
-   */
-  protected $recurlyPageManager;
-
-  /**
-   * Creates a subscription list controller.
-   *
-   * @param \Drupal\recurly\RecurlyFormatManager $recurly_formatter
-   *   The Recurly formatter to be used for formatting.
-   * @param \Drupal\recurly\RecurlyPagerManager $recurly_page_manager
-   *   The Recurly page manager service.
-   */
-  public function __construct(RecurlyFormatManager $recurly_formatter, RecurlyPagerManager $recurly_page_manager) {
-    $this->recurlyFormatter = $recurly_formatter;
-    $this->recurlyPageManager = $recurly_page_manager;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('recurly.format_manager'),
-      $container->get('recurly.pager_manager')
-    );
-  }
+class RecurlySubscriptionListController extends RecurlyController {
 
   /**
    * Route title callback.
@@ -68,10 +26,6 @@ class RecurlySubscriptionListController extends ControllerBase {
     $entity_type_id = $this->config('recurly.settings')->get('recurly_entity_type');
     $entity = $route_match->getParameter($entity_type_id);
     $subscriptions = [];
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
 
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
     $account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()]);

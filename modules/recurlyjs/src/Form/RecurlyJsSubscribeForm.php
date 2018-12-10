@@ -28,16 +28,8 @@ class RecurlyJsSubscribeForm extends RecurlyJsFormBase {
       // @TODO: Replace exception.
       throw new Exception();
     }
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      $form['error'] = [
-        '#markup' => $this->t('Could not initialize the Recurly client.'),
-      ];
-      return $form;
-    }
 
     $form = parent::buildForm($form, $form_state);
-
     $form['#entity_type'] = $entity_type;
     $form['#entity'] = $entity;
     $form['#plan_code'] = $plan_code;

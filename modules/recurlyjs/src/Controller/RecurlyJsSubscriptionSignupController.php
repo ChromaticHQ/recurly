@@ -3,13 +3,41 @@
 namespace Drupal\recurlyjs\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\recurly\RecurlyClient;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Returns responses for Recurly Subscription List.
  */
 class RecurlyJsSubscriptionSignupController extends ControllerBase {
+
+  /**
+   * The Recurly client service, initialized on construction.
+   *
+   * @var \Drupal\recurly\RecurlyClient
+   */
+  protected $recurlyClient;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('recurly.client')
+    );
+  }
+
+  /**
+   * Class constructor.
+   *
+   * @param \Drupal\recurly\RecurlyClient $client
+   *   The Recurly client service.
+   */
+  public function __construct(RecurlyClient $client) {
+    $this->recurlyClient = $client;
+  }
 
   /**
    * Controller callback to trigger a user subscription.
@@ -25,12 +53,8 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
     $entity = $route_match->getParameter($entity_type_id);
     $plan_code = $route_match->getParameter('plan_code');
     $currency = $route_match->getParameter('currency');
-    // Initialize the Recurly client with the site-wide settings.
-    if (!recurly_client_initialize()) {
-      return ['#markup' => $this->t('Could not initialize the Recurly client.')];
-    }
-
     $entity_type = $entity->getEntityType()->getLowercaseLabel();
+
     // Ensure the account does not already have this exact same plan. Recurly
     // does not support a single account having multiple of the same plan.
     $local_account = recurly_account_load(['entity_type' => $entity_type, 'entity_id' => $entity->id()], TRUE);
@@ -59,6 +83,7 @@ class RecurlyJsSubscriptionSignupController extends ControllerBase {
         }
       }
     }
+
     // Although this controller contains little else besides the subscription
     // form, it's a separate class because it's highly likely to need theming.
     $form = $this->formBuilder()->getForm('Drupal\recurlyjs\Form\RecurlyJsSubscribeForm', $entity_type, $entity, $plan_code, $currency);
